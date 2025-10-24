@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Database\Factories\ServiceTypeFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class ServiceType extends Model
+{
+    /** @use HasFactory<ServiceTypeFactory> */
+    use HasFactory, HasUuids;
+    protected $fillable = [
+        'code',
+        'name',
+    ];
+
+    public function items(): HasMany{
+        return $this->hasMany(TransactionItem::class, 'service_type_uuid', 'uuid');
+    }
+}

@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Task extends Model
+{
+    /** @use HasFactory<\Database\Factories\TaskFactory> */
+    use HasFactory, HasUuids;
+
+    protected $fillable = [
+        'transaction_uuid',
+        'service_uuid',
+        'status',
+        'description',
+        'assigned_at',
+    ];
+
+
+    public function transaction(): BelongsTo{
+        return $this->belongsTo(Transaction::class, 'transaction_uuid', 'uuid');
+    }
+
+    public function service(): BelongsTo{
+        return $this->belongsTo(Service::class, 'service_uuid', 'uuid');
+    }
+}
