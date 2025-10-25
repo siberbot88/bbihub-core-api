@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,122 +13,59 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
-        $customers = [
-            [
-                'name' => 'Ahmad Setiawan',
-                'phone' => '081234567890',
-                'address' => 'Jl. Merdeka No.10, Bandung',
-            ],
-            [
-                'name' => 'Siti Nurhaliza',
-                'phone' => '081298765432',
-                'address' => 'Jl. Sudirman No.25, Jakarta Selatan',
-            ],
-            [
-                'name' => 'Budi Santoso',
-                'phone' => '085712345678',
-                'address' => 'Jl. Diponegoro No.8, Yogyakarta',
-            ],
-            [
-                'name' => 'Rina Kurniawati',
-                'phone' => '081355667788',
-                'address' => 'Jl. Ahmad Yani No.17, Surabaya',
-            ],
-            [
-                'name' => 'Dewi Lestari',
-                'phone' => '081267899000',
-                'address' => 'Jl. Veteran No.14, Medan',
-            ],
-            [
-                'name' => 'Hendra Gunawan',
-                'phone' => '085822334455',
-                'address' => 'Jl. Malioboro No.33, Yogyakarta',
-            ],
-            [
-                'name' => 'Putri Ananda',
-                'phone' => '081277889900',
-                'address' => 'Jl. Imam Bonjol No.12, Semarang',
-            ],
-            [
-                'name' => 'Agus Saputra',
-                'phone' => '081388899900',
-                'address' => 'Jl. Dipatiukur No.4, Bandung',
-            ],
-            [
-                'name' => 'Kartika Sari',
-                'phone' => '085766554433',
-                'address' => 'Jl. Soekarno Hatta No.55, Malang',
-            ],
-            [
-                'name' => 'Rudi Hartono',
-                'phone' => '081322334455',
-                'address' => 'Jl. Asia Afrika No.7, Bandung',
-            ],
-            [
-                'name' => 'Lina Marlina',
-                'phone' => '081245678912',
-                'address' => 'Jl. Teuku Umar No.22, Denpasar',
-            ],
-            [
-                'name' => 'Eko Prasetyo',
-                'phone' => '085811122233',
-                'address' => 'Jl. Gatot Subroto No.19, Jakarta Timur',
-            ],
-            [
-                'name' => 'Nur Aini',
-                'phone' => '081234998877',
-                'address' => 'Jl. Kalimantan No.11, Palembang',
-            ],
-            [
-                'name' => 'Andi Wijaya',
-                'phone' => '081266778899',
-                'address' => 'Jl. Hasanuddin No.2, Makassar',
-            ],
-            [
-                'name' => 'Ratna Sari',
-                'phone' => '081398877665',
-                'address' => 'Jl. Gajah Mada No.30, Pontianak',
-            ],
-            [
-                'name' => 'Tono Rahman',
-                'phone' => '081377755544',
-                'address' => 'Jl. Pahlawan No.9, Bogor',
-            ],
-            [
-                'name' => 'Yuni Astuti',
-                'phone' => '085677889900',
-                'address' => 'Jl. Diponegoro No.18, Solo',
-            ],
-            [
-                'name' => 'Arif Hidayat',
-                'phone' => '081233344455',
-                'address' => 'Jl. Slamet Riyadi No.20, Solo',
-            ],
-            [
-                'name' => 'Nita Anggraini',
-                'phone' => '081288899900',
-                'address' => 'Jl. Sutomo No.8, Medan',
-            ],
-            [
-                'name' => 'Fajar Maulana',
-                'phone' => '081399988877',
-                'address' => 'Jl. Sisingamangaraja No.5, Pekanbaru',
-            ],
+
+        $firstNames = [
+            'Budi', 'Agus', 'Eko', 'Dewi', 'Siti', 'Rini', 'Andi', 'Dodi', 'Fajar', 'Gita',
+            'Hendra', 'Indah', 'Joko', 'Kiki', 'Lintang', 'Mega', 'Nina', 'Oscar', 'Putri', 'Rizky',
+            'Sari', 'Teguh', 'Utami', 'Vino', 'Wati', 'Yoga', 'Zulham', 'Asep', 'Cecep', 'Deden'
         ];
 
-        $no = 1;
-        foreach ($customers as $data) {
-            $code = 'CS' . str_pad($no, 3, '0', STR_PAD_LEFT);
-            DB::table('customers')->insert([
-                'id' => Str::uuid(),
+        $lastNames = [
+            'Santoso', 'Wijaya', 'Hartono', 'Lestari', 'Gunawan', 'Setiawan', 'Purnomo', 'Wati', 'Yulianto',
+            'Nugroho', 'Susanto', 'Salim', 'Kusuma', 'Pratama', 'Hidayat', 'Maulana', 'Saputra', 'Wahyudi'
+        ];
+
+        $streetNames = [
+            'Jl. Melati', 'Jl. Mawar', 'Jl. Kenanga', 'Jl. Anggrek', 'Jl. Sudirman', 'Jl. Thamrin',
+            'Jl. Diponegoro', 'Jl. Gajah Mada', 'Jl. Hayam Wuruk', 'Jl. Pahlawan', 'Jl. Merdeka', 'Jl. Pemuda'
+        ];
+
+        $cities = [
+            'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Yogyakarta',
+            'Denpasar', 'Makassar', 'Palembang', 'Bogor', 'Tangerang', 'Bekasi'
+        ];
+
+        $dataToInsert = [];
+        $now = now();
+        $datePart = $now->format('Ymd');
+
+        // Generate 100 customer
+        for ($i = 1; $i <= 100; $i++) {
+
+            $code = 'CUS' . $datePart . str_pad($i, 3, '0', STR_PAD_LEFT);
+
+            $name = $firstNames[array_rand($firstNames)] . ' ' . $lastNames[array_rand($lastNames)];
+
+            $phone = '08' . rand(10, 99) . rand(1000, 9999) . rand(1000, 9999);
+
+            $address = $streetNames[array_rand($streetNames)] . ' No. ' . rand(1, 100) . ', ' . $cities[array_rand($cities)];
+
+            $dataToInsert[] = [
+                'id' => Str::uuid()->toString(),
                 'code' => $code,
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'address' => $data['address'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $no++;
+                'name' => $name,
+                'phone' => $phone,
+                'address' => $address,
+                'created_at' => $now,
+                'updated_at' => $now
+            ];
         }
+
+
+        DB::table('customers')->upsert(
+            $dataToInsert,
+            ['code'],
+            ['name', 'phone', 'address', 'updated_at']
+        );
     }
 }

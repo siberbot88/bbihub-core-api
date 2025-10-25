@@ -14,7 +14,7 @@ class Employment extends Model
     /** @use HasFactory<EmploymentFactory> */
     use HasFactory, HasUuids, Notifiable;
     protected $fillable = [
-        'workshop_id',
+        'workshop_uuid',
         'code',
         'name',
         'role',
