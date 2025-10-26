@@ -16,29 +16,17 @@ class Employment extends Model
     protected $fillable = [
         'workshop_uuid',
         'code',
-        'name',
-        'role',
         'description',
-        'email',
-        'password',
-        'photo',
     ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
 
 
     public function workshop(): BelongsTo{
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_uuid');
+    }
+
 }
