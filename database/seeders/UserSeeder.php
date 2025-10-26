@@ -3,11 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Hash; // Pastikan ini ada
 use Illuminate\Support\Str;
-use Illuminate\Testing\Fluent\Concerns\Has;
+// Hapus 'use Has' yang tidak perlu
 
 class UserSeeder extends Seeder
 {
@@ -16,20 +15,22 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::firstOrCreate(
-            ['email' => 'budi.hartono@gmail.com'], // Kunci unik untuk mengecek
-            [
-                'id' => Str::uuid(), // ID di-generate otomatis
-                'name' => 'Budi Hartono',
-                'username' => 'budihartono',
-                'role' => 'owner', // Sesuai permintaan "rolenya wajib owner"
-                'email_verified_at' => now(),
-                'password' => Hash::make('password123'), // Password default: "password123"
-                'remember_token' => Str::random(10),
-                'photo' => 'https://placehold.co/400x400/4F46E5/FFFFFF?text=BH',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]
-        );
+        // Panggil RoleSeeder dulu jika belum
+        // $this->call(RoleSeeder::class);
+
+        // Langkah 1: Buat user-nya
+        $owner = User::create([
+            'id' => Str::uuid(),
+            'name' => 'Mohammad Bayu Rizki',
+            'email' => 'mohammadbayurizki22@gmail.com',
+            'username' => 'Owner bengkel',
+            'email_verified_at' => now(),
+            // Ganti 'bcrypt()' dengan 'Hash::make()' agar konsisten
+            'password' => Hash::make('password'),
+            'remember_token' => Str::random(10),
+        ]);
+
+        // Langkah 2: Gunakan Spatie untuk menetapkan role
+        $owner->assignRole('owner');
     }
 }

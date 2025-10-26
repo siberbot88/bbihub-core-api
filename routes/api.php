@@ -3,73 +3,60 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Owner\EmployementApiController;
-use App\Http\Controllers\WorkshopController;
+use App\Http\Controllers\Owner\WorkshopApiController;
+use App\Http\Controllers\Owner\WorkshopDocumentApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Rute Publik untuk Otentikasi
+/*
+|--------------------------------------------------------------------------
+| Rute Publik (Tidak Perlu Login)
+|--------------------------------------------------------------------------
+*/
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 });
 
-// Rute yang Dilindungi (Perlu Login / Token Sanctum)
+/*
+|--------------------------------------------------------------------------
+| Rute Terlindungi (Wajib Login / Bawa Token Sanctum)
+|--------------------------------------------------------------------------
+*/
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
-    Route::get('/user', function (Request $request) {
-        return $request->user();
+    Route::get('auth/user', function (Request $request) {
+        return $request->user()->load('roles:name');
     });
 
-    // Anda bisa tambahkan middleware Spatie di sini nanti: ->middleware('role:owner')
-    Route::prefix('owners')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Grup Rute untuk 'Owner'
+    | (Nanti bisa Anda tambahkan middleware 'role:owner')
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+        Route::prefix('owners')->group(function () {
+            // --- Rute Workshop (Step 1) ---
+            Route::post('workshops', [WorkshopApiController::class, 'store']);
 
-        // Rute Workshop (Contoh)
-        // Route::get('workshops', [WorkshopController::class, 'index']);
-        // Route::post('workshops', [WorkshopController::class, 'store']);
-        // Route::put('workshops/{workshop}', [WorkshopController::class, 'update']);
+            // --- Rute Dokumen (Step 2) ---
+            Route::post('documents', [WorkshopDocumentApiController::class, 'store']);
 
-        // Rute Employee (Contoh dari file Anda sebelumnya)
-        // Route::get('employee', [EmployementApiController::class, 'index']);
-        // Route::get('employee/{employment}', [EmployementApiController::class, 'show']);
-        // Route::post('employee', [EmployementApiController::class, 'store']);
-        // Route::put('employee/{employment}', [EmployementApiController::class, 'update']);
-        // Route::delete('employee/{employment}', [EmployementApiController::class, 'destroy']);
+            // --- Rute Employee ---
+            Route::apiResource('employee', EmployementApiController::class);
 
-        // Rute Customer (Contoh dari file Anda sebelumnya)
-        Route::apiResource('customer', CustomerApiController::class);
+            // --- Rute Customer ---
+            Route::apiResource('customer', CustomerApiController::class);
+        });
     });
 
-    // Anda bisa tambahkan grup rute lain untuk 'admin' atau 'mechanic' di sini
-    // Route::prefix('mechanic')->middleware('role:mechanic')->group(function () {
-    //    ...
+    /*
+    |--------------------------------------------------------------------------
+    | Grup Rute untuk 'Technician' (Contoh)
+    |--------------------------------------------------------------------------
+    */
+    // Route::prefix('technician')->middleware('role:technician')->group(function () {
+    //    Route::get('workshops/{workshop}', [WorkshopTechnicianController::class, 'show']);
     // });
-
 });
-//middleware('auth:sanctum')->
-
-Route::prefix('v1')->group(function () {
-    Route::prefix('owner')->group(function () {
-        Route::get('workshops', [WorkshopController::class, 'index']);
-        Route::post('workshops', [WorkshopController::class, 'store']);
-        Route::put('workshops/{workshop}', [WorkshopController::class, 'update']);
-
-        //Employee
-        Route::get('employee', [EmployementApiController::class, 'index']);
-        Route::get('employee/{employment}', [EmployementApiController::class, 'show']);
-        Route::post('employee', [EmployementApiController::class, 'store']);
-        Route::put('employee/{employment}', [EmployementApiController::class, 'update']);
-        Route::delete('employee/{employment}', [EmployementApiController::class, 'destroy']);
-
-
-        //Customer
-        Route::get('customer', [CustomerApiController::class, 'index']);
-        Route::post('customer', [CustomerApiController::class, 'store']);
-    });
-
-    Route::prefix('technician')->middleware('auth:sanctum')->group(function () {
-        Route::get('workshops/{workshop}', [WorkshopTechnicianController::class, 'show']);
-    });
-});
-
-
-

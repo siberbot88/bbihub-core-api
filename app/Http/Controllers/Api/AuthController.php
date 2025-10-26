@@ -51,7 +51,7 @@ class AuthController extends Controller
                 'message' => 'Registrasi berhasil. Akun Owner telah dibuat.',
                 'access_token' => $token,
                 'token_type' => 'Bearer',
-                'user' => $user
+                'user' => $user->load('roles:name')
             ], 201); // 201 Created
 
         } catch (\Exception $e) {
@@ -96,17 +96,28 @@ class AuthController extends Controller
         }
 
         // Hapus token lama jika ada
-        $user->tokens()->delete();
+        //$user->tokens()->delete();
 
         // Buat token Sanctum baru
         $token = $user->createToken('auth_token_for_' . $user->username)->plainTextToken;
+
+        // Ambil role-nya dulu
+        $role = $user->getRoleNames()->first();
 
         return response()->json([
             'message' => 'Login berhasil',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user->load('roles:name') // Memuat nama role user
-        ], 200); // 200 OK
+            // Kirim data user secara spesifik
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'photo' => $user->photo,
+                'role' => $role
+            ]
+        ], 200);
     }
 
     /**
