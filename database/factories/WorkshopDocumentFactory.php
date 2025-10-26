@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\WorkshopDocument;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\WorkshopDocument>
+ * @extends Factory<WorkshopDocument>
  */
 class WorkshopDocumentFactory extends Factory
 {

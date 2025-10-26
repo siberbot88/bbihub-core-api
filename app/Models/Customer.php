@@ -12,7 +12,7 @@ class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory, HasUuids;
-    protected $table = [
+    protected $fillable = [
         'code',
         'name',
         'phone',
