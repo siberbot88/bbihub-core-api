@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasUuids, HasFactory, Notifiable;
+    use HasUuids, HasFactory, Notifiable, HasRoles, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +25,6 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'username',
-        'role',
         'email',
         'password',
         'photo',
@@ -54,6 +55,11 @@ class User extends Authenticatable
 
     public function workshops(): HasMany{
         return $this->hasMany(Workshop::class, 'workshop_uuid');
+    }
+
+    public function employments()
+    {
+        return $this->hasMany(Employment::class, 'user_uuid');
     }
 
     public function transactions(): HasMany{

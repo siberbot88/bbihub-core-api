@@ -29,6 +29,7 @@ class Workshop extends Model
         'postal_code',
         'latitude',
         'longitude',
+        'maps_url',
         'opening_time',
         'closing_time',
         'operational_days',

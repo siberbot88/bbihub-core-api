@@ -17,17 +17,19 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Mohammad Bayu Rizki',
-            'username' => 'Owner bengkel',
-            'role' => 'owner',
-            'email' => 'mohammadbayurizki22@gmail.com',
-            'password' => bcrypt('password'),
-        ]);
+//        User::factory()->create([
+//            'name' => 'Mohammad Bayu Rizki',
+//            'username' => 'Owner bengkel',
+//            'role' => 'owner',
+//            'email' => 'mohammadbayurizki22@gmail.com',
+//            'password' => bcrypt('password'),
+//        ]);
 
         $this->call([
-           CustomerSeeder::class,
-           ServiceTypeSeeder::class,
+            CustomerSeeder::class,
+            ServiceTypeSeeder::class,
+            RoleSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
