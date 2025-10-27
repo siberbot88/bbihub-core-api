@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Owner;
+namespace App\Http\Controllers\Api\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Workshop;
@@ -28,6 +28,7 @@ class WorkshopApiController extends Controller
             'postal_code' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'maps_url' => 'required|string',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'operational_days' => 'required|string',
@@ -55,6 +56,7 @@ class WorkshopApiController extends Controller
                 'postal_code' => $request->postal_code,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
+                'maps_url' => $request->maps_url,
                 'opening_time' => $request->opening_time,
                 'closing_time' => $request->closing_time,
                 'operational_days' => $request->operational_days,

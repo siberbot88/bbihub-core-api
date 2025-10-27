@@ -2,9 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerApiController;
-use App\Http\Controllers\Owner\EmployementApiController;
-use App\Http\Controllers\Owner\WorkshopApiController;
-use App\Http\Controllers\Owner\WorkshopDocumentApiController;
+use App\Http\Controllers\Api\Owner\EmployementApiController;
+use App\Http\Controllers\Api\Owner\WorkshopApiController;
+use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,28 +35,36 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     | (Nanti bisa Anda tambahkan middleware 'role:owner')
     |--------------------------------------------------------------------------
     */
-    Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
-        Route::prefix('owners')->group(function () {
-            // --- Rute Workshop (Step 1) ---
-            Route::post('workshops', [WorkshopApiController::class, 'store']);
+    Route::prefix('owners')->middleware('auth:sanctum')->group(function () {
+        // --- Rute Workshop (Step 1) ---
+        Route::post('workshops', [WorkshopApiController::class, 'store']);
 
-            // --- Rute Dokumen (Step 2) ---
-            Route::post('documents', [WorkshopDocumentApiController::class, 'store']);
+        // --- Rute Dokumen (Step 2) ---
+        Route::post('documents', [WorkshopDocumentApiController::class, 'store']);
 
-            // --- Rute Employee ---
-            Route::apiResource('employee', EmployementApiController::class);
+        // --- Rute Employee ---
+        Route::apiResource('employee', EmployementApiController::class);
 
-            // --- Rute Customer ---
-            Route::apiResource('customer', CustomerApiController::class);
-        });
+        // --- Rute Customer ---
+        Route::apiResource('workshop', WorkshopApiController::class);
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Grup Rute untuk 'Technician' (Contoh)
+    | Grup Rute untuk 'Mechanic'
     |--------------------------------------------------------------------------
     */
-    // Route::prefix('technician')->middleware('role:technician')->group(function () {
-    //    Route::get('workshops/{workshop}', [WorkshopTechnicianController::class, 'show']);
-    // });
+     Route::prefix('mechanics')->middleware('role:technician')->group(function () {
+        //content api mechanic
+     });
+
+
+    /*
+   |--------------------------------------------------------------------------
+   | Grup Rute untuk 'Admin'
+   |--------------------------------------------------------------------------
+   */
+    Route::prefix('admins')->middleware('role:technician')->group(function () {
+
+    });
 });

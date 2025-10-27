@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Mechanic;
+namespace App\Http\Controllers\Api\Mechanic;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class ServiceTaskController extends Controller
 {
