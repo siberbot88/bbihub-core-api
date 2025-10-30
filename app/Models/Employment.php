@@ -13,10 +13,25 @@ class Employment extends Model
 {
     /** @use HasFactory<EmploymentFactory> */
     use HasFactory, HasUuids, Notifiable;
+
+
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
+        'id',
+        'user_uuid',
         'workshop_uuid',
         'code',
-        'description',
+        'specialist',
+        'jobdesk',
+
     ];
 
 
@@ -30,3 +45,4 @@ class Employment extends Model
     }
 
 }
+

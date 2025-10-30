@@ -26,13 +26,12 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Validasi gagal',
                 'errors' => $validator->errors()
-            ], 422); // 422 Unprocessable Entity
+            ], 422);
         }
 
-        // Buat user baru
         try {
             $user = User::create([
-                'id' => Str::uuid(), // Otomatis generate UUID
+                'id' => Str::uuid(),
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
@@ -40,35 +39,32 @@ class AuthController extends Controller
                 'photo' => 'https://placehold.co/400x400/000000/FFFFFF?text=' . substr($request->name, 0, 2),
             ]);
 
-            // PENTING: Berikan role 'owner' menggunakan Spatie
-            // Pastikan Anda sudah menjalankan RoleSeeder.php
+            // Beri role owner
             $user->assignRole('owner');
 
-            // Buat token Sanctum untuk user
+            // Buat token
             $token = $user->createToken('auth_token_for_' . $user->username)->plainTextToken;
+
+            // Load relasi sesuai role
+            $user->load('roles:name', 'workshops');
 
             return response()->json([
                 'message' => 'Registrasi berhasil. Akun Owner telah dibuat.',
                 'access_token' => $token,
                 'token_type' => 'Bearer',
-                'user' => $user->load('roles:name')
-            ], 201); // 201 Created
+                'user' => $user
+            ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Registrasi gagal, terjadi kesalahan.',
+                'message' => 'Registrasi gagal.',
                 'error' => $e->getMessage()
-            ], 500); // 500 Internal Server Error
+            ], 500);
         }
     }
 
-    /**
-     * Login untuk semua user (Owner, Admin, Mechanic).
-     * * Memeriksa kredensial dan memberikan token Sanctum jika berhasil.
-     */
     public function login(Request $request)
     {
-        // Validasi input
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string',
@@ -78,65 +74,50 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        // Cari user berdasarkan email
         $user = User::where('email', $request->email)->first();
 
-        // Cek user dan password
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Email atau password salah.'
-            ], 401); // 401 Unauthorized
+            ], 401);
         }
 
-        // PENTING: Cek apakah user punya role yang diizinkan untuk login ke aplikasi ini
         if (!$user->hasAnyRole(['owner', 'admin', 'mechanic'])) {
             return response()->json([
                 'message' => 'Akun Anda tidak memiliki izin untuk mengakses aplikasi ini.'
-            ], 403); // 403 Forbidden
+            ], 403);
         }
 
-        // Hapus token lama jika ada
-        //$user->tokens()->delete();
-
-        // Buat token Sanctum baru
+        // Buat token baru
         $token = $user->createToken('auth_token_for_' . $user->username)->plainTextToken;
 
-        // Ambil role-nya dulu
-        $role = $user->getRoleNames()->first();
+        // Load relasi berdasarkan role
+        if ($user->hasRole('owner')) {
+            $user->load('roles:name', 'workshops');
+        } else {
+            $user->load('roles:name', 'employment.workshop');
+        }
 
         return response()->json([
             'message' => 'Login berhasil',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            // Kirim data user secara spesifik
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'photo' => $user->photo,
-                'role' => $role
-            ]
+            'user' => $user
         ], 200);
     }
 
-    /**
-     * Logout user (Memerlukan token).
-     * * Menghapus token yang sedang digunakan.
-     */
     public function logout(Request $request)
     {
         try {
-            // Menghapus token yang sedang digunakan untuk otentikasi
             $request->user()->currentAccessToken()->delete();
 
             return response()->json([
                 'message' => 'Logout berhasil'
-            ], 200); // 200 OK
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Logout gagal, terjadi kesalahan.',
+                'message' => 'Logout gagal.',
                 'error' => $e->getMessage()
             ], 500);
         }
