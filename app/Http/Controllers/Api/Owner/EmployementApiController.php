@@ -4,175 +4,216 @@ namespace App\Http\Controllers\Api\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employment;
-use Exception;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class EmployementApiController extends Controller
 {
     /**
-     * Menampilkan daftar semua karyawan.
+     * Menampilkan semua karyawan milik Owner yang sedang login.
      */
     public function index(Request $request)
     {
-        // Mengambil workshop_uuid dari user (owner) yang sedang terotentikasi
-        //$workshopUuid = $request->user()->workshop_uuid;
+        $owner = $request->user();
 
-        // Filter karyawan berdasarkan workshop_uuid milik owner
-        //$employee = Employment::where('workshop_uuid', $workshopUuid)->get();
+        // 1. Ambil semua ID workshop milik owner ini
+        $workshopIds = $owner->workshops()->pluck('id');
 
-        $employee = Employment::all();
+        // 2. Ambil semua data employment dari workshop tsb.
+        $employees = Employment::whereIn('workshop_uuid', $workshopIds)
+            ->with('user', 'user.roles:name', 'workshop:id,name')
+            ->get();
 
-        return response()->json(['message' => 'Success', 'data' => $employee], 200);
+        if (!$employees){
+            return response()->json(['message' => 'Data tidak ditemukan.'], 404);
+        }
+        return response()->json(['message'=> 'Success', 'data'=> $employees],201);
     }
 
     /**
-     * Menyimpan karyawan baru.
+     * Menyimpan karyawan baru (didaftarkan oleh Owner).
+     * Ini adalah logic untuk form Flutter Anda.
      */
     public function store(Request $request)
     {
+        $owner = $request->user();
+
         $validator = Validator::make($request->all(), [
-            'workshop_uuid' => 'required|uuid|exists:workshops,id',
-            // 'code' Dihapus dari sini, akan di-generate otomatis
+            // Data untuk Tabel User
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'photo' => 'nullable|string|url',
             'role' => 'required|string|in:admin,mechanic',
-            'description' => 'nullable|string',
-            'email' => 'required|string|email|max:255|unique:employments,email',
-            'password' => 'required|string|min:8',
-            'photo' => 'nullable|string',
+
+            // Data untuk Tabel Employment
+            'workshop_uuid' => [
+                'required',
+                'uuid',
+                Rule::exists('workshops', 'id')->where(function ($query) use ($owner) {
+                    $query->where('user_uuid', $owner->id);
+                }),
+            ],
+            'specialist' => 'nullable|string|max:255',
+            'jobdesk' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $validatedData = $validator->validated();
-
-        // Mengunci tabel untuk mencegah race condition saat membuat kode baru
         DB::beginTransaction();
         try {
-            // Cari kode 'ST' terakhir, urutkan, dan kunci barisnya
-            $lastEmployee = Employment::where('code', 'LIKE', 'ST%')
-                ->orderBy('code', 'desc')
-                ->lockForUpdate() // Kunci untuk transaksi
-                ->first();
+            // --- Step 1: Buat Akun User Baru ---
+            $newUser = User::create([
+                'id' => Str::uuid(),
+                'name' => $request->name,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'photo' => $request->photo ?? 'https://placehold.co/400x400/000000/FFFFFF?text=' . substr($request->name, 0, 2),
+            ]);
 
-            $nextNumber = 1;
-            if ($lastEmployee) {
-                // Ambil angka dari kode terakhir (misal: 'ST00001' -> 1)
-                $lastNumber = (int) substr($lastEmployee->code, 2);
-                $nextNumber = $lastNumber + 1;
-            }
+            // --- Step 2: Beri Role (Spatie) ---
+            $newUser->assignRole($request->role);
 
-            // Format kode baru: ST + 5 digit angka (misal: ST00001)
-            $validatedData['code'] = 'ST' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+            // --- Step 3: Buat Catatan Kepegawaian (Employment) ---
+            $lastCode = Employment::max('code') ?? 'ST00000';
+            $nextNum = (int)substr($lastCode, 2) + 1;
+            $newCode = 'ST' . str_pad($nextNum, 5, '0', STR_PAD_LEFT);
 
-            // --- AKHIR LOGIKA AUTO-GENERATE CODE ---
+            $employment = Employment::create([
+                'id' => Str::uuid(),
+                'user_uuid' => $newUser->id,
+                'workshop_uuid' => $request->workshop_uuid,
+                'code' => $newCode,
+                'specialist' => $request->specialist,
+                'jobdesk' => $request->jobdesk,
+            ]);
 
-            // Hash password sebelum disimpan
-            $validatedData['password'] = Hash::make($validatedData['password']);
+            DB::commit();
 
-            // Asumsi Model Employment Anda menggunakan trait HasUuids untuk 'id'
-            $employee = Employment::create($validatedData);
 
-            DB::commit(); // Sukses, simpan perubahan
+            $employment->load('user', 'user.roles:name');
 
-            return response()->json(['message' => 'Employee created successfully', 'data' => $employee], 201);
+            return response()->json($employment, 201);
 
-        } catch (Exception $e) {
-            DB::rollBack(); // Gagal, batalkan perubahan
-            return response()->json(['message' => 'Failed to create employee, please try again.', 'error' => $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal membuat karyawan.', 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Menampilkan detail satu karyawan.
-     *
-     * @param  Employment  $employment
+     * Menampilkan detail 1 karyawan.
      */
-    public function show(Request $request, string $employment)
+    public function show(Request $request, Employment $employee)
     {
-        // 2. Cari data secara manual menggunakan ID
-        $employee = Employment::find($employment);
 
-        // 3. Jika tidak ditemukan, kirim respon JSON 404
-        if (!$employee) {
-            return response()->json(['message' => 'Data karyawan tidak ditemukan.'], 404);
+        // Cek Keamanan: Apakah owner ini memiliki workshop tempat karyawan ini bekerja?
+        if ($employee->workshop->user_uuid !== $request->user()->id) {
+            return response()->json(['message' => 'Tidak diizinkan'], 403);
         }
 
-        // (Ini asumsi auth:sanctum NONAKTIF)
-        // Jika auth AKTIF, uncomment baris pengecekan
-        /*
-        // Otorisasi: Pastikan owner hanya bisa lihat employee di workshopnya
-        if ($employee->workshop_uuid !== $request->user()->workshop_uuid) {
-            return response()->json(['message' => 'Unauthorized. You do not own this resource.'], 403);
-        }
-        */
-
-        // 4. Jika lolos (atau auth nonaktif), tampilkan data
-        return response()->json(['message' => 'Success', 'data' => $employee], 200);
+        $employee->load('user', 'user.roles:name', 'workshop:id,name');
+        return response()->json($employee);
     }
 
     /**
-     * Memperbarui data karyawan.
-     *
-     * @param  Employment  $employment
+     * Update data karyawan.
      */
-    public function update(Request $request, Employment $employment)
+    public function update(Request $request, Employment $employee)
     {
-        // Pastikan owner hanya bisa update employee di workshopnya
-//        if ($employment->workshop_uuid !== $request->user()->workshop_uuid) {
-//            return response()->json(['message' => 'Forbidden'], 403);
-//        }
+        $owner = $request->user();
+
+        // Cek Keamanan
+        if ($employee->workshop->user_uuid !== $owner->id) {
+            return response()->json(['message' => 'Tidak diizinkan'], 403);
+        }
+
+        $user = $employee->user;
 
         $validator = Validator::make($request->all(), [
-            // workshop_uuid dan code sebaiknya tidak bisa diubah
+            // Data User
             'name' => 'sometimes|required|string|max:255',
+            'username' => ['sometimes','required','string','max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['sometimes','required','string','email','max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
+
+            // Data Role
             'role' => 'sometimes|required|string|in:admin,mechanic',
-            'description' => 'nullable|string',
-            'email' => [
-                'sometimes',
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('employments', 'email')->ignore($employment->id),
-            ],
-            'password' => 'nullable|string|min:8', // Hanya update jika diisi
-            'photo' => 'nullable|string',
+
+            // Data Employment
+            'specialist' => 'nullable|string|max:255',
+            'jobdesk' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $validatedData = $validator->validated();
+        DB::beginTransaction();
+        try {
+            // --- Update User ---
+            $user->update($request->only('name', 'username', 'email'));
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+            }
 
-        if ($request->filled('password')) {
-            $validatedData['password'] = Hash::make($validatedData['password']);
+            // --- Update Role ---
+            if ($request->filled('role')) {
+                $user->syncRoles([$request->role]);
+            }
+
+            // --- Update Employment ---
+            $employee->update($request->only('specialist', 'jobdesk'));
+
+            DB::commit();
+
+            $employee->load('user', 'user.roles:name', 'workshop:id,name');
+            return response()->json($employee);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal update karyawan.', 'error' => $e->getMessage()], 500);
         }
-
-        $employment->update($validatedData);
-
-        return response()->json(['message' => 'Employee updated successfully', 'data' => $employment], 200);
     }
 
     /**
-     * Menghapus data karyawan.
-     *
-     * @param  Employment  $employment
+     * Menghapus karyawan.
      */
-    public function destroy(Employment $employment)
+    public function destroy(Request $request, Employment $employee)
     {
-        // Pastikan owner hanya bisa delete employee di workshopnya
-    //        if ($employment->workshop_uuid !== request()->user()->workshop_uuid) {
-    //            return response()->json(['message' => 'Forbidden'], 403);
-    //        }
+        // Cek Keamanan
+        if ($employee->workshop->user_uuid !== $request->user()->id) {
+            return response()->json(['message' => 'Tidak diizinkan'], 403);
+        }
 
-        $employment->delete();
-        return response()->json(['message' => 'Employee deleted successfully', 'data' => $employment], 200);
+        DB::beginTransaction();
+        try {
+            $user = $employee->user;
+
+            // 1. Hapus data employment
+            $employee->delete();
+
+            // 2. Hapus data user (ini akan menghapus role Spatie juga)
+            $user->delete();
+
+            DB::commit();
+
+            return response()->json(null, 204); // 204 No Content
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal menghapus karyawan.', 'error' => $e->getMessage()], 500);
+        }
     }
 }
