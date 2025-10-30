@@ -31,9 +31,13 @@ class Employment extends Model
         'code',
         'specialist',
         'jobdesk',
+        'status',
 
     ];
 
+    protected $casts = [
+        'status' => 'string',
+    ];
 
     public function workshop(): BelongsTo{
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
