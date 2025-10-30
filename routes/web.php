@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\WorkshopController;
+use App\Livewire\Counter;
+use App\Livewire\Login;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
 
 Route::prefix('workshop')->group(function () {
     Route::get('/', [WorkshopController::class, 'index'])->name('workshop.index');

@@ -19,6 +19,7 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->name('api.login');
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | Rute Terlindungi (Wajib Login / Bawa Token Sanctum)
@@ -36,6 +37,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         $user->load('roles:name');
         return response()->json($user);
     })->name('api.user');
+
+    Route::get('/debug/token', function (Request $request) {
+        $raw = $request->bearerToken();
+        $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($raw);
+        if (! $pat) return response()->json(['ok' => false, 'why' => 'token not found'], 401);
+        return [
+            'ok' => true,
+            'tokenable_type' => $pat->tokenable_type,
+            'tokenable_id' => $pat->tokenable_id,
+        ];
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -83,8 +95,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     */
     // Menggunakan middleware 'role:admin' dari Spatie
     Route::prefix('admins')->middleware('role:admin')->name('api.admin.')->group(function () {
-        // --- Contoh Rute Admin ---
-        // Route::get('reports', [AdminReportController::class, 'index']);
+
+
     });
 });
 

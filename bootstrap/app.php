@@ -20,6 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
+
+        $middleware->redirectGuestsTo(function ($request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return null;
+            }
+            return null;
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

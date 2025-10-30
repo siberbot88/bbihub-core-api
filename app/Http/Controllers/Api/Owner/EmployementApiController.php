@@ -33,7 +33,7 @@ class EmployementApiController extends Controller
         if (!$employees){
             return response()->json(['message' => 'Data tidak ditemukan.'], 404);
         }
-        return response()->json(['message'=> 'Success', 'data'=> $employees],201);
+        return response()->json(['message'=> 'Success', 'data'=> $employees],200);
     }
 
     /**
@@ -63,6 +63,7 @@ class EmployementApiController extends Controller
             ],
             'specialist' => 'nullable|string|max:255',
             'jobdesk' => 'nullable|string',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -96,13 +97,15 @@ class EmployementApiController extends Controller
                 'code' => $newCode,
                 'specialist' => $request->specialist,
                 'jobdesk' => $request->jobdesk,
+                'status' => $request->status,
             ]);
 
             DB::commit();
 
 
             $employment->load('user', 'user.roles:name');
-
+            $employment->status = $data['status'] ?? 'active';
+            $employment->save();
             return response()->json($employment, 201);
 
         } catch (\Exception $e) {
@@ -153,6 +156,7 @@ class EmployementApiController extends Controller
             // Data Employment
             'specialist' => 'nullable|string|max:255',
             'jobdesk' => 'nullable|string',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
