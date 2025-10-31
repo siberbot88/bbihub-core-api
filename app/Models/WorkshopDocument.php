@@ -10,9 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkshopDocument extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<WorkshopDocumentFactory> */
     use HasFactory, HasUuids;
     protected $fillable = [
+        'id',
         'workshop_uuid',
         'nib',
         'npwp',

@@ -10,10 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServiceLog extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<ServiceLogFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'service_uuid',
         'mechanic_uuid',
         'transaction_uuid',

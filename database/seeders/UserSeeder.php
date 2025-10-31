@@ -4,8 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash; // Pastikan ini ada
+use Illuminate\Support\Facades\Hash;
+
+// Pastikan ini ada
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
+
 // Hapus 'use Has' yang tidak perlu
 
 class UserSeeder extends Seeder
@@ -31,6 +35,6 @@ class UserSeeder extends Seeder
         ]);
 
         // Langkah 2: Gunakan Spatie untuk menetapkan role
-        $owner->assignRole('owner');
+        $owner->assignRole(Role::findByName('owner', 'web'));
     }
 }

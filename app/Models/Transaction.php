@@ -12,10 +12,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<TransactionFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'customer_uuid',
         'workshop_uuid',
         'admin_uuid',

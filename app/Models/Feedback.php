@@ -10,10 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Feedback extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<FeedbackFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'transaction_uuid',
         'rating',
         'comment',

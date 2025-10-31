@@ -10,9 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ServiceType extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<ServiceTypeFactory> */
     use HasFactory, HasUuids;
     protected $fillable = [
+        'id',
         'code',
         'name',
     ];

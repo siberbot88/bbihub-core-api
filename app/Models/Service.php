@@ -12,9 +12,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Service extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<ServiceFactory> */
     use HasFactory, HasUuids;
     protected $fillable = [
+        'id',
         'code',
         'workshop_uuid',
         'name',
