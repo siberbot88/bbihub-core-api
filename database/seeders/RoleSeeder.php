@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
 {
@@ -14,7 +15,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Hapus cache role/permission Spatie agar tidak error
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Buat 3 role utama Anda
         // firstOrCreate() akan membuat jika belum ada, atau mengambil jika sudah ada.

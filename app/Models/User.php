@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
+    protected string $guard_name = 'web';
 
     /**
      * The attributes that are mass assignable.
@@ -59,6 +60,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
 
     /**
      * Relasi untuk Owner: Mendapatkan SEMUA workshop yang dimiliki Owner ini.

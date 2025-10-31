@@ -10,10 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<TaskFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'transaction_uuid',
         'service_uuid',
         'status',

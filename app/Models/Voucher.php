@@ -10,9 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Voucher extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<VoucherFactory> */
     use HasFactory, HasUuids;
     protected $fillable = [
+        'id',
         'code_voucher',
         'workshop_uuid',
         'title',

@@ -10,10 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     /** @use HasFactory<NotificationFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'user_uuid',
         'title',
         'message',
