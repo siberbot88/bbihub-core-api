@@ -4,16 +4,32 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
-use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
+    /**
+     * Helper: assign role ke beberapa guard sekaligus (web & sanctum).
+     */
+    private function assignRoleForGuards(User $user, string $roleName, array $guards = ['web', 'sanctum']): void
+    {
+        foreach ($guards as $guard) {
+            // Jika role belum dibuat untuk guard tsb, abaikan
+            try {
+                $role = Role::findByName($roleName, $guard);
+                $user->assignRole($role);
+            } catch (\Throwable $e) {
+                // silent ignore; pastikan RoleSeeder membuat role untuk web & sanctum
+            }
+        }
+    }
+
     /**
      * Register owner (default).
      */
@@ -43,10 +59,13 @@ class AuthController extends Controller
                 'photo'    => 'https://placehold.co/400x400/000000/FFFFFF?text=' . strtoupper(substr($request->name, 0, 2)),
             ]);
 
-            $user->assignRole(Role::findByName('owner', 'web'));
+            // Beri role OWNER untuk kedua guard
+            $this->assignRoleForGuards($user, 'owner');
 
-            $token = $user->createToken('auth_token_for_' . $user->username)->plainTextToken;
+            // Buat token Sanctum
+            $token = $user->createToken('auth_token_for_'.$user->username)->plainTextToken;
 
+            // Muat relasi sesuai role
             $user->load('roles:name', 'workshops');
 
             return response()->json([
@@ -55,6 +74,7 @@ class AuthController extends Controller
                 'token_type'   => 'Bearer',
                 'user'         => $user,
             ], 201);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Registrasi gagal.',
@@ -80,19 +100,18 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Email atau password salah.',
-            ], 401);
+            return response()->json(['message' => 'Email atau password salah.'], 401);
         }
 
+        // Pastikan user punya salah satu role aplikasi
         if (! $user->hasAnyRole(['owner', 'admin', 'mechanic'])) {
-            return response()->json([
-                'message' => 'Akun Anda tidak memiliki izin untuk mengakses aplikasi ini.',
-            ], 403);
+            return response()->json(['message' => 'Akun Anda tidak memiliki izin untuk mengakses aplikasi ini.'], 403);
         }
 
-        $token = $user->createToken('auth_token_for_' . $user->username)->plainTextToken;
+        // Token Sanctum
+        $token = $user->createToken('auth_token_for_'.$user->username)->plainTextToken;
 
+        // Relasi tergantung role
         if ($user->hasRole('owner')) {
             $user->load('roles:name', 'workshops');
         } else {
@@ -113,14 +132,9 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         try {
-            $token = $request->user()?->currentAccessToken();
-            if ($token) {
-                $token->delete();
-            }
+            $request->user()?->currentAccessToken()?->delete();
 
-            return response()->json([
-                'message' => 'Logout berhasil',
-            ], 200);
+            return response()->json(['message' => 'Logout berhasil'], 200);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Logout gagal.',

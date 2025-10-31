@@ -41,7 +41,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         ];
     });
 
-    Route::prefix('owners')->middleware('role:owner, web')->name('api.owner.')->group(function () {
+    Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
         // Workshops
         Route::post('workshops',[WorkshopApiController::class, 'store'])->name('workshops.store');
         Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
@@ -62,11 +62,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::apiResource('customers', CustomerApiController::class);
     });
 
-    Route::prefix('mechanics')->middleware('role:mechanic')->name('api.mechanic.')->group(function () {
+    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
         //
     });
 
-    Route::prefix('admins')->middleware('role:admin')->name('api.admin.')->group(function () {
+    Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
         //
     });
 });
