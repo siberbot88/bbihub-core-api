@@ -14,6 +14,12 @@ class ServiceListController extends Controller
         return response()->json(['message'=>'Success', 'data' => $list_services], 201);
     }
 
+    public function store(Request $request){
+        $validator = Validator::make($request->all(), [
+
+        ]);
+    }
+
     public function inform(Request $request, Workshop $workshop){
 
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use App\Http\Controllers\Api\ServiceApiContoller;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -60,6 +61,22 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         // Customers (optional)
         Route::apiResource('customers', CustomerApiController::class);
+
+
+        // List Service
+        Route::get ('services',           [ServiceApiContoller::class, 'index']);
+        Route::post('services',           [ServiceApiContoller::class, 'store']);
+        Route::get ('services/{service}', [ServiceApiContoller::class, 'show']);
+        Route::put ('services/{service}', [ServiceApiContoller::class, 'update']);
+        Route::delete('services/{service}',[ServiceApiContoller::class, 'destroy']);
+
+
+        // Kendaraan
+        Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+        Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+        Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+        Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+        Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
 
     Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
