@@ -62,4 +62,9 @@ class Service extends Model
     public function vehicle(): BelongsTo{
         return $this->belongsTo(Vehicle::class, 'vehicle_uuid');
     }
+
+    public function mechanic(): BelongsTo{
+        return $this->belongsTo(Employment::class, 'mechanic_uuid')->with('user');
+    }
+
 }

@@ -69,6 +69,7 @@ class VehicleController extends Controller
             'name'          => ['required', 'string', 'max:255'],
             'type'          => ['required', 'string', 'max:100'], // ex: car/motorcycle
             'brand'         => ['required', 'string', 'max:100'],
+            'category'      => ['required', 'string', 'max:100'],
             'model'         => ['required', 'string', 'max:100'],
             'year'          => ['required', 'string', 'max:10'],  // kamu simpan string
             'color'         => ['required', 'string', 'max:50'],
@@ -103,6 +104,7 @@ class VehicleController extends Controller
                 'code'          => $code,
                 'name'          => $validated['name'],
                 'type'          => $validated['type'],
+                'category'      => $validated['category'],
                 'brand'         => $validated['brand'],
                 'model'         => $validated['model'],
                 'year'          => $validated['year'],
@@ -118,7 +120,7 @@ class VehicleController extends Controller
         }
 
         return response()->json([
-            'message' => 'created',
+            'message' => 'kendaraan berhasil dibuat',
             'data'    => $vehicle,
         ], 201);
     }
@@ -149,6 +151,7 @@ class VehicleController extends Controller
             'customer_uuid' => ['sometimes', 'uuid', 'exists:customers,id'],
             'name'          => ['sometimes', 'string', 'max:255'],
             'type'          => ['sometimes', 'string', 'max:100'],
+            'category'      => ['sometimes', 'string', 'max:100'],
             'brand'         => ['sometimes', 'string', 'max:100'],
             'model'         => ['sometimes', 'string', 'max:100'],
             'year'          => ['sometimes', 'string', 'max:10'],

@@ -6,9 +6,11 @@ use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use App\Http\Controllers\Api\ServiceApiContoller;
+use App\Livewire\Counter;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');

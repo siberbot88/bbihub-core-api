@@ -23,6 +23,7 @@ class Vehicle extends Model
         'code',
         'name',
         'type',
+        'category',
         'brand',
         'model',
         'year',

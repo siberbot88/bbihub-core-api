@@ -6,6 +6,9 @@ use App\Livewire\Login;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
+
+Route::get('counter', Counter::class)->name('counter');
+Route::get('about',  \App\Livewire\About::class)->name('about');
 Route::get('/', function () {
     return view('welcome');
 });
