@@ -7,6 +7,7 @@
         <title>{{ $title ?? 'Page Title' }}</title>
     </head>
     <body>
+    <livewire:header/>
         <main>
             {{ $slot }}
         </main>
