@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use App\Http\Controllers\Api\ServiceApiContoller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Admin\ServiceListController;
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');
@@ -68,6 +69,19 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
         //
+        Route::get('/admin/services',            [ServiceListController::class, 'index']);   // ?status=&date=&q=&per_page=
+        Route::get('/admin/services/{service}',  [ServiceListController::class, 'show']);
+
+        // AKSI ALUR BARU
+        Route::post('/admin/services/{service}/accept', [ServiceListController::class, 'accept']);   // requested -> pending
+        Route::post('/admin/services/{service}/reject', [ServiceListController::class, 'reject']);   // requested -> rejected
+        Route::post('/admin/services/{service}/assign-mechanic', [ServiceListController::class, 'assignMechanic']); // pending -> (tetap pending)
+        Route::post('/admin/services/{service}/start',  [ServiceListController::class, 'startWork']);    // pending -> in progress
+        Route::post('/admin/services/{service}/finish', [ServiceListController::class, 'finishWork']);    // in progress -> completed
+        Route::post('/admin/services/{service}/pay',    [ServiceListController::class, 'confirmPayment']); // completed -> paid
+
+
+
     });
 });
 
