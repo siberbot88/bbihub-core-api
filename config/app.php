@@ -2,6 +2,9 @@
 
 return [
 
+    'mobile_deep_link' => env('MOBILE_DEEP_LINK', 'myapp://login'),
+    'mobile_web_login' => env('MOBILE_WEB_LOGIN', null),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
