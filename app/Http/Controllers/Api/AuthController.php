@@ -17,12 +17,12 @@ class AuthController extends Controller
     /**
      * Helper: assign role ke beberapa guard sekaligus (web & sanctum).
      */
-    private function assignRoleForGuards(User $user, string $roleName, array $guards = ['web', 'sanctum']): void
+    private function assignRoleForGuards(User $user, array $guards = ['web', 'sanctum']): void
     {
         foreach ($guards as $guard) {
             // Jika role belum dibuat untuk guard tsb, abaikan
             try {
-                $role = Role::findByName($roleName, $guard);
+                $role = Role::findByName('owner', $guard);
                 $user->assignRole($role);
             } catch (\Throwable $e) {
                 // silent ignore; pastikan RoleSeeder membuat role untuk web & sanctum
@@ -60,7 +60,7 @@ class AuthController extends Controller
             ]);
 
             // Beri role OWNER untuk kedua guard
-            $this->assignRoleForGuards($user, 'owner');
+            $this->assignRoleForGuards($user);
 
             // Buat token Sanctum
             $token = $user->createToken('auth_token_for_'.$user->username)->plainTextToken;
