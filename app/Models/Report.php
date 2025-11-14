@@ -26,6 +26,6 @@ class Report extends Model
     ];
 
     public function workshop(): BelongsTo{
-        return $this->belongsTo(Workshop::class, 'workshop_uuid', 'uuid');
+        return $this->belongsTo(Workshop::class, 'workshop_uuid', 'id');
     }
 }

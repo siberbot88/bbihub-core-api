@@ -46,11 +46,11 @@ class Service extends Model
     }
 
     public function log(): HasOne{
-        return $this->hasOne(ServiceLog::class, 'service_uuid', 'uuid');
+        return $this->hasOne(ServiceLog::class, 'service_uuid', 'id');
     }
 
     public function task(): HasOne{
-        return $this->hasOne(Task::class, 'transaction_uuid', 'uuid');
+        return $this->hasOne(Task::class, 'transaction_uuid', 'id');
     }
 
     public function customer(): BelongsTo{
