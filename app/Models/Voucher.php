@@ -29,7 +29,7 @@ class Voucher extends Model
         'valid_from',
         'valid_until',
         'is_active',
-        'image_url',
+        'image',
     ];
 
     protected $casts = [
@@ -42,13 +42,13 @@ class Voucher extends Model
     ];
 
     public function workshop(): BelongsTo{
-        return $this->belongsTo(Workshop::class, 'workshop_uuid', 'uuid');
+        return $this->belongsTo(Workshop::class, 'workshop_uuid', 'id');
     }
 
     public function getImageUrlAttribute()
     {
-        if ($this->image_url) {
-            return Storage::disk('public')->url($this->image_url);
+        if ($this->image) {
+            return Storage::disk('public')->url($this->image);
         }
 
         return null;

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\WorkshopController;
 use App\Livewire\Counter;
-use App\Livewire\Login;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
