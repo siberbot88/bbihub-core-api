@@ -35,6 +35,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'must_change_password',
         'photo',
     ];
 

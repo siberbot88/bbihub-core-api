@@ -31,6 +31,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         return response()->json($user);
     })->name('api.user');
 
+    Route::post('auth/change-password', [AuthController::class, 'changePassword'])->name('api.change-password');
+
     Route::get('/debug/token', function (Request $request) {
         $raw = $request->bearerToken();
         $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($raw);
