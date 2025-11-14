@@ -5,12 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-
-// Pastikan ini ada
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
-
-// Hapus 'use Has' yang tidak perlu
+// Kita tidak perlu 'Spatie\Permission\Models\Role' jika pakai string
 
 class UserSeeder extends Seeder
 {
@@ -19,22 +15,33 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Panggil RoleSeeder dulu jika belum
-        // $this->call(RoleSeeder::class);
-
-        // Langkah 1: Buat user-nya
+        // 1. Buat user 'owner'
         $owner = User::create([
             'id' => Str::uuid(),
             'name' => 'Mohammad Bayu Rizki',
             'email' => 'mohammadbayurizki22@gmail.com',
             'username' => 'Owner bengkel',
             'email_verified_at' => now(),
-            // Ganti 'bcrypt()' dengan 'Hash::make()' agar konsisten
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ]);
 
-        // Langkah 2: Gunakan Spatie untuk menetapkan role
-        $owner->assignRole(Role::findByName('owner', 'web'));
+        $owner->guard_name = 'sanctum';
+
+        $owner->assignRole('owner');
+
+
+        // (Opsional) Jika Anda ingin membuat superadmin untuk 'web'
+        // $superadmin = User::create([
+        //     'id' => Str::uuid(),
+        //     'name' => 'Super Admin',
+        //     'email' => 'superadmin@example.com',
+        //     'username' => 'superadmin',
+        //     'email_verified_at' => now(),
+        //     'password' => Hash::make('password'),
+        // ]);
+
+        // $superadmin->guard_name = 'web'; // Atur guard ke 'web'
+        // $superadmin->assignRole('superadmin'); // Beri role 'superadmin' (guard 'web')
     }
 }
