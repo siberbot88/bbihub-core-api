@@ -20,15 +20,21 @@ class TransactionItem extends Model
     protected $fillable = [
         'id',
         'transaction_uuid',
-        'name',
-        'service_type',
+        'service_uuid',
         'price',
         'quantity',
         'subtotal',
     ];
 
+    public function service(): BelongsTo{
+        return $this->belongsTo(Service::class, 'service_uuid');
+    }
+
     public function transaction(): BelongsTo{
         return $this->belongsTo(Transaction::class, 'transaction_uuid');
     }
 
+    public function serviceType(): BelongsTo{
+        return $this->belongsTo(ServiceType::class, 'service_type_uuid');
+    }
 }

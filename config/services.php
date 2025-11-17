@@ -2,10 +2,6 @@
 
 return [
 
-    'employee_app' => [
-        'url' => env('EMPLOYEE_APP_URL', 'bengkelapp://login'),
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

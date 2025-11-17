@@ -33,8 +33,4 @@ class Customer extends Model
     public function vehicles(): HasMany{
         return $this->hasMany(Vehicle::class, 'customer_uuid','id');
     }
-
-    public function services(): HasMany{
-        return $this->hasMany(Service::class, 'customer_uuid');
-    }
 }
