@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -11,12 +10,14 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
+use App\Http\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
-    /** Role yang diperbolehkan login ke aplikasi mobile (guard 'sanctum') */
-    private const ALLOWED_LOGIN_ROLES = ['owner', 'admin']; // <-- Saya tambahkan 'mechanic'
+    use ApiResponseTrait;
+
+    private const ALLOWED_LOGIN_ROLES = ['owner', 'admin'];
     private const MAX_LOGIN_ATTEMPTS = 5;
     private const DECAY_SECONDS       = 60;
 
@@ -41,7 +42,6 @@ class AuthController extends Controller
         if ($user->hasRole('owner', 'sanctum')) {
             $user->load('roles:name', 'workshops');
         } else {
-            // Untuk admin dan mechanic
             $user->load('roles:name', 'employment.workshop');
         }
     }
@@ -65,7 +65,7 @@ class AuthController extends Controller
         $user = $request->user();
         $this->loadUserRelations($user);
 
-        return response()->json($user, 200);
+        return $this->successResponse('User data retrieved', $user);
     }
 
     /**
@@ -82,10 +82,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors'  => $validator->errors(),
-            ], 422);
+            return $this->errorResponse('Validasi gagal', 422, $validator->errors());
         }
 
         try {
@@ -108,8 +105,7 @@ class AuthController extends Controller
 
             $this->loadUserRelations($user);
 
-            return response()->json([
-                'message'      => 'Registrasi berhasil. Akun Owner telah dibuat.',
+            return $this->successResponse('Registrasi berhasil. Akun Owner telah dibuat.', [
                 'access_token' => $token,
                 'token_type'   => 'Bearer',
                 'user'         => [
@@ -124,10 +120,11 @@ class AuthController extends Controller
             ], 201);
 
         } catch (\Throwable $e) {
-            return response()->json([
-                'message' => 'Registrasi gagal.',
-                'error'   => config('app.debug') ? $e->getMessage() : 'Server error',
-            ], 500);
+            return $this->errorResponse(
+                'Registrasi gagal.',
+                500,
+                config('app.debug') ? $e->getMessage() : 'Server error'
+            );
         }
     }
 
@@ -143,18 +140,16 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors'  => $validator->errors(),
-            ], 422);
+            return $this->errorResponse('Validasi gagal', 422, $validator->errors());
         }
 
         $key = $this->loginThrottleKey($request);
         if (RateLimiter::tooManyAttempts($key, self::MAX_LOGIN_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($key);
-            return response()->json([
-                'message' => 'Terlalu banyak percobaan login. Coba lagi dalam ' . $seconds . ' detik.',
-            ], 429);
+            return $this->errorResponse(
+                'Terlalu banyak percobaan login. Coba lagi dalam ' . $seconds . ' detik.',
+                429
+            );
         }
 
         /** @var User|null $user */
@@ -162,13 +157,12 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             RateLimiter::hit($key, self::DECAY_SECONDS);
-            return response()->json(['message' => 'Email atau password salah.'], 401);
+            return $this->errorResponse('Email atau password salah.', 401);
         }
 
         RateLimiter::clear($key);
-
         if (! $user->hasAnyRole(self::ALLOWED_LOGIN_ROLES, 'sanctum')) {
-            return response()->json(['message' => 'Akun Anda tidak memiliki izin untuk mengakses aplikasi ini.'], 403);
+            return $this->errorResponse('Akun Anda tidak memiliki izin untuk mengakses aplikasi ini.', 403);
         }
 
         if ((bool) $request->boolean('revoke_others', false)) {
@@ -178,9 +172,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
 
         $this->loadUserRelations($user);
-
-        return response()->json([
-            'message'      => 'Login berhasil',
+        return $this->successResponse('Login berhasil', [
             'access_token' => $token,
             'token_type'   => 'Bearer',
             'user'         => [
@@ -193,7 +185,7 @@ class AuthController extends Controller
                 'workshops' => $user->relationLoaded('workshops') ? $user->workshops : null,
                 'employment' => $user->relationLoaded('employment') ? $user->employment : null,
             ],
-        ], 200);
+        ]);
     }
 
     /**
@@ -205,15 +197,12 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        // Cek apakah user sedang dalam status 'harus ganti password'
         $mustChange = (bool) $user->must_change_password;
 
         $rules = [
-            'new_password' => ['required', 'string', 'min:8', 'confirmed'], // 'confirmed' butuh 'new_password_confirmation'
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
 
-        // Jika INI BUKAN ganti password pertama kali (mustChange = false),
-        // maka WAJIB menyertakan password lama (current_password)
         if (! $mustChange) {
             $rules['current_password'] = ['required', 'string', 'min:6'];
         }
@@ -222,30 +211,26 @@ class AuthController extends Controller
             'new_password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors'  => $validator->errors(),
-            ], 422);
+            return $this->errorResponse('Validasi gagal', 422, $validator->errors());
         }
 
-        // Cek password lama (hanya jika diperlukan)
         if (! $mustChange) {
             if (! Hash::check($request->input('current_password'), $user->password)) {
-                return response()->json([
-                    'message' => 'Validasi gagal',
-                    'errors' => ['current_password' => ['Password saat ini salah']]
-                ], 422);
+                return $this->errorResponse(
+                    'Validasi gagal',
+                    422,
+                    ['current_password' => ['Password saat ini salah']]
+                );
             }
         }
 
-        // Update password dan reset flag
         $user->forceFill([
             'password' => Hash::make($request->input('new_password')),
-            'must_change_password' => false, // Setel kembali ke false
+            'must_change_password' => false,
             'password_changed_at' => now(),
         ])->save();
 
-        return response()->json(['message' => 'Password berhasil diperbarui'], 200);
+        return $this->successResponse('Password berhasil diperbarui');
     }
 
     /**
@@ -264,12 +249,13 @@ class AuthController extends Controller
                 $user->currentAccessToken()->delete();
             }
 
-            return response()->json(['message' => 'Logout berhasil'], 200);
+            return $this->successResponse('Logout berhasil');
         } catch (\Throwable $e) {
-            return response()->json([
-                'message' => 'Logout gagal.',
-                'error'   => config('app.debug') ? $e->getMessage() : 'Server error',
-            ], 500);
+            return $this->errorResponse(
+                'Logout gagal.',
+                500,
+                config('app.debug') ? $e->getMessage() : 'Server error'
+            );
         }
     }
 }

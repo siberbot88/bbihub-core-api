@@ -33,7 +33,7 @@ class ServiceApiContoller extends Controller
      * GET /services
      * Query optional:
      *   - workshop_uuid=...
-     *   - status=pending,accept,in progress,completed,cancelled
+     *     status=pending,accept,in progress,completed,cancelled
      *   - code=WO-001
      *   - date_from=YYYY-MM-DD
      *   - date_to=YYYY-MM-DD

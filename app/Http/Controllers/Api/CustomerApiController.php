@@ -3,22 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Customer\UpdateCustomerRequest;
 use App\Models\Customer;
-use App\Models\Employment;
+use App\Http\Requests\Api\Customer\StoreCustomerRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Traits\ApiResponseTrait;
+use Exception;
 
 class CustomerApiController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $customers = Customer::all();
-        return response()->json(['message'=>'Success', 'data'=>$customers],201);
+        return $this->successResponse('Success', $customers, 200);
     }
 
     /**
@@ -26,66 +28,28 @@ class CustomerApiController extends Controller
      */
     public function create()
     {
-        //
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCustomerRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $validatedData = $validator->validated();
-
-        // Mengunci tabel untuk mencegah race condition saat membuat kode baru
-        DB::beginTransaction();
         try {
-            // Cari kode 'ST' terakhir, urutkan, dan kunci barisnya
-            $lastCustomer = Customer::where('code', 'LIKE', 'CS%')
-                ->orderBy('code', 'desc')
-                ->lockForUpdate() // Kunci untuk transaksi
-                ->first();
+            $customer = Customer::create($request->validated());
+            return $this->successResponse('Customer created successfully', $customer, 201);
 
-            $nextNumber = 1;
-            if ($lastCustomer) {
-                // Ambil angka dari kode terakhir (misal: 'ST00001' -> 1)
-                $lastNumber = (int) substr($lastCustomer->code, 2);
-                $nextNumber = $lastNumber + 1;
-            }
-
-            // Format kode baru: CS + 5 digit angka (misal: ST00001)
-            $validatedData['code'] = 'CS' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
-
-            // --- AKHIR LOGIKA AUTO-GENERATE CODE ---
-
-            // Asumsi Model Employment Anda menggunakan trait HasUuids untuk 'id'
-            $customer = Customer::create($validatedData);
-
-            DB::commit(); // Sukses, simpan perubahan
-
-            return response()->json(['message' => 'Customer created successfully', 'data' => $customer], 201);
-
-        } catch (Exception $e) {
-            DB::rollBack(); // Gagal, batalkan perubahan
-            return response()->json(['message' => 'Failed to create customer, please try again.', 'error' => $e->getMessage()], 500);
+        } catch (Exception $e) { // Tangkap error
+            return $this->errorResponse('Failed to create customer, please try again.', 500, $e->getMessage());
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Customer $customer)
     {
-        //
+        return $this->successResponse('Customer found', $customer);
     }
 
     /**
@@ -93,22 +57,32 @@ class CustomerApiController extends Controller
      */
     public function edit(string $id)
     {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        try {
+            $customer->update($request->validated());
+            return $this->successResponse('Customer updated successfully', $customer);
+        } catch (Exception $e) {
+            return $this->errorResponse('Failed to update customer.', 500, $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    // 15. Gunakan Route-Model Binding
+    public function destroy(Customer $customer)
     {
-        //
+        try {
+            $customer->delete();
+            return $this->successResponse('Customer deleted successfully');
+        } catch (Exception $e) {
+            return $this->errorResponse('Failed to delete customer.', 500, $e->getMessage());
+        }
     }
 }
