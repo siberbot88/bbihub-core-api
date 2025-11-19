@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])
         Route::get('/dashboard', Dashboard::class)->name('dashboard');
         Route::get('/admin/users', [Controller::class, 'index'])->name('admin.users');
         Route::get('/users',       UsersIndex::class)->name('users');
+        Route::get('/users/create', \App\Livewire\Admin\Users\Create::class)->name('users.create');
         Route::get('/promotions',  PromotionsIndex::class)->name('promotions');
         Route::get('/workshops',   WorkshopsIndex::class)->name('workshops');
         Route::get('/data-center', DataCenterIndex::class)->name('data-center');
