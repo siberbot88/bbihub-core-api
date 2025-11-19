@@ -4,63 +4,87 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Voucher;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class VoucherPolicy
 {
+    use HandlesAuthorization;
+
     /**
-     * Determine whether the user can view any models.
+     * Superadmin full akses semua ability.
+     */
+    public function before(User $user, string $ability)
+    {
+        if ($user->hasRole('superadmin')) {
+            return true;
+        }
+
+        return null;
+    }
+
+    /**
+     * Bisa lihat daftar voucher?
+     * Query tetap kita batasi di controller (by workshop),
+     * di sini cuma cek boleh akses fitur voucher atau tidak.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasAnyRole(['admin', 'owner', 'superadmin']);
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Bisa lihat satu voucher?
      */
     public function view(User $user, Voucher $voucher): bool
     {
-        return false;
+        return $this->canAccessWorkshop($user, $voucher->workshop_uuid);
     }
 
     /**
-     * Determine whether the user can create models.
+     * Bisa membuat voucher untuk workshop tertentu?
+     *
+     * Dipanggil dengan: Gate::authorize('create', [Voucher::class, $workshopUuid])
      */
-    public function create(User $user): bool
+    public function create(User $user, string $workshopUuid): bool
     {
-        return false;
+        return $this->canAccessWorkshop($user, $workshopUuid);
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Bisa update voucher?
      */
     public function update(User $user, Voucher $voucher): bool
     {
-        return false;
+        return $this->canAccessWorkshop($user, $voucher->workshop_uuid);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Bisa delete voucher?
      */
     public function delete(User $user, Voucher $voucher): bool
     {
-        return false;
+        return $this->canAccessWorkshop($user, $voucher->workshop_uuid);
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Helper: cek apakah user boleh akses workshop tertentu
+     * berdasarkan role & relasi.
      */
-    public function restore(User $user, Voucher $voucher): bool
+    protected function canAccessWorkshop(User $user, string $workshopUuid): bool
     {
-        return false;
-    }
+        if ($user->hasRole('owner')) {
+            return $user->workshops()
+                ->where('id', $workshopUuid)
+                ->exists();
+        }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Voucher $voucher): bool
-    {
+        if ($user->hasRole('admin')) {
+            $employment = $user->employment;
+
+            return $employment
+                && $employment->workshop_uuid === $workshopUuid;
+        }
+
         return false;
     }
 }

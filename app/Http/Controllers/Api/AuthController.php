@@ -1,25 +1,27 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Auth\ChangePasswordRequest;
+use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\RegisterRequest;
+use App\Http\Traits\ApiResponseTrait;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
-use Spatie\Permission\Models\Role;
-use App\Http\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
     use ApiResponseTrait;
 
-    private const ALLOWED_LOGIN_ROLES = ['owner', 'admin'];
-    private const MAX_LOGIN_ATTEMPTS = 5;
-    private const DECAY_SECONDS       = 60;
+    // Konstanta untuk login dipindahkan ke LoginRequest,
+    // tapi kita mungkin masih butuh ini jika ada logika lain.
+    // private const ALLOWED_LOGIN_ROLES = ['owner', 'admin'];
 
     /**
      * Helper: pastikan role tersedia di guard tertentu, kalau belum ada dibuat.
@@ -47,15 +49,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Helper: key untuk rate limiter login.
-     */
-    private function loginThrottleKey(Request $request): string
-    {
-        $email = Str::lower((string) $request->input('email'));
-        return 'login:' . sha1($email . '|' . $request->ip());
-    }
-
-    /**
      * GET /v1/auth/user
      * (Route ini harus dilindungi oleh middleware 'auth:sanctum')
      */
@@ -72,28 +65,20 @@ class AuthController extends Controller
      * POST /v1/auth/register
      * Register owner (default).
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name'                  => ['required', 'string', 'max:255'],
-            'username'              => ['required', 'string', 'max:255', 'unique:users,username'],
-            'email'                 => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password'              => ['required', 'confirmed', Password::defaults()],
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse('Validasi gagal', 422, $validator->errors());
-        }
+        // Validasi sudah otomatis ditangani oleh RegisterRequest.
+        // Jika gagal, response error 422 otomatis dikirim.
 
         try {
             /** @var User $user */
             $user = User::create([
                 'id'       => Str::uuid(),
-                'name'     => $request->name,
-                'username' => $request->username,
-                'email'    => $request->email,
-                'password' => Hash::make($request->password),
-                'photo'    => 'https://placehold.co/400x400/000000/FFFFFF?text=' . strtoupper(substr($request->name, 0, 2)),
+                'name'     => $request->input('name'),
+                'username' => $request->input('username'),
+                'email'    => $request->input('email'),
+                'password' => Hash::make($request->input('password')),
+                'photo'    => 'https://placehold.co/400x400/000000/FFFFFF?text=' . strtoupper(substr($request->input('name'), 0, 2)),
                 'must_change_password' => false,
             ]);
 
@@ -118,7 +103,6 @@ class AuthController extends Controller
                     'workshops' => $user->relationLoaded('workshops') ? $user->workshops : null,
                 ],
             ], 201);
-
         } catch (\Throwable $e) {
             return $this->errorResponse(
                 'Registrasi gagal.',
@@ -132,38 +116,17 @@ class AuthController extends Controller
      * POST /v1/auth/login
      * Login (owner/admin/mechanic).
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email'    => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        // Validasi, rate limiting, dan pengecekan kredensial
+        // sudah ditangani oleh $request->authenticate().
+        // Jika gagal, otomatis melempar ValidationException (respons 422).
+        $request->authenticate();
 
-        if ($validator->fails()) {
-            return $this->errorResponse('Validasi gagal', 422, $validator->errors());
-        }
+        // Jika sampai di sini, berarti user valid dan tidak di-rate-limit.
 
-        $key = $this->loginThrottleKey($request);
-        if (RateLimiter::tooManyAttempts($key, self::MAX_LOGIN_ATTEMPTS)) {
-            $seconds = RateLimiter::availableIn($key);
-            return $this->errorResponse(
-                'Terlalu banyak percobaan login. Coba lagi dalam ' . $seconds . ' detik.',
-                429
-            );
-        }
-
-        /** @var User|null $user */
-        $user = User::where('email', $request->email)->first();
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            RateLimiter::hit($key, self::DECAY_SECONDS);
-            return $this->errorResponse('Email atau password salah.', 401);
-        }
-
-        RateLimiter::clear($key);
-        if (! $user->hasAnyRole(self::ALLOWED_LOGIN_ROLES, 'sanctum')) {
-            return $this->errorResponse('Akun Anda tidak memiliki izin untuk mengakses aplikasi ini.', 403);
-        }
+        /** @var User $user */
+        $user = $request->user(); // Ambil user yang sudah diotentikasi oleh LoginRequest
 
         if ((bool) $request->boolean('revoke_others', false)) {
             $user->tokens()->delete();
@@ -172,6 +135,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
 
         $this->loadUserRelations($user);
+
         return $this->successResponse('Login berhasil', [
             'access_token' => $token,
             'token_type'   => 'Bearer',
@@ -192,37 +156,13 @@ class AuthController extends Controller
      * POST /v1/auth/change-password
      * (Route ini harus dilindungi oleh middleware 'auth:sanctum')
      */
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
+        // Validasi (termasuk cek 'current_password' jika perlu)
+        // sudah ditangani oleh ChangePasswordRequest.
+
         /** @var User $user */
         $user = $request->user();
-
-        $mustChange = (bool) $user->must_change_password;
-
-        $rules = [
-            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
-        ];
-
-        if (! $mustChange) {
-            $rules['current_password'] = ['required', 'string', 'min:6'];
-        }
-
-        $validator = Validator::make($request->all(), $rules, [
-            'new_password.confirmed' => 'Konfirmasi password baru tidak cocok.',
-        ]);
-        if ($validator->fails()) {
-            return $this->errorResponse('Validasi gagal', 422, $validator->errors());
-        }
-
-        if (! $mustChange) {
-            if (! Hash::check($request->input('current_password'), $user->password)) {
-                return $this->errorResponse(
-                    'Validasi gagal',
-                    422,
-                    ['current_password' => ['Password saat ini salah']]
-                );
-            }
-        }
 
         $user->forceFill([
             'password' => Hash::make($request->input('new_password')),
