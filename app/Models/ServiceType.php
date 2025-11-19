@@ -21,4 +21,8 @@ class ServiceType extends Model
         'code',
         'name',
     ];
+
+    public function items(): HasMany{
+        return $this->hasMany(TransactionItem::class, 'service_type_uuid', 'uuid');
+    }
 }
