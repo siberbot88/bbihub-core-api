@@ -8,22 +8,11 @@ use App\Http\Requests\Api\Voucher\UpdateVoucherRequest;
 use App\Http\Resources\VoucherResource;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * @group Vouchers
- *
- * API untuk mengelola data voucher.
- */
 class VoucherApiController extends Controller
 {
-    /**
-     * List voucher sesuai role & workshop user.
-     *
-     * Query param:
-     * - status: active | expired | inactive | scheduled
-     * - workshop_uuid: optional, untuk mempersempit hasil
-     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', Voucher::class);
@@ -44,13 +33,12 @@ class VoucherApiController extends Controller
         return VoucherResource::collection($vouchers);
     }
 
-    /**
-     * Simpan voucher baru.
-     * Authorization ada di StoreVoucherRequest@authorize
-     */
     public function store(StoreVoucherRequest $request)
     {
         $data = $request->validated();
+
+        // cek akses ke workshop
+        Gate::authorize('create', [Voucher::class, $data['workshop_uuid']]);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('vouchers', 'public');
@@ -61,9 +49,6 @@ class VoucherApiController extends Controller
         return new VoucherResource($voucher);
     }
 
-    /**
-     * Detail satu voucher.
-     */
     public function show(Voucher $voucher)
     {
         $this->authorize('view', $voucher);
@@ -71,12 +56,10 @@ class VoucherApiController extends Controller
         return new VoucherResource($voucher);
     }
 
-    /**
-     * Update voucher.
-     * Authorization ada di UpdateVoucherRequest@authorize
-     */
     public function update(UpdateVoucherRequest $request, Voucher $voucher)
     {
+        $this->authorize('update', $voucher);
+
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
@@ -92,9 +75,6 @@ class VoucherApiController extends Controller
         return new VoucherResource($voucher);
     }
 
-    /**
-     * Hapus voucher.
-     */
     public function destroy(Voucher $voucher)
     {
         $this->authorize('delete', $voucher);

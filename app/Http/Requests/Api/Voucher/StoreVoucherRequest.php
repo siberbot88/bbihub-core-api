@@ -2,21 +2,13 @@
 
 namespace App\Http\Requests\Api\Voucher;
 
-use App\Models\Voucher;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVoucherRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $user = $this->user();
-        $workshopUuid = (string) $this->input('workshop_uuid');
-
-        if (! $user || ! $workshopUuid) {
-            return false;
-        }
-
-        return $user->can('create', [Voucher::class, $workshopUuid]);
+        return $this->user()?->hasAnyRole(['owner', 'admin', 'superadmin']) ?? false;
     }
 
     public function rules(): array

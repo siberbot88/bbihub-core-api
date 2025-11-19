@@ -22,69 +22,45 @@ class VoucherPolicy
         return null;
     }
 
-    /**
-     * Bisa lihat daftar voucher?
-     * Query tetap kita batasi di controller (by workshop),
-     * di sini cuma cek boleh akses fitur voucher atau tidak.
-     */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'owner', 'superadmin']);
+        return $user->hasAnyRole(['owner', 'admin', 'superadmin']);
     }
 
-    /**
-     * Bisa lihat satu voucher?
-     */
     public function view(User $user, Voucher $voucher): bool
     {
         return $this->canAccessWorkshop($user, $voucher->workshop_uuid);
     }
 
-    /**
-     * Bisa membuat voucher untuk workshop tertentu?
-     *
-     * Dipanggil dengan: Gate::authorize('create', [Voucher::class, $workshopUuid])
-     */
-    public function create(User $user, string $workshopUuid): bool
+    public function create(User $user, string $workshopId): bool
     {
-        return $this->canAccessWorkshop($user, $workshopUuid);
+        return $this->canAccessWorkshop($user, $workshopId);
     }
 
-    /**
-     * Bisa update voucher?
-     */
     public function update(User $user, Voucher $voucher): bool
     {
         return $this->canAccessWorkshop($user, $voucher->workshop_uuid);
     }
 
-    /**
-     * Bisa delete voucher?
-     */
     public function delete(User $user, Voucher $voucher): bool
     {
         return $this->canAccessWorkshop($user, $voucher->workshop_uuid);
     }
 
-    /**
-     * Helper: cek apakah user boleh akses workshop tertentu
-     * berdasarkan role & relasi.
-     */
-    protected function canAccessWorkshop(User $user, string $workshopUuid): bool
+    protected function canAccessWorkshop(User $user, string $workshopId): bool
     {
         if ($user->hasRole('owner')) {
             return $user->workshops()
-                ->where('id', $workshopUuid)
+                ->where('id', $workshopId)
                 ->exists();
         }
 
         if ($user->hasRole('admin')) {
             $employment = $user->employment;
-
-            return $employment
-                && $employment->workshop_uuid === $workshopUuid;
+            return $employment && $employment->workshop_uuid === $workshopId;
         }
 
         return false;
     }
+
 }

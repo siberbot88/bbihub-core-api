@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Api\Voucher;
 
-use App\Models\Voucher;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,31 +9,19 @@ class UpdateVoucherRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        /** @var Voucher|null $voucher */
-        $voucher = $this->route('voucher');
-        $user    = $this->user();
-
-        if (! $voucher || ! $user) {
-            return false;
-        }
-
-        $newWorkshopUuid = $this->input('workshop_uuid');
-
-        if ($newWorkshopUuid && $newWorkshopUuid !== $voucher->workshop_uuid) {
-            if (! $user->can('create', [Voucher::class, (string) $newWorkshopUuid])) {
-                return false;
-            }
-        }
-        return $user->can('update', $voucher);
+        // role check saja di sini, detail akses di policy (controller)
+        return $this->user()?->hasAnyRole(['owner', 'admin', 'superadmin']) ?? false;
     }
 
     public function rules(): array
     {
-        /** @var Voucher|null $voucher */
+        /** @var \App\Models\Voucher|null $voucher */
         $voucher = $this->route('voucher');
 
         return [
-            'workshop_uuid'   => 'sometimes|required|uuid|exists:workshops,id,prohibited',
+            // tidak boleh ubah workshop voucher
+            'workshop_uuid'   => 'prohibited',
+
             'code_voucher'    => [
                 'sometimes',
                 'required',
