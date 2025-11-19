@@ -4,46 +4,39 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Carbon\Carbon;
 
 class VoucherResource extends JsonResource
 {
     /**
-     * Transform resource menjadi array.
+     * Transform the resource into an array.
      *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        $status = 'active';
-        $now = Carbon::now();
-
-        if (!$this->is_active) {
-            $status = 'inactive';
-        } elseif ($this->valid_until < $now) {
-            $status = 'expired';
-        } elseif ($this->valid_from > $now) {
-            $status = 'scheduled';
-        }
-
         return [
-            'id' => $this->id,
-            'workshop_uuid' => $this->workshop_uuid,
-            'code_voucher' => $this->code_voucher,
-            'title' => $this->title,
-            'discount_value' => $this->discount_value,
-            'quota' => $this->quota,
-            'min_transaction' => $this->min_transaction,
-            'valid_from' => $this->valid_from->toDateString(),
-            'valid_until' => $this->valid_until->toDateString(),
-            'is_active' => $this->is_active,
-            'image_url' => $this->image_url,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id'              => $this->id,
+            'code_voucher'    => $this->code_voucher,
+            'title'           => $this->title,
 
-            // Data tambahan untuk Flutter:
-            'status' => $status,
-            // 'remaining_quota' => $this->calculateRemainingQuota(), // Lihat catatan di bawah
+            'workshop_uuid'   => $this->workshop_uuid,
+            'workshop' => $this->whenLoaded('workshop', fn () => [
+                'uuid' => $this->workshop->uuid,
+            ]),
+            'discount_value'  => (float) $this->discount_value,
+            'quota'           => $this->quota,
+            'min_transaction' => (float) $this->min_transaction,
+
+            'valid_from'      => optional($this->valid_from)->toDateString(),
+            'valid_until'     => optional($this->valid_until)->toDateString(),
+            'is_active'       => (bool) $this->is_active,
+            'status'          => $this->status,      // dari accessor di model
+
+            'image'           => $this->image,
+            'image_url'       => $this->image_url,   // dari accessor di model
+
+            'created_at'      => optional($this->created_at)?->toIso8601String(),
+            'updated_at'      => optional($this->updated_at)?->toIso8601String(),
         ];
     }
 }

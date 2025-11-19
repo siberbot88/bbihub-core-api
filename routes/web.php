@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\WorkshopController;
+use App\Http\Controllers\Api\WorkshopController;
 use App\Livewire\Counter;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;

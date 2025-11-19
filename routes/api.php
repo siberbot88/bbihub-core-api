@@ -20,16 +20,7 @@ Route::prefix('v1/auth')->group(function () {
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('api.logout');
 
-    Route::get('auth/user', function (Request $request) {
-        $user = $request->user();
-        if ($user->hasRole('owner')) {
-            $user->load('workshops');
-        } else {
-            $user->load('employment.workshop');
-        }
-        $user->load('roles:name');
-        return response()->json($user);
-    })->name('api.user');
+    Route::get('auth/user', [AuthController::class, 'me'])->name('api.user');
 
     Route::post('auth/change-password', [AuthController::class, 'changePassword'])->name('api.change-password');
 
@@ -45,6 +36,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
             'tokenable_id'  => $pat->tokenable_id,
         ];
     });
+
+    // ... sisa file ...
 
     Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
         // Workshops
@@ -88,6 +81,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+        Route:
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
 
@@ -101,4 +95,7 @@ Route::prefix('admin')->group(function () {
     Route::get ('services',               [ServiceApiContoller::class, 'index']);
     Route::post('services',               [ServiceApiContoller::class, 'store']);
     Route::get ('services/{service}',     [ServiceApiContoller::class, 'show']);
+
+
+
 });
