@@ -10,20 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkshopDocument extends Model
 {
-    protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     /** @use HasFactory<WorkshopDocumentFactory> */
     use HasFactory, HasUuids;
-    protected $fillable = [
-        'id',
-        'workshop_uuid',
-        'nib',
-        'npwp',
-    ];
 
-    public function workshop(): BelongsTo{
+    protected $guarded = [];
+
+    /**
+     * Relasi ke Workshop
+     */
+    public function workshop(): BelongsTo
+    {
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
     }
 }

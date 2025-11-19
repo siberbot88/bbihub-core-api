@@ -28,10 +28,10 @@ class Task extends Model
 
 
     public function transaction(): BelongsTo{
-        return $this->belongsTo(Transaction::class, 'transaction_uuid', 'uuid');
+        return $this->belongsTo(Transaction::class, 'transaction_uuid', 'id');
     }
 
     public function service(): BelongsTo{
-        return $this->belongsTo(Service::class, 'service_uuid', 'uuid');
+        return $this->belongsTo(Service::class, 'service_uuid', 'id');
     }
 }
