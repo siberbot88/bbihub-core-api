@@ -1,15 +1,7 @@
 <?php
 
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Admin\{
-    Dashboard,
-    Users\Index as UsersIndex,
-    Promotions\Index as PromotionsIndex,
-    Workshops\Index as WorkshopsIndex,
-    DataCenter\Index as DataCenterIndex,
-    Reports\Index as ReportsIndex,
-    Settings\Index as SettingsIndex
-};
 
 // Redirect dari root ke dashboard
 Route::redirect('/', '/admin/dashboard');
