@@ -20,18 +20,21 @@ class UpdateServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'workshop_uuid'  => 'sometimes|required|uuid|exists:workshops,id',
-            'name'           => 'sometimes|required|string|max:255',
-            'description'    => 'sometimes|nullable|string',
-            'price'          => 'sometimes|nullable|numeric|min:0|max:999999.99',
-            'scheduled_date' => 'sometimes|required|date',
-            'estimated_time' => 'sometimes|nullable|date',
-            'status'         => 'sometimes|required|in:pending,accept,in progress,completed,cancelled',
-            'customer_uuid'  => 'sometimes|nullable|uuid|exists:customers,id',
-            'vehicle_uuid'   => 'sometimes|nullable|uuid|exists:vehicles,id',
-            'mechanic_uuid'  => 'sometimes|nullable|uuid|exists:employments,id',
-            'reason'         => 'nullable|string',
-            'feedback_mechanic'=> 'nullable|string',
+            'workshop_uuid'    => 'sometimes|required|uuid|exists:workshops,id',
+            'name'             => 'sometimes|required|string|max:255',
+            'description'      => 'sometimes|nullable|string',
+            'category_service' => 'sometimes|nullable|string',
+            'price'            => 'sometimes|nullable|numeric|min:0|max:999999.99',
+            'scheduled_date'   => 'sometimes|required|date',
+            'estimated_time'   => 'sometimes|nullable|date',
+            'status'           => 'sometimes|required|in:pending,accept,in progress,completed,cancelled',
+            'customer_uuid'    => 'sometimes|nullable|uuid|exists:customers,id',
+            'vehicle_uuid'     => 'sometimes|nullable|uuid|exists:vehicles,id',
+            'mechanic_uuid'    => 'sometimes|nullable|uuid|exists:employments,id',
+            'reason'           => 'sometimes|nullable|string',
+            'feedback_mechanic'=> 'sometimes|nullable|string',
+            'accepted_at'      => 'prohibited',
+            'completed_at'     => 'prohibited',
         ];
     }
 }
