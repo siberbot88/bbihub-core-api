@@ -30,15 +30,15 @@ class ServiceApiContoller extends Controller
     {
         $this->authorize('viewAny', Service::class);
 
-        $user = $request->user();
+        $user    = $request->user();
         $perPage = (int) $request->get('per_page', 15);
         $perPage = $perPage < 1 ? 15 : min($perPage, 100);
 
         $q = Service::query()
             ->with([
                 'workshop:id,name',
-                'customer:id,name,phone,email,address',
-                'vehicle:id,plate_number,brand,model,name,year,color,odometer',
+                'customer:id,name',
+                'vehicle:id,plate_number,brand,model,name',
                 'mechanic.user:id,name',
             ])
             ->latest();
@@ -68,7 +68,7 @@ class ServiceApiContoller extends Controller
             }
         }
 
-        // filter lain
+        // filter status (bisa multiple, dipisah koma)
         $q->when($request->filled('status'), function ($x) use ($request) {
             $statuses = collect(explode(',', $request->string('status')))
                 ->map(fn ($s) => trim($s))
@@ -80,10 +80,12 @@ class ServiceApiContoller extends Controller
             }
         });
 
+        // filter code
         $q->when($request->filled('code'), fn ($x) =>
         $x->where('code', 'like', '%'.$request->string('code').'%')
         );
 
+        // filter tanggal
         $q->when($request->filled('date_from'), fn ($x) =>
         $x->whereDate('scheduled_date', '>=', $request->date('date_from'))
         );
@@ -95,12 +97,11 @@ class ServiceApiContoller extends Controller
         $p = $q->paginate($perPage)->appends($request->query());
 
         $p->getCollection()->transform(function (Service $s) {
-            return $this->mapService($s, false);
+            return $this->mapService($s, includeItems: false);
         });
 
         return response()->json($p, 200);
     }
-
 
     /**
      * GET /services/{service}
@@ -115,7 +116,9 @@ class ServiceApiContoller extends Controller
             'customer:id,name,phone,email,address',
             'vehicle:id,plate_number,brand,model,name,year,color,odometer',
             'mechanic.user:id,name',
-            'transactions.items',
+            // pastikan di model Service ada relasi `transaction()` (hasOne)
+            // dan di model Transaction ada relasi `items()`
+            'transaction.items',
         ]);
 
         return response()->json([
@@ -123,8 +126,6 @@ class ServiceApiContoller extends Controller
             'data'    => $this->mapService($service, includeItems: true),
         ], 200);
     }
-
-
 
     /**
      * POST /services
@@ -135,11 +136,13 @@ class ServiceApiContoller extends Controller
         $data = $request->validated();
         $user = $request->user();
 
+        // Pastikan admin hanya buat di workshop tempat dia bekerja
         $employment = $user->employment;
         if (! $employment || $employment->workshop_uuid !== $data['workshop_uuid']) {
             return response()->json(['message' => 'Workshop bukan milik Anda'], 403);
         }
 
+        // validasi mekanik (jika diisi)
         if (! empty($data['mechanic_uuid'])) {
             $ok = Employment::where('id', $data['mechanic_uuid'])
                 ->where('workshop_uuid', $data['workshop_uuid'])
@@ -182,10 +185,10 @@ class ServiceApiContoller extends Controller
 
         return response()->json([
             'message' => 'created',
-            'data'    => $this->mapService($service),
+            'data'    => $this->mapService($service, includeItems: false),
         ], 201);
-
     }
+
     /**
      * Mapper untuk respon ringkas + relasi.
      */
@@ -194,12 +197,16 @@ class ServiceApiContoller extends Controller
         $items = [];
 
         if ($includeItems) {
-            foreach ($s->transactions as $t) {
-                foreach ($t->items as $it) {
+            if ($s->relationLoaded('transaction') && $s->transaction) {
+                $transaction = $s->transaction;
+
+                $transactionItems = $transaction->items ?? collect();
+
+                foreach ($transactionItems as $it) {
                     $items[] = [
                         'id'                => $it->id,
                         'name'              => $it->name,
-                        'service_type_name' => $it->service_type, // string dari kolom
+                        'service_type_name' => $it->service_type,
                         'price'             => $it->price,
                         'quantity'          => $it->quantity,
                         'subtotal'          => $it->subtotal,
@@ -218,9 +225,13 @@ class ServiceApiContoller extends Controller
             'estimated_time'   => optional($s->estimated_time)->toIso8601String(),
             'status'           => $s->status,
             'acceptance_status'=> $s->acceptance_status,
+
+            // kolom di DB: category_service → kirim ke frontend sebagai category_name
             'category_service' => $s->category_service,
-            'accepted_at'    => optional($s->accepted_at)->toIso8601String(),
-            'completed_at'   => optional($s->completed_at)->toIso8601String(),
+            'category_name'    => $s->category_service,
+
+            'accepted_at'      => optional($s->accepted_at)->toIso8601String(),
+            'completed_at'     => optional($s->completed_at)->toIso8601String(),
 
             'workshop' => $s->workshop ? [
                 'id'   => $s->workshop->id,
@@ -251,20 +262,16 @@ class ServiceApiContoller extends Controller
                 'name' => optional($s->mechanic->user)->name,
             ] : null,
 
-            'reason'           => $s->reason,
-            'feedback_mechanic'=> $s->feedback_mechanic,
-            'note'             => $s->note,
+            'reason'            => $s->reason,
+            'feedback_mechanic' => $s->feedback_mechanic,
+            'note'              => $s->note,
 
-            'items'            => $includeItems ? $items : null,
+            'items'             => $includeItems ? $items : null,
 
-            'created_at'       => optional($s->created_at)->toIso8601String(),
-            'updated_at'       => optional($s->updated_at)->toIso8601String(),
+            'created_at'        => optional($s->created_at)->toIso8601String(),
+            'updated_at'        => optional($s->updated_at)->toIso8601String(),
         ];
     }
-
-
-
-
 
     /**
      * PUT/PATCH /services/{service}
@@ -274,7 +281,6 @@ class ServiceApiContoller extends Controller
     {
         $dataToUpdate = $request->validated();
 
-        // Validasi transisi status (sama seperti sebelumnya)
         if (isset($dataToUpdate['status'])) {
             $from = $service->status;
             $to   = $dataToUpdate['status'];
@@ -304,10 +310,9 @@ class ServiceApiContoller extends Controller
             }
         }
 
-
-        // Validasi workshop & mechanic sama seperti sebelumnya
+        // Validasi workshop & mechanic
         if (isset($dataToUpdate['workshop_uuid'])) {
-            $user = $request->user();
+            $user       = $request->user();
             $employment = $user->employment;
 
             if (! $employment || $employment->workshop_uuid !== $dataToUpdate['workshop_uuid']) {
@@ -335,14 +340,14 @@ class ServiceApiContoller extends Controller
 
         $service->load([
             'workshop:id,name',
-            'customer:id,name',
-            'vehicle:id,plate_number,brand,model,name',
+            'customer:id,name,phone,email,address',
+            'vehicle:id,plate_number,brand,model,name,year,color,odometer',
             'mechanic.user:id,name',
         ]);
 
         return response()->json([
             'message' => 'Service updated successfully',
-            'data'    => $this->mapService($service),
+            'data'    => $this->mapService($service, includeItems: false),
         ], 200);
     }
 
@@ -358,6 +363,4 @@ class ServiceApiContoller extends Controller
 
         return response()->json(null, 204);
     }
-
-    // mapService() tetap sama
 }
