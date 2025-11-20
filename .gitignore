@@ -13,3 +13,5 @@
 
 /.idea/
 /.vscode/
+.phpunit.result.cache
+/public/build
