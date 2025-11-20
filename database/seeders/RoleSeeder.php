@@ -11,17 +11,20 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        
-        $guards = ['web', 'sanctum'];
-        $roles  = ['owner', 'admin', 'mechanic'];
 
-        foreach ($guards as $guard) {
-            foreach ($roles as $name) {
-                Role::firstOrCreate([
-                    'name'       => $name,
-                    'guard_name' => $guard,
-                ]);
-            }
+        // --- Roles untuk Mobile/API (Guard: sanctum) ---
+        $apiRoles = ['owner', 'admin', 'mechanic', 'user'];
+        foreach ($apiRoles as $name) {
+            Role::firstOrCreate([
+                'name'       => $name,
+                'guard_name' => 'sanctum', // Guard khusus API
+            ]);
         }
+
+        // --- Roles untuk Web Dashboard (Guard: web) ---
+        Role::firstOrCreate([
+            'name'       => 'superadmin',
+            'guard_name' => 'web', // Guard khusus Web
+        ]);
     }
 }

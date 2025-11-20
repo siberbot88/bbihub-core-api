@@ -28,14 +28,21 @@ class Service extends Model
         'scheduled_date',
         'estimated_time',
         'status',
+        'acceptance_status',
+        'customer_uuid',
+        'vehicle_uuid',
+        'mechanic_uuid'
     ];
+
+    protected $casts = [
+        'price'          => 'decimal:2',
+        'scheduled_date' => 'date',
+        'estimated_time' => 'date',
+    ];
+
 
     public function workshop(): BelongsTo{
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
-    }
-
-    public function items(): HasMany{
-        return $this->hasMany(TransactionItem::class, 'service_uuid');
     }
 
     public function log(): HasOne{
@@ -45,4 +52,17 @@ class Service extends Model
     public function task(): HasOne{
         return $this->hasOne(Task::class, 'transaction_uuid', 'id');
     }
+
+    public function customer(): BelongsTo{
+        return $this->belongsTo(Customer::class, 'customer_uuid');
+    }
+
+    public function vehicle(): BelongsTo{
+        return $this->belongsTo(Vehicle::class, 'vehicle_uuid');
+    }
+
+    public function mechanic(): BelongsTo{
+        return $this->belongsTo(Employment::class, 'mechanic_uuid')->with('user');
+    }
+
 }

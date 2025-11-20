@@ -22,6 +22,7 @@ class ServiceLog extends Model
         'service_uuid',
         'mechanic_uuid',
         'transaction_uuid',
+        'status',
         'notes',
     ];
 

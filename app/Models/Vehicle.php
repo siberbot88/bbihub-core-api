@@ -2,15 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vehicle extends Model
 {
-    use HasFactory;
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    /** @use HasFactory<\Database\Factories\VehicleFactory> */
+    use HasFactory, HasUuids;
 
     protected $fillable = [
-        'plate_number','brand','type','owner_name','status','last_active_at'
+        'id',
+        'customer_uuid',
+        'code',
+        'name',
+        'type',
+        'category',
+        'brand',
+        'model',
+        'year',
+        'color',
+        'plate_number',
+        'odometer',
     ];
-    protected $casts = ['last_active_at' => 'datetime'];
+
+    public function customer(): BelongsTo{
+        return $this->belongsTo(Customer::class, 'customer_uuid','id');
+    }
+
+    public function services(): HasMany{
+        return $this->hasMany(Service::class, 'vehicle_uuid','id');
+    }
 }
