@@ -4,63 +4,84 @@ namespace App\Policies;
 
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ServicePolicy
 {
+    use HandlesAuthorization;
+
+    public function before(User $user, string $ability)
+    {
+        if ($user->hasRole('superadmin')) {
+            return true;
+        }
+
+        return null;
+    }
+
     /**
-     * Determine whether the user can view any models.
+     * Owner & admin boleh lihat daftar service (di workshop dia).
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasAnyRole(['owner', 'admin']);
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Owner & admin boleh lihat detail service di workshop dia.
      */
     public function view(User $user, Service $service): bool
     {
-        return false;
+        return $this->canAccessWorkshop($user, $service->workshop_uuid);
     }
 
     /**
-     * Determine whether the user can create models.
+     * HANYA admin boleh create service.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * HANYA admin boleh update service di workshop dia.
      */
     public function update(User $user, Service $service): bool
     {
-        return false;
+        return $user->hasRole('admin')
+            && $this->canAccessWorkshop($user, $service->workshop_uuid);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * HANYA admin boleh delete service di workshop dia.
      */
     public function delete(User $user, Service $service): bool
     {
-        return false;
+        return $user->hasRole('admin')
+            && $this->canAccessWorkshop($user, $service->workshop_uuid);
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Helper: cek apakah user punya akses ke workshop service ini.
+     *
+     * - owner  -> lewat relasi workshops()
+     * - admin  -> lewat employment->workshop_uuid
      */
-    public function restore(User $user, Service $service): bool
+    protected function canAccessWorkshop(User $user, string $workshopId): bool
     {
-        return false;
-    }
+        if ($user->hasRole('owner')) {
+            return $user->workshops()
+                ->where('id', $workshopId)
+                ->exists();
+        }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Service $service): bool
-    {
+        if ($user->hasRole('admin')) {
+            $employment = $user->employment;
+
+            return $employment
+                && $employment->workshop_uuid === $workshopId;
+        }
+
         return false;
     }
 }

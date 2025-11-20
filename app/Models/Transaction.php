@@ -29,6 +29,7 @@ class Transaction extends Model
         'status',
         'amount',
         'payment_method',
+        'service_uuid',
     ];
 
     /* ========= RELATIONSHIPS ========= */
@@ -43,6 +44,10 @@ class Transaction extends Model
     }
     public function customer(): BelongsTo{
         return $this->belongsTo(Customer::class, 'customer_uuid');
+    }
+
+    public function service():  BelongsTo{
+        return $this->belongsTo(Service::class, 'service_uuid');
     }
 
     public function workshop(): BelongsTo{
@@ -62,18 +67,18 @@ class Transaction extends Model
     }
 
     public function logs(): HasMany{
-        return $this->hasMany(ServiceLog::class, 'service_uuid', 'uuid');
+        return $this->hasMany(ServiceLog::class, 'service_uuid', 'id');
     }
 
     public function invoice(): HasOne{
-        return $this->hasOne(Invoice::class, 'uuid', 'uuid');
+        return $this->hasOne(Invoice::class, 'uuid', 'id');
     }
 
     public function task(): HasOne{
-        return $this->hasOne(Task::class, 'transaction_uuid', 'uuid');
+        return $this->hasOne(Task::class, 'transaction_uuid', 'id');
     }
 
     public function feedback(): HasOne{
-        return $this->hasOne(Feedback::class, 'transaction_uuid', 'uuid');
+        return $this->hasOne(Feedback::class, 'transaction_uuid', 'id');
     }
 }

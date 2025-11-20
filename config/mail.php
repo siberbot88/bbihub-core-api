@@ -49,13 +49,6 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
-        'markdown' => [
-            'theme' => 'default',
-            'paths' => [
-                resource_path('views/vendor/mail'),
-            ],
-        ],
-
         'ses' => [
             'transport' => 'ses',
         ],

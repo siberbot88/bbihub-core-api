@@ -27,14 +27,14 @@ class ServiceLog extends Model
     ];
 
     public function service(): BelongsTo{
-        return $this->belongsTo(Service::class, 'service_uuid', 'uuid');
+        return $this->belongsTo(Service::class, 'service_uuid', 'id');
     }
 
     public function mechanic(): BelongsTo{
-        return $this->belongsTo(User::class, 'mechanic_uuid', 'uuid');
+        return $this->belongsTo(User::class, 'mechanic_uuid', 'id');
     }
 
     public function transaction(): BelongsTo{
-        return $this->belongsTo(Transaction::class, 'transaction_uuid', 'uuid');
+        return $this->belongsTo(Transaction::class, 'transaction_uuid', 'id');
     }
 }

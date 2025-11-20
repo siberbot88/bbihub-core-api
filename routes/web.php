@@ -1,23 +1,28 @@
 <?php
 
-use App\Http\Controllers\WorkshopController;
-use App\Livewire\Counter;
-use App\Livewire\Login;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
+// Redirect dari root ke dashboard
+Route::redirect('/', '/admin/dashboard');
+Route::redirect('/dashboard', '/admin/dashboard')->name('dashboard');
 
-Route::get('counter', Counter::class)->name('counter');
-Route::get('about',  \App\Livewire\About::class)->name('about');
-Route::get('/', function () {
-    return view('welcome');
-});
+// Grup untuk admin area
+Route::middleware(['auth', 'verified'])
+    ->prefix('admin')->as('admin.')
+    ->group(function () {
+        Route::get('/dashboard', Dashboard::class)->name('dashboard');
+        Route::get('/admin/users', [Controller::class, 'index'])->name('admin.users');
+        Route::get('/users',       UsersIndex::class)->name('users');
+        Route::get('/users/create', \App\Livewire\Admin\Users\Create::class)->name('users.create');
+        Route::get('/promotions',  PromotionsIndex::class)->name('promotions');
+        Route::get('/workshops',   WorkshopsIndex::class)->name('workshops');
+        Route::get('/data-center', DataCenterIndex::class)->name('data-center');
+        Route::get('/reports',     ReportsIndex::class)->name('reports');
+        Route::get('/settings',    SettingsIndex::class)->name('settings');
+    });
 
+require __DIR__.'/auth.php';
 
-Route::prefix('workshop')->group(function () {
-    Route::get('/', [WorkshopController::class, 'index'])->name('workshop.index');
-    Route::get('/create', [WorkshopController::class, 'create'])->name('workshop.create');
-    Route::post('/store', [WorkshopController::class, 'store'])->name('workshop.store');
-    Route::get('/{workshop}/edit', [WorkshopController::class, 'edit'])->name('workshop.edit');
-    Route::patch('/{workshop}', [WorkshopController::class, 'update'])->name('workshop.update');
-})->withoutMiddleware(VerifyCsrfToken::class);
+// Optional fallback
+Route::fallback(fn() => abort(404));

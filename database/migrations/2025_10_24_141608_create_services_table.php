@@ -20,7 +20,8 @@ return new class extends Migration
             $table->decimal('price', 8, 2)->default(0);
             $table->date('scheduled_date');
             $table->date('estimated_time');
-            $table->enum('status', ['pending', 'accept', 'in progress', 'completed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'in progress', 'completed'])->default('pending');
+            $table->enum('acceptance_status', ['pending', 'accepted','decline']);
             $table->timestamps();
         });
     }

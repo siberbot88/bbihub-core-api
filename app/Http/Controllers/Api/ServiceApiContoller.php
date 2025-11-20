@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Service\StoreServiceRequest;
+use App\Http\Requests\Api\Service\UpdateServiceRequest;
 use App\Models\Service;
 use App\Models\Employment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class ServiceApiContoller extends Controller
 {
     /**
-     * Ambil daftar ID workshop milik owner yang login.
+     * Helper: untuk owner -> list workshop dia.
      */
     private function ownerWorkshopIds(Request $request)
     {
@@ -21,137 +22,132 @@ class ServiceApiContoller extends Controller
     }
 
     /**
-     * Pastikan service milik salah satu workshop owner yang login.
-     */
-    private function assertOwned(Request $request, Service $service): void
-    {
-        $ids = $this->ownerWorkshopIds($request);
-        abort_unless($ids->contains($service->workshop_uuid), 403, 'Tidak diizinkan');
-    }
-
-    /**
      * GET /services
-     * Query optional:
-     *   - workshop_uuid=...
-     *   - status=pending,accept,in progress,completed,cancelled
-     *   - code=WO-001
-     *   - date_from=YYYY-MM-DD
-     *   - date_to=YYYY-MM-DD
-     *   - per_page=15 (max 100)
+     * - owner: lihat service di semua workshop dia
+     * - admin: lihat service di workshop tempat dia bekerja
      */
     public function index(Request $request): JsonResponse
     {
-        $ownerWorkshopIds = $this->ownerWorkshopIds($request);
+        $this->authorize('viewAny', Service::class);
 
+        $user    = $request->user();
         $perPage = (int) $request->get('per_page', 15);
         $perPage = $perPage < 1 ? 15 : min($perPage, 100);
 
         $q = Service::query()
-            ->whereIn('workshop_uuid', $ownerWorkshopIds) // <-- scope ke owner
             ->with([
                 'workshop:id,name',
                 'customer:id,name',
                 'vehicle:id,plate_number,brand,model,name',
-                'mechanic.user:id,name', // <-- ikutkan teknisi
+                'mechanic.user:id,name',
             ])
             ->latest();
 
-        // Validasi workshop_uuid jika dikirim: harus milik owner
-        $q->when($request->filled('workshop_uuid'), function ($x) use ($request, $ownerWorkshopIds) {
-            $wid = (string) $request->string('workshop_uuid');
-            abort_unless($ownerWorkshopIds->contains($wid), 403, 'Workshop bukan milik Anda');
-            $x->where('workshop_uuid', $wid);
-        });
+        if ($user->hasRole('owner')) {
+            $ownerWorkshopIds = $this->ownerWorkshopIds($request);
+            $q->whereIn('workshop_uuid', $ownerWorkshopIds);
 
+            $q->when($request->filled('workshop_uuid'), function ($x) use ($request, $ownerWorkshopIds) {
+                $wid = (string) $request->string('workshop_uuid');
+                abort_unless($ownerWorkshopIds->contains($wid), 403, 'Workshop bukan milik Anda');
+                $x->where('workshop_uuid', $wid);
+            });
+        } elseif ($user->hasRole('admin')) {
+            $employment = $user->employment;
+
+            if (! $employment) {
+                $q->whereRaw('1 = 0');
+            } else {
+                $q->where('workshop_uuid', $employment->workshop_uuid);
+
+                $q->when($request->filled('workshop_uuid'), function ($x) use ($request, $employment) {
+                    $wid = (string) $request->string('workshop_uuid');
+                    abort_unless($wid === $employment->workshop_uuid, 403, 'Workshop bukan milik Anda');
+                    $x->where('workshop_uuid', $wid);
+                });
+            }
+        }
+
+        // filter status (bisa multiple, dipisah koma)
         $q->when($request->filled('status'), function ($x) use ($request) {
             $statuses = collect(explode(',', $request->string('status')))
-                ->map(fn ($s) => trim($s))->filter()->values();
-            if ($statuses->isNotEmpty()) $x->whereIn('status', $statuses);
+                ->map(fn ($s) => trim($s))
+                ->filter()
+                ->values();
+
+            if ($statuses->isNotEmpty()) {
+                $x->whereIn('status', $statuses);
+            }
         });
 
+        // filter code
         $q->when($request->filled('code'), fn ($x) =>
-        $x->where('code', 'like', '%'.$request->string('code').'%'));
+        $x->where('code', 'like', '%'.$request->string('code').'%')
+        );
 
+        // filter tanggal
         $q->when($request->filled('date_from'), fn ($x) =>
-        $x->whereDate('scheduled_date', '>=', $request->date('date_from')));
+        $x->whereDate('scheduled_date', '>=', $request->date('date_from'))
+        );
 
         $q->when($request->filled('date_to'), fn ($x) =>
-        $x->whereDate('scheduled_date', '<=', $request->date('date_to')));
+        $x->whereDate('scheduled_date', '<=', $request->date('date_to'))
+        );
 
         $p = $q->paginate($perPage)->appends($request->query());
-        $p->getCollection()->transform(fn (Service $s) => $this->mapService($s));
+
+        $p->getCollection()->transform(function (Service $s) {
+            return $this->mapService($s, includeItems: false);
+        });
 
         return response()->json($p, 200);
     }
 
     /**
      * GET /services/{service}
+     * owner + admin (policy view)
      */
     public function show(Request $request, Service $service): JsonResponse
     {
-        $this->assertOwned($request, $service);
+        $this->authorize('view', $service);
 
         $service->load([
             'workshop:id,name',
-            'customer:id,name',
-            'vehicle:id,plate_number,brand,model,name',
+            'customer:id,name,phone,email,address',
+            'vehicle:id,plate_number,brand,model,name,year,color,odometer',
             'mechanic.user:id,name',
+            // pastikan di model Service ada relasi `transaction()` (hasOne)
+            // dan di model Transaction ada relasi `items()`
+            'transaction.items',
         ]);
 
         return response()->json([
             'message' => 'success',
-            'data'    => $this->mapService($service),
+            'data'    => $this->mapService($service, includeItems: true),
         ], 200);
     }
 
     /**
      * POST /services
-     * Body minimal untuk dummy:
-     * {
-     *   "workshop_uuid": "uuid-ws",
-     *   "name": "Tune Up",
-     *   "description": "dummy",
-     *   "price": 150000,
-     *   "scheduled_date": "2025-11-01",
-     *   "estimated_time": "2025-11-01",
-     *   "status": "pending",             // optional (default pending)
-     *   "customer_uuid": "uuid-cus",     // optional
-     *   "vehicle_uuid": "uuid-veh",      // optional
-     *   "mechanic_uuid": "uuid-emp"      // optional
-     * }
+     * HANYA admin (policy + middleware).
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreServiceRequest $request): JsonResponse
     {
-        $v = Validator::make($request->all(), [
-            'workshop_uuid'  => 'required|uuid|exists:workshops,id',
-            'name'           => 'required|string|max:255',
-            'description'    => 'nullable|string',
-            'price'          => 'nullable|numeric|min:0|max:999999.99',
-            'scheduled_date' => 'required|date',
-            'estimated_time' => 'nullable|date',
-            'status'         => 'nullable|in:pending,accept,in progress,completed,cancelled',
-            'customer_uuid'  => 'nullable|uuid|exists:customers,id',
-            'vehicle_uuid'   => 'nullable|uuid|exists:vehicles,id',
-            'mechanic_uuid'  => 'nullable|uuid|exists:employments,id',
-        ]);
+        $data = $request->validated();
+        $user = $request->user();
 
-        if ($v->fails()) {
-            return response()->json(['message' => 'Validasi gagal', 'errors' => $v->errors()], 422);
-        }
-
-        $data = $v->validated();
-
-        // Pastikan workshop adalah milik owner yang login
-        $ownerWorkshopIds = $this->ownerWorkshopIds($request);
-        if (! $ownerWorkshopIds->contains($data['workshop_uuid'])) {
+        // Pastikan admin hanya buat di workshop tempat dia bekerja
+        $employment = $user->employment;
+        if (! $employment || $employment->workshop_uuid !== $data['workshop_uuid']) {
             return response()->json(['message' => 'Workshop bukan milik Anda'], 403);
         }
 
-        // Jika mechanic_uuid dikirim, pastikan employment berada di workshop yang sama
+        // validasi mekanik (jika diisi)
         if (! empty($data['mechanic_uuid'])) {
             $ok = Employment::where('id', $data['mechanic_uuid'])
                 ->where('workshop_uuid', $data['workshop_uuid'])
                 ->exists();
+
             if (! $ok) {
                 return response()->json([
                     'message' => 'Mechanic tidak ditemukan pada workshop ini'
@@ -161,7 +157,6 @@ class ServiceApiContoller extends Controller
 
         $data['status'] = $data['status'] ?? 'pending';
 
-        // Generate code: WO-XXX-HHMMYY (XXX = urut 3 digit global)
         $service = DB::transaction(function () use ($data) {
             $last = Service::where('code', 'like', 'WO-%')
                 ->orderBy('code', 'desc')
@@ -173,7 +168,9 @@ class ServiceApiContoller extends Controller
                 $seq = ((int) $m[1]) + 1;
             }
 
-            $timeSuffix = now('Asia/Jakarta')->format('Hi') . now('Asia/Jakarta')->format('y'); // HHMMYY
+            $nowJakarta = now('Asia/Jakarta');
+            $timeSuffix = $nowJakarta->format('Hi') . $nowJakarta->format('y'); // HHMMYY
+
             $data['code'] = 'WO-'.str_pad((string) $seq, 3, '0', STR_PAD_LEFT).'-'.$timeSuffix;
 
             return Service::create($data);
@@ -188,38 +185,102 @@ class ServiceApiContoller extends Controller
 
         return response()->json([
             'message' => 'created',
-            'data'    => $this->mapService($service),
+            'data'    => $this->mapService($service, includeItems: false),
         ], 201);
     }
 
     /**
-     * PUT/PATCH /services/{service}
-     * Body: sebagian field (lihat rules)
+     * Mapper untuk respon ringkas + relasi.
      */
-    public function update(Request $request, Service $service): JsonResponse
+    private function mapService(Service $s, bool $includeItems = false): array
     {
-        $this->assertOwned($request, $service);
+        $items = [];
 
-        $v = Validator::make($request->all(), [
-            'workshop_uuid'  => 'sometimes|required|uuid|exists:workshops,id',
-            'name'           => 'sometimes|required|string|max:255',
-            'description'    => 'sometimes|nullable|string',
-            'price'          => 'sometimes|nullable|numeric|min:0|max:999999.99',
-            'scheduled_date' => 'sometimes|required|date',
-            'estimated_time' => 'sometimes|nullable|date',
-            'status'         => 'sometimes|required|in:pending,accept,in progress,completed,cancelled',
-            'customer_uuid'  => 'sometimes|nullable|uuid|exists:customers,id',
-            'vehicle_uuid'   => 'sometimes|nullable|uuid|exists:vehicles,id',
-            'mechanic_uuid'  => 'sometimes|nullable|uuid|exists:employments,id',
-        ]);
+        if ($includeItems) {
+            if ($s->relationLoaded('transaction') && $s->transaction) {
+                $transaction = $s->transaction;
 
-        if ($v->fails()) {
-            return response()->json(['message' => 'Validasi gagal', 'errors' => $v->errors()], 422);
+                $transactionItems = $transaction->items ?? collect();
+
+                foreach ($transactionItems as $it) {
+                    $items[] = [
+                        'id'                => $it->id,
+                        'name'              => $it->name,
+                        'service_type_name' => $it->service_type,
+                        'price'             => $it->price,
+                        'quantity'          => $it->quantity,
+                        'subtotal'          => $it->subtotal,
+                    ];
+                }
+            }
         }
 
-        $dataToUpdate = $v->validated();
+        return [
+            'id'               => $s->id,
+            'code'             => $s->code,
+            'name'             => $s->name,
+            'description'      => $s->description,
+            'price'            => $s->price,
+            'scheduled_date'   => optional($s->scheduled_date)->toIso8601String(),
+            'estimated_time'   => optional($s->estimated_time)->toIso8601String(),
+            'status'           => $s->status,
+            'acceptance_status'=> $s->acceptance_status,
 
-        // Validasi transisi status
+            // kolom di DB: category_service → kirim ke frontend sebagai category_name
+            'category_service' => $s->category_service,
+            'category_name'    => $s->category_service,
+
+            'accepted_at'      => optional($s->accepted_at)->toIso8601String(),
+            'completed_at'     => optional($s->completed_at)->toIso8601String(),
+
+            'workshop' => $s->workshop ? [
+                'id'   => $s->workshop->id,
+                'name' => $s->workshop->name,
+            ] : null,
+
+            'customer' => $s->customer ? [
+                'id'      => $s->customer->id,
+                'name'    => $s->customer->name,
+                'phone'   => $s->customer->phone,
+                'email'   => $s->customer->email,
+                'address' => $s->customer->address,
+            ] : null,
+
+            'vehicle'  => $s->vehicle ? [
+                'id'           => $s->vehicle->id,
+                'plate_number' => $s->vehicle->plate_number,
+                'brand'        => $s->vehicle->brand,
+                'model'        => $s->vehicle->model,
+                'name'         => $s->vehicle->name,
+                'year'         => $s->vehicle->year,
+                'color'        => $s->vehicle->color,
+                'odometer'     => $s->vehicle->odometer,
+            ] : null,
+
+            'mechanic' => $s->mechanic ? [
+                'id'   => $s->mechanic->id,
+                'name' => optional($s->mechanic->user)->name,
+            ] : null,
+
+            'reason'            => $s->reason,
+            'feedback_mechanic' => $s->feedback_mechanic,
+            'note'              => $s->note,
+
+            'items'             => $includeItems ? $items : null,
+
+            'created_at'        => optional($s->created_at)->toIso8601String(),
+            'updated_at'        => optional($s->updated_at)->toIso8601String(),
+        ];
+    }
+
+    /**
+     * PUT/PATCH /services/{service}
+     * HANYA admin (di UpdateServiceRequest@authorize + policy).
+     */
+    public function update(UpdateServiceRequest $request, Service $service): JsonResponse
+    {
+        $dataToUpdate = $request->validated();
+
         if (isset($dataToUpdate['status'])) {
             $from = $service->status;
             $to   = $dataToUpdate['status'];
@@ -237,21 +298,36 @@ class ServiceApiContoller extends Controller
                     'message' => "Transisi status dari '{$from}' ke '{$to}' tidak diperbolehkan."
                 ], 422);
             }
+
+            $now = now('Asia/Jakarta');
+
+            if ($to === 'accept' && $service->accepted_at === null) {
+                $dataToUpdate['accepted_at'] = $now;
+            }
+
+            if ($to === 'completed' && $service->completed_at === null) {
+                $dataToUpdate['completed_at'] = $now;
+            }
         }
 
-        // Jika workshop_uuid mau diubah, pastikan milik owner.
-        $ownerWorkshopIds = $this->ownerWorkshopIds($request);
-        if (isset($dataToUpdate['workshop_uuid']) && ! $ownerWorkshopIds->contains($dataToUpdate['workshop_uuid'])) {
-            return response()->json(['message' => 'Workshop bukan milik Anda'], 403);
+        // Validasi workshop & mechanic
+        if (isset($dataToUpdate['workshop_uuid'])) {
+            $user       = $request->user();
+            $employment = $user->employment;
+
+            if (! $employment || $employment->workshop_uuid !== $dataToUpdate['workshop_uuid']) {
+                return response()->json(['message' => 'Workshop bukan milik Anda'], 403);
+            }
         }
 
-        // Jika mechanic_uuid dikirim, pastikan employment ada di workshop target (baru atau lama)
         if (array_key_exists('mechanic_uuid', $dataToUpdate)) {
             $targetWorkshop = $dataToUpdate['workshop_uuid'] ?? $service->workshop_uuid;
+
             if (! empty($dataToUpdate['mechanic_uuid'])) {
                 $ok = Employment::where('id', $dataToUpdate['mechanic_uuid'])
                     ->where('workshop_uuid', $targetWorkshop)
                     ->exists();
+
                 if (! $ok) {
                     return response()->json([
                         'message' => 'Mechanic tidak ditemukan pada workshop ini'
@@ -264,67 +340,27 @@ class ServiceApiContoller extends Controller
 
         $service->load([
             'workshop:id,name',
-            'customer:id,name',
-            'vehicle:id,plate_number,brand,model,name',
+            'customer:id,name,phone,email,address',
+            'vehicle:id,plate_number,brand,model,name,year,color,odometer',
             'mechanic.user:id,name',
         ]);
 
         return response()->json([
             'message' => 'Service updated successfully',
-            'data'    => $this->mapService($service),
+            'data'    => $this->mapService($service, includeItems: false),
         ], 200);
     }
 
     /**
      * DELETE /services/{service}
+     * HANYA admin (policy delete).
      */
     public function destroy(Request $request, Service $service): JsonResponse
     {
-        $this->assertOwned($request, $service);
+        $this->authorize('delete', $service);
+
         $service->delete();
 
         return response()->json(null, 204);
-    }
-
-    /**
-     * Mapper untuk respon ringkas + relasi.
-     */
-    private function mapService(Service $s): array
-    {
-        return [
-            'id'             => $s->id,
-            'code'           => $s->code,
-            'name'           => $s->name,
-            'description'    => $s->description,
-            'price'          => $s->price,
-            'scheduled_date' => optional($s->scheduled_date)->toDateString(),
-            'estimated_time' => optional($s->estimated_time)->toDateString(),
-            'status'         => $s->status,
-
-            'workshop'       => $s->workshop ? [
-                'id'   => $s->workshop->id,
-                'name' => $s->workshop->name,
-            ] : null,
-
-            'customer'       => $s->customer ? [
-                'id'   => $s->customer->id,
-                'name' => $s->customer->name,
-            ] : null,
-
-            'vehicle'        => $s->vehicle ? [
-                'id'           => $s->vehicle->id,
-                'plate_number' => $s->vehicle->plate_number,
-                'name'         => trim(($s->vehicle->brand ?? '').' '.($s->vehicle->model ?? '').' '.($s->vehicle->name ?? '')),
-            ] : null,
-
-            // kirim teknisi (jika ada)
-            'mechanic'       => $s->mechanic ? [
-                'id'   => $s->mechanic->id,
-                'name' => optional($s->mechanic->user)->name,
-            ] : null,
-
-            'created_at'     => optional($s->created_at)->toISOString(),
-            'updated_at'     => optional($s->updated_at)->toISOString(),
-        ];
     }
 }

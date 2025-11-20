@@ -13,7 +13,7 @@ class RoleSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // --- Roles untuk Mobile/API (Guard: sanctum) ---
-        $apiRoles = ['owner', 'admin', 'mechanic'];
+        $apiRoles = ['owner', 'admin', 'mechanic', 'user'];
         foreach ($apiRoles as $name) {
             Role::firstOrCreate([
                 'name'       => $name,

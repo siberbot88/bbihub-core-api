@@ -18,7 +18,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasUuids, HasFactory, Notifiable, HasRoles, HasApiTokens;
-
+    protected $guarded = [];
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -35,7 +35,6 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'must_change_password',
         'photo',
     ];
 
