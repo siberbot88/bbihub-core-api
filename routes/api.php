@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use App\Http\Controllers\Api\ServiceApiContoller;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\TransactionItemController;
 use App\Http\Controllers\Api\VehicleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -88,20 +90,28 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
-        //
-        Route::apiResource('services', \App\Http\Controllers\Api\ServiceController::class);
+
+        // =========================
+        // SERVICE
+        // =========================
         Route::get('/admin/services',            [ServiceController::class, 'index']);   // ?status=&date=&q=&per_page=
+        Route::post('/admin/services',           [ServiceController::class, 'store']);
         Route::get('/admin/services/{service}',  [ServiceController::class, 'show']);
-        Route::post('/admin/services',  [ServiceController::class, 'store']);
+        Route::post('/admin/services/{service}', [ServiceController::class, 'update']);
+        Route::post('/admin/services{service}',  [ServiceController::class, 'destroy']);
 
-        // AKSI ALUR BARU
-        Route::post('/admin/services/{service}/accept', [ServiceController::class, 'accept']);   // requested -> pending
-        Route::post('/admin/services/{service}/reject', [ServiceController::class, 'reject']);   // requested -> rejected
-        Route::post('/admin/services/{service}/assign-mechanic', [ServiceController::class, 'assignMechanic']); // pending -> (tetap pending)
-        Route::post('/admin/services/{service}/start',  [ServiceController::class, 'startWork']);    // pending -> in progress
-        Route::post('/admin/services/{service}/finish', [ServiceController::class, 'finishWork']);    // in progress -> completed
-        Route::post('/admin/services/{service}/pay',    [ServiceController::class, 'confirmPayment']); // completed -> paid
+        // =========================
+        // TRANSACTION
+        // =========================
+        Route::post('/transactions', [TransactionController::class, 'store']);
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
+        Route::put('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
 
+
+        // =========================
+        // TRANSACTION ITEMS
+        // =========================
+        Route::post('/transaction-items', [TransactionItemController::class, 'store']);
     });
 });
 

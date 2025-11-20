@@ -23,7 +23,6 @@ class AuthController extends Controller
     /**
      * Helper: pastikan role tersedia di guard tertentu, kalau belum ada dibuat.
      */
-    private function assignRoleForGuards(User $user, array $guards = ['web', 'sanctum']): void
     private function ensureRoleExistsForGuard(string $roleName, string $guard): Role
     {
         try {

@@ -56,6 +56,8 @@ class ServiceListController extends Controller
 
         $data['id'] = (string) Str::uuid();
         $data['code'] = $this->generateCode();
+        $data['status'] = 'pending';
+        $data['acceptance_status'] = 'pending';
 
         $service = Service::create($data);
 
@@ -87,6 +89,11 @@ class ServiceListController extends Controller
         return new ServiceResource($service->fresh()->load(['workshop','customer','vehicle','mechanic','items','log','task']));
     }
 
+    public function destroy(Service $service)
+    {
+        $service->delete();
+        return response()->json(['message' => 'Service deleted']);
+    }
     protected function generateCode()
     {
         return 'SRV-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
