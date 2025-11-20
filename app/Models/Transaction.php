@@ -28,11 +28,16 @@ class Transaction extends Model
         'status',
         'amount',
         'payment_method',
+        'service_uuid',
     ];
 
 
     public function customer(): BelongsTo{
         return $this->belongsTo(Customer::class, 'customer_uuid');
+    }
+
+    public function service():  BelongsTo{
+        return $this->belongsTo(Service::class, 'service_uuid');
     }
 
     public function workshop(): BelongsTo{

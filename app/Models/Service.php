@@ -24,6 +24,7 @@ class Service extends Model
         'workshop_uuid',
         'name',
         'description',
+        'category_service',
         'price',
         'scheduled_date',
         'estimated_time',
@@ -31,7 +32,11 @@ class Service extends Model
         'acceptance_status',
         'customer_uuid',
         'vehicle_uuid',
-        'mechanic_uuid'
+        'mechanic_uuid',
+        'reason',
+        'feedback_mechanic',
+        'accepted_at',
+        'completed_at',
     ];
 
     protected $casts = [
@@ -63,6 +68,10 @@ class Service extends Model
 
     public function mechanic(): BelongsTo{
         return $this->belongsTo(Employment::class, 'mechanic_uuid')->with('user');
+    }
+
+    public function transaction(): HasOne{
+        return $this->hasOne(Transaction::class, 'service_uuid', 'id');
     }
 
 }

@@ -37,8 +37,8 @@ class ServiceApiContoller extends Controller
         $q = Service::query()
             ->with([
                 'workshop:id,name',
-                'customer:id,name',
-                'vehicle:id,plate_number,brand,model,name',
+                'customer:id,name,phone,email,address',
+                'vehicle:id,plate_number,brand,model,name,year,color,odometer',
                 'mechanic.user:id,name',
             ])
             ->latest();
@@ -56,7 +56,6 @@ class ServiceApiContoller extends Controller
             $employment = $user->employment;
 
             if (! $employment) {
-                // admin tanpa employment: tidak punya workshop
                 $q->whereRaw('1 = 0');
             } else {
                 $q->where('workshop_uuid', $employment->workshop_uuid);
@@ -69,7 +68,7 @@ class ServiceApiContoller extends Controller
             }
         }
 
-        // filter lain sama seperti sebelumnya
+        // filter lain
         $q->when($request->filled('status'), function ($x) use ($request) {
             $statuses = collect(explode(',', $request->string('status')))
                 ->map(fn ($s) => trim($s))
@@ -94,10 +93,14 @@ class ServiceApiContoller extends Controller
         );
 
         $p = $q->paginate($perPage)->appends($request->query());
-        $p->getCollection()->transform(fn (Service $s) => $this->mapService($s));
+
+        $p->getCollection()->transform(function (Service $s) {
+            return $this->mapService($s, false);
+        });
 
         return response()->json($p, 200);
     }
+
 
     /**
      * GET /services/{service}
@@ -109,16 +112,19 @@ class ServiceApiContoller extends Controller
 
         $service->load([
             'workshop:id,name',
-            'customer:id,name',
-            'vehicle:id,plate_number,brand,model,name',
+            'customer:id,name,phone,email,address',
+            'vehicle:id,plate_number,brand,model,name,year,color,odometer',
             'mechanic.user:id,name',
+            'transactions.items',
         ]);
 
         return response()->json([
             'message' => 'success',
-            'data'    => $this->mapService($service),
+            'data'    => $this->mapService($service, includeItems: true),
         ], 200);
     }
+
+
 
     /**
      * POST /services
@@ -129,7 +135,6 @@ class ServiceApiContoller extends Controller
         $data = $request->validated();
         $user = $request->user();
 
-        // Pastikan admin hanya buat di workshop tempat dia bekerja
         $employment = $user->employment;
         if (! $employment || $employment->workshop_uuid !== $data['workshop_uuid']) {
             return response()->json(['message' => 'Workshop bukan milik Anda'], 403);
@@ -182,45 +187,84 @@ class ServiceApiContoller extends Controller
 
     }
     /**
-         * Mapper untuk respon ringkas + relasi.
-         */
-        private function mapService(Service $s): array
-        {
-        return [
-            'id'             => $s->id,
-            'code'           => $s->code,
-            'name'           => $s->name,
-            'description'    => $s->description,
-            'price'          => $s->price,
-            'scheduled_date' => optional($s->scheduled_date)->toDateString(),
-            'estimated_time' => optional($s->estimated_time)->toDateString(),
-            'status'         => $s->status,
+     * Mapper untuk respon ringkas + relasi.
+     */
+    private function mapService(Service $s, bool $includeItems = false): array
+    {
+        $items = [];
 
-            'workshop'       => $s->workshop ? [
+        if ($includeItems) {
+            foreach ($s->transactions as $t) {
+                foreach ($t->items as $it) {
+                    $items[] = [
+                        'id'                => $it->id,
+                        'name'              => $it->name,
+                        'service_type_name' => $it->service_type, // string dari kolom
+                        'price'             => $it->price,
+                        'quantity'          => $it->quantity,
+                        'subtotal'          => $it->subtotal,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'id'               => $s->id,
+            'code'             => $s->code,
+            'name'             => $s->name,
+            'description'      => $s->description,
+            'price'            => $s->price,
+            'scheduled_date'   => optional($s->scheduled_date)->toIso8601String(),
+            'estimated_time'   => optional($s->estimated_time)->toIso8601String(),
+            'status'           => $s->status,
+            'acceptance_status'=> $s->acceptance_status,
+            'category_service' => $s->category_service,
+            'accepted_at'    => optional($s->accepted_at)->toIso8601String(),
+            'completed_at'   => optional($s->completed_at)->toIso8601String(),
+
+            'workshop' => $s->workshop ? [
                 'id'   => $s->workshop->id,
                 'name' => $s->workshop->name,
             ] : null,
 
-            'customer'       => $s->customer ? [
-                'id'   => $s->customer->id,
-                'name' => $s->customer->name,
+            'customer' => $s->customer ? [
+                'id'      => $s->customer->id,
+                'name'    => $s->customer->name,
+                'phone'   => $s->customer->phone,
+                'email'   => $s->customer->email,
+                'address' => $s->customer->address,
             ] : null,
 
-            'vehicle'        => $s->vehicle ? [
+            'vehicle'  => $s->vehicle ? [
                 'id'           => $s->vehicle->id,
                 'plate_number' => $s->vehicle->plate_number,
-                'name'         => trim(($s->vehicle->brand ?? '').' '.($s->vehicle->model ?? '').' '.($s->vehicle->name ?? '')),
+                'brand'        => $s->vehicle->brand,
+                'model'        => $s->vehicle->model,
+                'name'         => $s->vehicle->name,
+                'year'         => $s->vehicle->year,
+                'color'        => $s->vehicle->color,
+                'odometer'     => $s->vehicle->odometer,
             ] : null,
 
-            'mechanic'       => $s->mechanic ? [
+            'mechanic' => $s->mechanic ? [
                 'id'   => $s->mechanic->id,
                 'name' => optional($s->mechanic->user)->name,
             ] : null,
 
-            'created_at'     => optional($s->created_at)->toISOString(),
-            'updated_at'     => optional($s->updated_at)->toISOString(),
-            ];
-        }
+            'reason'           => $s->reason,
+            'feedback_mechanic'=> $s->feedback_mechanic,
+            'note'             => $s->note,
+
+            'items'            => $includeItems ? $items : null,
+
+            'created_at'       => optional($s->created_at)->toIso8601String(),
+            'updated_at'       => optional($s->updated_at)->toIso8601String(),
+        ];
+    }
+
+
+
+
 
     /**
      * PUT/PATCH /services/{service}
@@ -248,7 +292,18 @@ class ServiceApiContoller extends Controller
                     'message' => "Transisi status dari '{$from}' ke '{$to}' tidak diperbolehkan."
                 ], 422);
             }
+
+            $now = now('Asia/Jakarta');
+
+            if ($to === 'accept' && $service->accepted_at === null) {
+                $dataToUpdate['accepted_at'] = $now;
+            }
+
+            if ($to === 'completed' && $service->completed_at === null) {
+                $dataToUpdate['completed_at'] = $now;
+            }
         }
+
 
         // Validasi workshop & mechanic sama seperti sebelumnya
         if (isset($dataToUpdate['workshop_uuid'])) {
