@@ -30,10 +30,10 @@ class VoucherResource extends JsonResource
             'valid_from'      => optional($this->valid_from)->toDateString(),
             'valid_until'     => optional($this->valid_until)->toDateString(),
             'is_active'       => (bool) $this->is_active,
-            'status'          => $this->status,      // dari accessor di model
+            'status'          => $this->status,
 
             'image'           => $this->image,
-            'image_url'       => $this->image_url,   // dari accessor di model
+            'image_url'       => $this->image_url,
 
             'created_at'      => optional($this->created_at)?->toIso8601String(),
             'updated_at'      => optional($this->updated_at)?->toIso8601String(),
