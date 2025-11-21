@@ -19,10 +19,6 @@ class AuthController extends Controller
 {
     use ApiResponseTrait;
 
-    // Konstanta untuk login dipindahkan ke LoginRequest,
-    // tapi kita mungkin masih butuh ini jika ada logika lain.
-    // private const ALLOWED_LOGIN_ROLES = ['owner', 'admin'];
-
     /**
      * Helper: pastikan role tersedia di guard tertentu, kalau belum ada dibuat.
      */
