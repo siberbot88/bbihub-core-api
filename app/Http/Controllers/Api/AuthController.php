@@ -63,8 +63,6 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        // Validasi sudah otomatis ditangani oleh RegisterRequest.
-        // Jika gagal, response error 422 otomatis dikirim.
 
         try {
             /** @var User $user */
@@ -114,12 +112,7 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        // Validasi, rate limiting, dan pengecekan kredensial
-        // sudah ditangani oleh $request->authenticate().
-        // Jika gagal, otomatis melempar ValidationException (respons 422).
         $request->authenticate();
-
-        // Jika sampai di sini, berarti user valid dan tidak di-rate-limit.
 
         /** @var User $user */
         $user = $request->user(); // Ambil user yang sudah diotentikasi oleh LoginRequest
