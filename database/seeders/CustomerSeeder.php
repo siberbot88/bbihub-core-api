@@ -50,12 +50,15 @@ class CustomerSeeder extends Seeder
 
             $address = $streetNames[array_rand($streetNames)] . ' No. ' . rand(1, 100) . ', ' . $cities[array_rand($cities)];
 
+            $email = $name . '@gmail.com';
+
             $dataToInsert[] = [
                 'id' => Str::uuid()->toString(),
                 'code' => $code,
                 'name' => $name,
                 'phone' => $phone,
                 'address' => $address,
+                'email' => $email,
                 'created_at' => $now,
                 'updated_at' => $now
             ];
@@ -65,7 +68,7 @@ class CustomerSeeder extends Seeder
         DB::table('customers')->upsert(
             $dataToInsert,
             ['code'],
-            ['name', 'phone', 'address', 'updated_at']
+            ['name', 'phone', 'address', 'email', 'updated_at']
         );
     }
 }
