@@ -1,5 +1,5 @@
 
-<div class="bg-[#F6EFEF] min-h-screen">
+<div class="min-h-screen">
   <div class="mx-auto max-w-7xl px-4 py-6">
 
     {{-- TOP TOOLBAR (mirip) --}}
