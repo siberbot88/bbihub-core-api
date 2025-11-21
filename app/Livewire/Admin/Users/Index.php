@@ -18,54 +18,60 @@ class Index extends Component
     public $q = '';
     public $perPage = 10;
 
-    public $showDetail = false;
-    public $showEdit = false;
-    public $showReset = false;
-    public $showDelete = false;
+    public bool $showDetail = false;
+    public bool $showEdit   = false;
+    public bool $showDelete = false;
 
-    public $selectedUser = null;
-    public $newPassword;
-    public $confirmPassword;
+    // RESET PASSWORD modal state
+    public bool $showReset = false;
 
-    public $statusOptions = [
-        '' => 'Semua Status',
-        'active' => 'Aktif',
-        'inactive' => 'Nonaktif',
-        'pending' => 'Menunggu Verifikasi',
+    public ?User $selectedUser = null;
+    public string $newPassword = '';
+    public string $confirmPassword = '';
+
+    protected $rules = [
+        'newPassword'     => 'required|min:8|same:confirmPassword',
+        'confirmPassword' => 'required|min:8',
     ];
 
-    public $roleOptions = [
-        '' => 'Semua Role',
-        'admin' => 'Admin',
-        'owner' => 'Owner',
-        'mechanic' => 'Mekanik',
-    ];
+    public function mount(): void
+    {
+        $this->resetModal();
+    }
+
+    protected function resetModal(): void
+    {
+        $this->showReset = false;
+        $this->showDetail = false;
+        $this->showEdit = false;
+        $this->showDelete = false;
+
+        $this->selectedUser = null;
+        $this->newPassword = '';
+        $this->confirmPassword = '';
+    }
 
     public function render()
     {
         $now = Carbon::now();
         $lastWeek = $now->copy()->subWeek();
 
-        // Total pengguna
         $totalUsers = User::count();
         $lastWeekUsers = User::whereBetween('created_at', [$lastWeek->startOfWeek(), $lastWeek->endOfWeek()])->count();
         $growthUsers = $this->calculateGrowth($totalUsers, $lastWeekUsers);
 
-        // Menunggu verifikasi
         $totalPending = User::whereNull('email_verified_at')->count();
         $lastWeekPending = User::whereNull('email_verified_at')
             ->whereBetween('created_at', [$lastWeek->startOfWeek(), $lastWeek->endOfWeek()])
             ->count();
         $growthPending = $this->calculateGrowth($totalPending, $lastWeekPending);
 
-        // Akun aktif
         $totalActive = User::whereNotNull('email_verified_at')->count();
         $lastWeekActive = User::whereNotNull('email_verified_at')
             ->whereBetween('created_at', [$lastWeek->startOfWeek(), $lastWeek->endOfWeek()])
             ->count();
         $growthActive = $this->calculateGrowth($totalActive, $lastWeekActive);
 
-        // Akun tidak aktif
         $hasLastLoginColumn = DB::getSchemaBuilder()->hasColumn('users', 'last_login_at');
         if ($hasLastLoginColumn) {
             $totalInactive = User::whereNull('last_login_at')->count();
@@ -78,7 +84,6 @@ class Index extends Component
         }
         $growthInactive = $this->calculateGrowth($totalInactive, $lastWeekInactive);
 
-        // Hitung berdasarkan role
         $roleCounts = DB::table('model_has_roles')
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->select('roles.name as role', DB::raw('COUNT(model_has_roles.model_id) as total'))
@@ -87,9 +92,8 @@ class Index extends Component
             ->toArray();
 
         $totalMechanic = $roleCounts['mechanic'] ?? 0;
-        $totalOwner = $roleCounts['owner'] ?? 0;
+        $totalOwner    = $roleCounts['owner'] ?? 0;
 
-        // Ambil daftar user
         $users = User::query()
             ->when($this->q, fn($q) =>
                 $q->where('name', 'like', "%{$this->q}%")
@@ -114,54 +118,54 @@ class Index extends Component
         ))->layout('layouts.app');
     }
 
+    // ==== RESET PASSWORD ====
+
+    public function resetPassword($id)
+    {
+        $this->selectedUser = User::findOrFail($id);
+        $this->showReset = true;
+    }
+
+    public function updatePassword()
+    {
+        $this->validate();
+
+        if ($this->selectedUser) {
+            $this->selectedUser->update([
+                'password' => Hash::make($this->newPassword),
+            ]);
+        }
+
+        $this->closeResetModal();
+        session()->flash('message', 'Password berhasil diubah.');
+    }
+
+    public function closeResetModal()
+    {
+        $this->showReset = false;
+        $this->selectedUser = null;
+        $this->newPassword = '';
+        $this->confirmPassword = '';
+    }
+
+    // ==== OTHER MODALS =====
+
     public function view($id)
     {
         $this->selectedUser = User::findOrFail($id);
-        $this->dispatchBrowserEvent('open-modal', ['detail' => 'detail-user']);
+        $this->showDetail = true;
     }
 
     public function edit($id)
     {
         $this->selectedUser = User::findOrFail($id);
-        $this->dispatchBrowserEvent('open-modal', ['detail' => 'edit-user']);
-    }
-
-    public function resetPassword($id)
-    {
-        $this->selectedUser = User::findOrFail($id);
-        $this->dispatchBrowserEvent('open-modal', ['detail' => 'reset-user']);
+        $this->showEdit = true;
     }
 
     public function delete($id)
     {
         $this->selectedUser = User::findOrFail($id);
-        $this->dispatchBrowserEvent('open-modal', ['detail' => 'delete-user']);
-    }
-
-    public function updateUser()
-    {
-        $this->selectedUser->save();
-        $this->dispatchBrowserEvent('close-modal', ['detail' => 'edit-user']);
-    }
-
-    public function updatePassword()
-    {
-        $this->validate([
-            'newPassword' => 'required|min:6|same:confirmPassword',
-        ]);
-
-        $this->selectedUser->update([
-            'password' => Hash::make($this->newPassword),
-        ]);
-
-        $this->dispatchBrowserEvent('close-modal', ['detail' => 'reset-user']);
-        $this->newPassword = $this->confirmPassword = '';
-    }
-
-    public function confirmDelete($id)
-    {
-        User::findOrFail($id)->delete();
-        $this->dispatchBrowserEvent('close-modal', ['detail' => 'delete-user']);
+        $this->showDelete = true;
     }
 
     private function calculateGrowth($current, $previous)
