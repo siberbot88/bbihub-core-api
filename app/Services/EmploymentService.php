@@ -15,7 +15,7 @@ use Spatie\Permission\Models\Role;
 class EmploymentService
 {
     /** Role yang otomatis dikirim email kredensial */
-    private const ROLES_NEED_EMAIL = ['admin', 'mechanic'];
+    private const ROLES_NEED_EMAIL = ['admin'];
 
     /**
      * Membuat Karyawan baru, User, dan mengirim email.
