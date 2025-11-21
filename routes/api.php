@@ -75,7 +75,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
-        Route:
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
 
@@ -96,7 +95,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
-        Route:
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
 });
