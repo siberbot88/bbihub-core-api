@@ -21,7 +21,7 @@ return new class extends Migration
             $table->date('scheduled_date');
             $table->date('estimated_time');
             $table->enum('status', ['pending', 'in progress', 'completed'])->default('pending');
-            $table->enum('acceptance_status', ['pending', 'accepted','decline']);
+            $table->enum('acceptance_status', ['pending', 'accepted','decline'])->default('pending');
             $table->timestamps();
         });
     }
