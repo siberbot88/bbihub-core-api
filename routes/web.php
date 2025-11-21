@@ -3,6 +3,12 @@
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return response()->json([
+        'message' => 'BbiHub API',
+        'version' => '1.0.0'
+    ]);
+});
 // Redirect dari root ke dashboard
 Route::redirect('/', '/admin/dashboard');
 Route::redirect('/dashboard', '/admin/dashboard')->name('dashboard');
