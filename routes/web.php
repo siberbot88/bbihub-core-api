@@ -1,11 +1,22 @@
 <?php
 
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application.
+| These routes are loaded by the RouteServiceProvider and all of them
+| will be assigned to the "web" middleware group.
+|
+*/
 
 Route::get('/', function () {
     return response()->json([
         'message' => 'BbiHub API',
-        'version' => '1.0.0'
+        'version' => '1.0.0',
+        'status' => 'running'
     ]);
 });
