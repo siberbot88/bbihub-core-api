@@ -81,12 +81,7 @@ class ServiceApiController extends Controller
         $perPage = (int) $request->get('per_page', 15);
         $services = $query->paginate($perPage)->appends($request->query());
 
-        return response()->json($services); // Laravel automatically wraps pagination
-        // Note: To use Resource with pagination properly:
-        // return ServiceResource::collection($services)->response();
-        // But for consistency with previous response structure (which seemed to be direct pagination object),
-        // we might want to wrap it. Let's use Resource collection for best practice.
-        return ServiceResource::collection($services)->response();
+        return ServiceResource::collection($services);
     }
 
     /**
