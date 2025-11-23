@@ -19,17 +19,7 @@ class AuthController extends Controller
 {
     use ApiResponseTrait;
 
-    /**
-     * Helper: pastikan role tersedia di guard tertentu, kalau belum ada dibuat.
-     */
-    private function ensureRoleExistsForGuard(string $roleName, string $guard): Role
-    {
-        try {
-            return Role::findByName($roleName, $guard);
-        } catch (\Throwable $e) {
-            return Role::create(['name' => $roleName, 'guard_name' => $guard]);
-        }
-    }
+
 
     /**
      * Helper: muat relasi sesuai role agar payload user ringkas & kontekstual.
@@ -76,9 +66,11 @@ class AuthController extends Controller
                 'must_change_password' => false,
             ]);
 
-            $role = $this->ensureRoleExistsForGuard('owner', 'sanctum');
-            $user->guard_name = 'sanctum';
-            $user->assignRole($role);
+            // Role 'owner' must exist in database (seeded)
+            $user->assignRole('owner');
+            // Force guard name if needed, though assignRole usually handles it based on config
+            // But to be safe with previous logic:
+            // $user->guard_name = 'sanctum'; // Usually not needed if model has guard_name property or default
 
             $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
 
