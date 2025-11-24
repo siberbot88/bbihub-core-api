@@ -18,7 +18,12 @@ class EmploymentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'user_uuid' => \App\Models\User::factory(),
+            'workshop_uuid' => \App\Models\Workshop::factory(),
+            'code' => 'EMP-' . strtoupper($this->faker->bothify('???-###')),
+            'specialist' => $this->faker->randomElement(['Mekanik Umum', 'Spesialis AC', 'Spesialis Mesin', 'Elektrikal']),
+            'jobdesk' => $this->faker->sentence(),
+            'status' => 'active',
         ];
     }
 }

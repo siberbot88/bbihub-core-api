@@ -18,7 +18,11 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'transaction_uuid' => \App\Models\Transaction::factory(),
+            'name'             => $this->faker->sentence(),
+            'description'      => $this->faker->paragraph(),
+            'status'           => $this->faker->randomElement(['pending', 'in_progress', 'completed']),
+            'due_date'         => now()->addDays(3),
         ];
     }
 }
