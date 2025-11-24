@@ -37,7 +37,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         ];
     });
 
-    // ... sisa file ...
 
     Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
         // Workshops
