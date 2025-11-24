@@ -7,6 +7,9 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Workshop;
+use App\Models\Employment;
+use App\Livewire\Forms\UserForm;
 use Carbon\Carbon;
 
 class Index extends Component
@@ -24,6 +27,10 @@ class Index extends Component
     public bool $showEdit   = false;
     public bool $showDelete = false;
     public bool $showReset  = false;
+    public bool $showCreate = false;
+
+    // Forms
+    public UserForm $form;
 
     // Selected user + form fields
     public ?User $selectedUser = null;
@@ -39,13 +46,14 @@ class Index extends Component
     ];
 
     public array $roleOptions = [
-        ''         => 'Semua Role',
-        'admin'    => 'Admin',
-        'owner'    => 'Owner',
-        'mechanic' => 'Mekanik',
+        ''            => 'Semua Role',
+        'superadmin'  => 'Super Admin',
+        'admin'       => 'Admin',
+        'owner'       => 'Owner',
+        'mechanic'    => 'Mekanik',
     ];
 
-    // Validation rules
+    // Validation rules for password reset
     protected $rules = [
         'newPassword'     => 'required|min:8|same:confirmPassword',
         'confirmPassword' => 'required|min:8',
@@ -63,10 +71,12 @@ class Index extends Component
         $this->showDetail = false;
         $this->showEdit   = false;
         $this->showDelete = false;
+        $this->showCreate = false;
 
         $this->selectedUser = null;
         $this->newPassword = '';
         $this->confirmPassword = '';
+        $this->form->reset();
     }
 
     public function render()
@@ -76,7 +86,7 @@ class Index extends Component
 
         // Statistik
         $totalUsers = User::count();
-        $lastWeekUsers = User::whereBetween('created_at', [$lastWeek->startOfWeek(), $lastWeek->endOfWeek()])
+       $lastWeekUsers = User::whereBetween('created_at', [$lastWeek->startOfWeek(), $lastWeek->endOfWeek()])
             ->count();
         $growthUsers = $this->calculateGrowth($totalUsers, $lastWeekUsers);
 
@@ -116,18 +126,22 @@ class Index extends Component
         $totalMechanic = $roleCounts['mechanic'] ?? 0;
         $totalOwner    = $roleCounts['owner'] ?? 0;
 
-        // Query users
+        // Query users with workshop relationship
         $users = User::query()
             ->when($this->q, fn($q) =>
                 $q->where('name', 'like', "%{$this->q}%")
                   ->orWhere('email', 'like', "%{$this->q}%"))
             ->when($this->role, fn($q) =>
                 $q->whereHas('roles', fn($r) => $r->where('name', $this->role)))
-            ->with('roles')
+            ->with(['employment.workshop', 'roles'])
             ->paginate($this->perPage);
+
+        // Get workshops for dropdown
+        $workshops = Workshop::select('id', 'name')->get();
 
         return view('livewire.admin.users.index', compact(
             'users',
+            'workshops',
             'totalUsers',
             'totalPending',
             'totalActive',
@@ -145,21 +159,28 @@ class Index extends Component
     // MODAL OPENERS
     // ==========================
 
+    public function create()
+    {
+        $this->form->reset();
+        $this->showCreate = true;
+    }
+
     public function view($id)
     {
-        $this->selectedUser = User::findOrFail($id);
+        $this->selectedUser = User::with(['employment.workshop', 'roles'])->findOrFail($id);
         $this->showDetail   = true;
     }
 
     public function edit($id)
     {
-        $this->selectedUser = User::findOrFail($id);
-        $this->showEdit     = true;
+        $this->selectedUser = User::with(['employment.workshop', 'roles'])->findOrFail($id);
+        $this->form->setUser($this->selectedUser);
+        $this->showEdit = true;
     }
 
     public function delete($id)
     {
-        $this->selectedUser = User::findOrFail($id);
+        $this->selectedUser = User::with(['employment.workshop', 'roles'])->findOrFail($id);
         $this->showDelete   = true;
     }
 
@@ -167,6 +188,121 @@ class Index extends Component
     {
         $this->selectedUser = User::findOrFail($id);
         $this->showReset    = true;
+    }
+
+    // ==========================
+    // CRUD ACTIONS
+    // ==========================
+
+    public function createUser()
+    {
+        $this->form->validate();
+
+        DB::beginTransaction();
+        try {
+            // Create user
+            $user = User::create([
+                'name' => $this->form->name,
+                'email' => $this->form->email,
+                'password' => Hash::make($this->form->password),
+            ]);
+
+            // Assign role
+            $user->assignRole($this->form->role);
+
+            // Create employment if workshop is selected and role requires it
+            if ($this->form->workshop_id && in_array($this->form->role, ['mechanic', 'owner'])) {
+                Employment::create([
+                    'user_uuid' => $user->id,
+                    'workshop_uuid' => $this->form->workshop_id,
+                    'status' => 'active',
+                    'code' => 'EMP' . time(),
+                ]);
+            }
+
+            DB::commit();
+
+            $this->resetModal();
+            session()->flash('message', 'Pengguna berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function updateUser()
+    {
+        $this->form->validate();
+
+        DB::beginTransaction();
+        try {
+            if (!$this->selectedUser) {
+                throw new \Exception('User not found');
+            }
+
+            // Update user
+            $this->selectedUser->update([
+                'name' => $this->form->name,
+                'email' => $this->form->email,
+            ]);
+
+            // Update password if provided
+            if (!empty($this->form->password)) {
+                $this->selectedUser->update([
+                    'password' => Hash::make($this->form->password),
+                ]);
+            }
+
+            // Update role
+            $this->selectedUser->syncRoles([$this->form->role]);
+
+            // Update or create employment
+            if ($this->form->workshop_id && in_array($this->form->role, ['mechanic', 'owner'])) {
+                Employment::updateOrCreate(
+                    ['user_uuid' => $this->selectedUser->id],
+                    [
+                        'workshop_uuid' => $this->form->workshop_id,
+                        'status' => 'active',
+                        'code' => 'EMP' . time(),
+                    ]
+                );
+            } else {
+                // Remove employment if role doesn't require workshop
+                Employment::where('user_uuid', $this->selectedUser->id)->delete();
+            }
+
+            DB::commit();
+
+            $this->resetModal();
+            session()->flash('message', 'Pengguna berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function confirmDelete()
+    {
+        DB::beginTransaction();
+        try {
+            if (!$this->selectedUser) {
+                throw new \Exception('User not found');
+            }
+
+            // Delete employment first (if exists)
+            Employment::where('user_uuid', $this->selectedUser->id)->delete();
+
+            // Delete user
+            $this->selectedUser->delete();
+
+            DB::commit();
+
+            $this->resetModal();
+            session()->flash('message', 'Pengguna berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     // ==========================
@@ -190,6 +326,22 @@ class Index extends Component
     // ==========================
     // UTIL
     // ==========================
+
+    public function getUserStatus(User $user): string
+    {
+        // Superadmin and Owner always active
+        if ($user->hasRole('superadmin') || $user->hasRole('owner')) {
+            return 'Aktif';
+        }
+
+        // Check employment status for other roles
+        $employment = $user->employment;
+        if ($employment) {
+            return $employment->status === 'active' ? 'Aktif' : 'Tidak Aktif';
+        }
+
+        return 'Tidak Ada Data';
+    }
 
     private function calculateGrowth($current, $previous)
     {

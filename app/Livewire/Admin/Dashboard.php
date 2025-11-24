@@ -19,10 +19,38 @@ class Dashboard extends Component
     public function mount(): void
     {
         $this->cards = [
-            ['title'=>'Total Bengkel','value'=>20,'desc'=>'Bengkel terkonfirmasi','icon'=>'bengkel','delta'=>'+5%'],
-            ['title'=>'Total User','value'=>20,'desc'=>'Pelanggan terdaftar','icon'=>'pengguna','delta'=>'+5%'],
-            ['title'=>'Total Teknisi','value'=>20,'desc'=>'Mekanik terverifikasi','icon'=>'tech','delta'=>'+5%'],
-            ['title'=>'Total Feedback','value'=>20,'desc'=>'Feedback hari ini','icon'=>'feedback','delta'=>'+5%'],
+            [
+                'title' => 'Total Bengkel',
+                'value' => 20,
+                'desc' => 'Bengkel terkonfirmasi',
+                'icon' => 'bengkel',
+                'delta' => '+5%',
+                'chart' => [10, 15, 12, 18, 20, 15, 20]
+            ],
+            [
+                'title' => 'Total User',
+                'value' => 120,
+                'desc' => 'Pelanggan terdaftar',
+                'icon' => 'pengguna',
+                'delta' => '+12%',
+                'chart' => [80, 90, 100, 95, 110, 115, 120]
+            ],
+            [
+                'title' => 'Total Teknisi',
+                'value' => 45,
+                'desc' => 'Mekanik terverifikasi',
+                'icon' => 'tech',
+                'delta' => '+8%',
+                'chart' => [30, 32, 35, 38, 40, 42, 45]
+            ],
+            [
+                'title' => 'Total Feedback',
+                'value' => 23,
+                'desc' => 'Feedback hari ini',
+                'icon' => 'feedback',
+                'delta' => '+2%',
+                'chart' => [15, 18, 12, 20, 18, 22, 23]
+            ],
         ];
 
         $this->activityLogs = [

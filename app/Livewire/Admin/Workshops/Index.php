@@ -7,7 +7,9 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Workshop;
 
 #[Title('Manajemen Bengkel')]
@@ -21,7 +23,16 @@ class Index extends Component
     #[Url] public string $q = '';
     #[Url] public string $status = 'all';
     #[Url] public string $city = 'all';
-    #[Url] public int $perPage = 8;
+    #[Url] public int $perPage = 10;
+
+    // Modal control
+    public bool $showDetail = false;
+    public bool $showEdit = false;
+    public bool $showDelete = false;
+    public bool $showSuspend = false;
+
+    // Selected workshop
+    public ?Workshop $selectedWorkshop = null;
 
     public array $statusOptions = [
         'all'       => 'Semua Status',
@@ -34,17 +45,22 @@ class Index extends Component
 
     public function mount(): void
     {
-        // Dropdown kota (distinct, non-null)
-        $cities = Workshop::query()
-            ->select('city')
-            ->distinct()
-            ->pluck('city')
-            ->filter()
-            ->values();
+        // Cache city options for 1 hour
+        $this->cityOptions = Cache::remember('workshop_cities', 3600, function () {
+            $cities = Workshop::query()
+                ->select('city')
+                ->distinct()
+                ->whereNotNull('city')
+                ->pluck('city')
+                ->filter()
+                ->values();
 
-        foreach ($cities as $c) {
-            $this->cityOptions[$c] = $c;
-        }
+            $options = ['all' => 'Semua Kota'];
+            foreach ($cities as $c) {
+                $options[$c] = $c;
+            }
+            return $options;
+        });
     }
 
     // Reset pagination saat filter/search berubah
@@ -54,56 +70,74 @@ class Index extends Component
     public function updatingPerPage() { $this->resetPage(); }
 
     /**
-     * Ringkasan kartu (untuk tampilan seperti manajemen pengguna)
-     * Gunakan struktur yang sama agar bisa pakai <x-summary-card>.
+     * Computed property for summary cards with lazy loading
      */
-    public function getCardsProperty(): array
+    #[Computed]
+    public function cards(): array
     {
-        $base = Workshop::query();
-
-        // Pastikan aman kalau kolom status belum ada
         $hasStatus = Schema::hasColumn('workshops', 'status');
 
-        $total      = (clone $base)->count();
-        $pending    = $hasStatus ? (clone $base)->where('status', 'pending')->count() : 0;
-        $active     = $hasStatus ? (clone $base)->where('status', 'active')->count() : 0;
-        $suspended  = $hasStatus ? (clone $base)->where('status', 'suspended')->count() : 0;
+        // Use selectRaw for better performance
+        $total = Workshop::count();
+        $pending = $hasStatus ? Workshop::where('status', 'pending')->count() : 0;
+        $active = $hasStatus ? Workshop::where('status', 'active')->count() : 0;
+        $suspended = $hasStatus ? Workshop::where('status', 'suspended')->count() : 0;
 
         return [
             [
                 'label' => 'Total Bengkel',
                 'value' => $total,
                 'hint'  => 'update +5%',
-                'icon'  => 'total_bengkel',
                 'color' => 'blue',
             ],
             [
                 'label' => 'Menunggu Verifikasi',
                 'value' => $pending,
                 'hint'  => 'update +2%',
-                'icon'  => 'total_verifikasi',
                 'color' => 'yellow',
             ],
             [
                 'label' => 'Bengkel Aktif',
                 'value' => $active,
                 'hint'  => 'update +5%',
-                'icon'  => 'akun_aktif',
                 'color' => 'green',
             ],
             [
                 'label' => 'Bengkel Ditangguhkan',
                 'value' => $suspended,
                 'hint'  => 'update +5%',
-                'icon'  => 'akun_tidak_aktif',
                 'color' => 'red',
             ],
         ];
     }
 
-    public function render()
+    /**
+     * Computed property for workshops with optimized query
+     */
+    #[Computed]
+    public function workshops()
     {
-        $query = Workshop::query();
+        $hasStatus = Schema::hasColumn('workshops', 'status');
+        $hasRating = Schema::hasColumn('workshops', 'rating');
+        
+        // Build select columns dynamically - only add columns that exist
+        $columns = [
+            'id',
+            'name',
+            'code',
+            'city',
+            'created_at',
+        ];
+        
+        if ($hasStatus) {
+            $columns[] = 'status';
+        }
+        
+        if ($hasRating) {
+            $columns[] = 'rating';
+        }
+        
+        $query = Workshop::query()->select($columns);
 
         // Pencarian
         if ($this->q !== '') {
@@ -114,8 +148,8 @@ class Index extends Component
             });
         }
 
-        // Filter status → hanya jika kolom 'status' ada
-        if ($this->status !== 'all' && Schema::hasColumn('workshops', 'status')) {
+        // Filter status - only if column exists
+        if ($this->status !== 'all' && $hasStatus) {
             $query->where('status', $this->status);
         }
 
@@ -124,11 +158,70 @@ class Index extends Component
             $query->where('city', $this->city);
         }
 
-        $rows = $query->latest('id')->paginate($this->perPage);
+        return $query->latest('id')->paginate($this->perPage);
+    }
 
+    // ==========================
+    // MODAL OPENERS
+    // ==========================
+
+    public function view($id)
+    {
+        $this->selectedWorkshop = Workshop::findOrFail($id);
+        $this->showDetail = true;
+    }
+
+    public function edit($id)
+    {
+        $this->selectedWorkshop = Workshop::findOrFail($id);
+        $this->showEdit = true;
+    }
+
+    public function suspend($id)
+    {
+        $this->selectedWorkshop = Workshop::findOrFail($id);
+        $this->showSuspend = true;
+    }
+
+    public function delete($id)
+    {
+        $this->selectedWorkshop = Workshop::findOrFail($id);
+        $this->showDelete = true;
+    }
+
+    // ==========================
+    // CRUD ACTIONS
+    // ==========================
+
+    public function confirmSuspend()
+    {
+        if ($this->selectedWorkshop && Schema::hasColumn('workshops', 'status')) {
+            $newStatus = $this->selectedWorkshop->status === 'suspended' ? 'active' : 'suspended';
+            $this->selectedWorkshop->update(['status' => $newStatus]);
+            
+            $this->reset(['showSuspend', 'selectedWorkshop']);
+            session()->flash('message', 'Status bengkel berhasil diubah.');
+        }
+    }
+
+    public function confirmDelete()
+    {
+        if ($this->selectedWorkshop) {
+            $this->selectedWorkshop->delete();
+            
+            $this->reset(['showDelete', 'selectedWorkshop']);
+            session()->flash('message', 'Bengkel berhasil dihapus.');
+        }
+    }
+
+    public function closeModal()
+    {
+        $this->reset(['showDetail', 'showEdit', 'showDelete', 'showSuspend', 'selectedWorkshop']);
+    }
+
+    public function render()
+    {
         return view('livewire.admin.workshops.index', [
-            'rows'          => $rows,
-            'cards'         => $this->cards, // gunakan accessor getCardsProperty()
             'statusOptions' => $this->statusOptions,
             'cityOptions'   => $this->cityOptions,
         ]);
