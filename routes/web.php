@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 use App\Livewire\Admin\{
     Dashboard,
     Users\Index as UsersIndex,
@@ -73,6 +74,16 @@ Route::middleware(['auth', 'verified', 'superadmin'])
         */
         Route::get('/dashboard', Dashboard::class)
             ->name('dashboard');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Profile
+        |--------------------------------------------------------------------------
+        */
+        Volt::route('/profile', 'pages.profile.edit')
+            ->name('profile');
+
+
 
 
         /*
