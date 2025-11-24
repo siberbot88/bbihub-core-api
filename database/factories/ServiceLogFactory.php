@@ -18,7 +18,11 @@ class ServiceLogFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'service_uuid'  => \App\Models\Service::factory(),
+            'mechanic_uuid' => \App\Models\User::factory(),
+            'status'        => $this->faker->randomElement(['accepted', 'rejected', 'completed']),
+            'log_time'      => now(),
+            'description'   => $this->faker->sentence(),
         ];
     }
 }

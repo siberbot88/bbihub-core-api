@@ -22,7 +22,14 @@ class VoucherApiControllerTest extends TestCase
     {
         parent::setUp();
 
+        // Create roles
+        Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
+        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        Role::create(['name' => 'superadmin', 'guard_name' => 'sanctum']);
+
         $this->user = User::factory()->create();
+        $this->user->assignRole('owner');
+        
         $this->workshop = Workshop::factory()->create();
         Sanctum::actingAs($this->user);
         Storage::fake('public');

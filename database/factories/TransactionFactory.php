@@ -18,7 +18,14 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'customer_uuid' => \App\Models\Customer::factory(),
+            'workshop_uuid' => \App\Models\Workshop::factory(),
+            'admin_uuid'    => \App\Models\User::factory(),
+            'mechanic_uuid' => \App\Models\User::factory(),
+            'service_uuid'  => \App\Models\Service::factory(),
+            'status'        => $this->faker->randomElement(['pending', 'paid', 'cancelled']),
+            'amount'        => $this->faker->numberBetween(100000, 1000000),
+            'payment_method'=> $this->faker->randomElement(['cash', 'transfer', 'qris']),
         ];
     }
 }
