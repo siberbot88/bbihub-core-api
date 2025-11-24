@@ -9,7 +9,7 @@
     @php
       $items = [
         ['label' => 'Dashboard',          'icon' => 'dashboard',   'route' => 'admin.dashboard'],
-        ['label' => 'Manajemen Pengguna', 'icon' => 'user',        'route' => 'admin.users'],
+        ['label' => 'Manajemen Pengguna', 'icon' => 'user',        'route' => 'admin.users.index'],
         ['label' => 'Manajemen Bengkel',  'icon' => 'workshop',    'route' => 'admin.workshops'],
         ['label' => 'Manajemen Promosi',  'icon' => 'promo',       'route' => 'admin.promotions'],
         ['label' => 'Data Center',        'icon' => 'datacenter',  'route' => 'admin.data-center'],

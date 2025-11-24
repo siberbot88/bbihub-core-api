@@ -17,8 +17,27 @@
     <button class="rounded-full p-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700" title="Pengaturan">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M11.983 2a2 2 0 0 1 1.965 1.63l.166.94a6.99 6.99 0 0 1 1.582.915l.9-.328a2 2 0 0 1 2.44 1.006l.94 1.865a2 2 0 0 1-.475 2.364l-.7.622c.043.305.065.616.065.931s-.022.626-.065.93l.7.622a2 2 0 0 1 .475 2.365l-.94 1.864a2 2 0 0 1-2.44 1.006l-.9-.327a6.99 6.99 0 0 1-1.582.914l-.166.94a2 2 0 0 1-1.965 1.631h-1.886a2 2 0 0 1-1.965-1.63l-.166-.94a6.99 6.99 0 0 1-1.582-.915l-.9.328a2 2 0 0 1-2.44-1.006l-.94-1.865a2 2 0 0 1 .475-2.364Z"/></svg>
     </button>
-    <div class="h-8 w-8 overflow-hidden rounded-full ring-2 ring-rose-100">
-      <img src="{{ asset('images/avatar.png') }}" alt="avatar" class="h-full w-full object-cover">
+    <div class="relative" x-data="{ open: false }">
+      <button @click="open = !open" class="h-8 w-8 overflow-hidden rounded-full ring-2 ring-rose-100 focus:outline-none">
+        <img src="{{ asset('images/avatar.png') }}" alt="avatar" class="h-full w-full object-cover">
+      </button>
+
+      <div x-show="open" 
+           @click.away="open = false"
+           class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100"
+           style="display: none;">
+        <div class="px-4 py-2 border-b border-gray-100">
+            <p class="text-sm font-semibold text-gray-900">{{ Auth::user()->name ?? 'User' }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email ?? '' }}</p>
+        </div>
+        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                Log Out
+            </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

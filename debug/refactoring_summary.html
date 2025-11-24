@@ -1,78 +1,189 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laravel Refactoring - Work Summary</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@300..700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @media print {
-            @page { margin: 2cm; }
-            body { font-size: 11pt; }
-            h1 { page-break-before: always; }
-            h1:first-child { page-break-before: avoid; }
-            table { page-break-inside: avoid; }
-        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            color: #1f2937;
         }
-        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-top: 30px; }
-        h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px; margin-top: 25px; }
-        h3 { color: #7f8c8d; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
-        th { background-color: #3498db; color: white; }
-        tr:nth-child(even) { background-color: #f8f9fa; }
-        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
-        .success { color: #27ae60; font-weight: bold; }
-        .warning { color: #f39c12; font-weight: bold; }
+
+        .font-bubble {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #fee2e2;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #DC2626;
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-yellow {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            color: #DC2626;
+            font-size: 0.875rem;
+        }
     </style>
 </head>
-<body>
-    <h1>📋 Laravel Refactoring - Work Summary</h1>
-    <p><strong>Tanggal:</strong> 23 November 2025<br><strong>Project:</strong> BBIHUB Backend API</p>
 
-    <h2>Completed Work</h2>
-    <h3>1. Service Module Refactoring <span class="success">✅</span></h3>
-    <ul>
-        <li><code>ServiceService.php</code> - Business logic (createService, updateService, validations)</li>
-        <li><code>ServiceResource.php</code> - JSON response standardization</li>
-        <li><code>ServiceApiController.php</code> - Refactored to thin controller with QueryBuilder</li>
-    </ul>
+<body class="min-h-screen p-8 md:p-16">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="mb-12 border-b-2 border-red-50 pb-6">
+            <h1 class="text-4xl font-bubble font-bold text-[#DC2626] mb-2">📋 Laravel Refactoring</h1>
+            <p class="text-gray-500">Work Summary & Status Report</p>
+            <div class="mt-4 text-sm text-gray-400">
+                <strong>Date:</strong> 23 November 2025 | <strong>Project:</strong> BBIHUB Backend API
+            </div>
+        </header>
 
-    <h3>2. Factory Fixes <span class="success">✅</span></h3>
-    <table>
-        <tr><th>Factory</th><th>Status</th><th>Changes</th></tr>
-        <tr><td>ServiceFactory</td><td class="success">✅</td><td>All fields, category enums</td></tr>
-        <tr><td>EmploymentFactory</td><td class="success">✅</td><td>Removed role/joined_at, added code/specialist</td></tr>
-        <tr><td>CustomerFactory</td><td class="success">✅</td><td>Removed workshop_uuid, added code</td></tr>
-        <tr><td>VehicleFactory</td><td class="success">✅</td><td>Added type & category</td></tr>
-        <tr><td>TransactionFactory</td><td class="success">✅</td><td>All required fields</td></tr>
-        <tr><td>ServiceLogFactory</td><td class="success">✅</td><td>All required fields</td></tr>
-    </table>
+        <!-- Completed Work -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-8 h-8 flex items-center justify-center rounded-full text-lg">01</span>
+                Completed Work
+            </h2>
 
-    <h2>Test Results</h2>
-    <p><span class="success">✅ 38 tests PASSED</span> | <span class="warning">⚠️ 14 tests FAILED</span></p>
-    <p>Failed tests: New ServiceApiControllerTest + non-critical tests</p>
+            <div class="grid gap-6">
+                <div class="card p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Service Module Refactoring</h3>
+                        <span class="badge badge-green">Completed</span>
+                    </div>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center gap-2"><span class="text-[#DC2626]">•</span>
+                            <code>ServiceService.php</code> - Business logic (create, update, validations)</li>
+                        <li class="flex items-center gap-2"><span class="text-[#DC2626]">•</span>
+                            <code>ServiceResource.php</code> - JSON response standardization</li>
+                        <li class="flex items-center gap-2"><span class="text-[#DC2626]">•</span>
+                            <code>ServiceApiController.php</code> - Refactored to thin controller</li>
+                    </ul>
+                </div>
 
-    <h2>Next Session</h2>
-    <ol>
-        <li>Build/refactor Transaction controller</li>
-        <li>Fix remaining test failures</li>
-        <li>Full test suite verification</li>
-    </ol>
+                <div class="card p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Factory Fixes</h3>
+                        <span class="badge badge-green">Completed</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-red-50 text-[#DC2626]">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Factory</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 rounded-r-lg">Changes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600">
+                                <tr class="border-b border-gray-50">
+                                    <td class="p-3 font-semibold">ServiceFactory</td>
+                                    <td class="p-3 text-green-600">✅</td>
+                                    <td class="p-3">All fields, category enums</td>
+                                </tr>
+                                <tr class="border-b border-gray-50">
+                                    <td class="p-3 font-semibold">EmploymentFactory</td>
+                                    <td class="p-3 text-green-600">✅</td>
+                                    <td class="p-3">Removed role/joined_at, added code</td>
+                                </tr>
+                                <tr class="border-b border-gray-50">
+                                    <td class="p-3 font-semibold">CustomerFactory</td>
+                                    <td class="p-3 text-green-600">✅</td>
+                                    <td class="p-3">Removed workshop_uuid, added code</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-semibold">TransactionFactory</td>
+                                    <td class="p-3 text-green-600">✅</td>
+                                    <td class="p-3">All required fields</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <p style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ccc; text-align: center; color: #7f8c8d;">
-        Generated: 23 November 2025 | BBIHUB Backend Refactoring
-    </p>
+        <!-- Test Results -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-8 h-8 flex items-center justify-center rounded-full text-lg">02</span>
+                Test Results
+            </h2>
+            <div class="card p-6 bg-gray-50 border-gray-200">
+                <div class="flex items-center gap-6 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✅</span>
+                        <span class="font-bold text-green-700 text-lg">38 Passed</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">⚠️</span>
+                        <span class="font-bold text-yellow-600 text-lg">14 Failed</span>
+                    </div>
+                </div>
+                <p class="text-gray-600"><strong>Note:</strong> Failed tests are primarily from the new
+                    <code>ServiceApiControllerTest</code> and some non-critical legacy tests.</p>
+            </div>
+        </section>
 
-    <script>
-        // Auto-open print dialog when page loads (optional)
-        // window.onload = function() { window.print(); }
-    </script>
+        <!-- Next Steps -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-8 h-8 flex items-center justify-center rounded-full text-lg">03</span>
+                Next Session
+            </h2>
+            <div class="card p-6 border-l-4 border-l-[#DC2626]">
+                <ol class="space-y-3 text-gray-700 list-decimal list-inside font-medium">
+                    <li>Build/refactor Transaction controller</li>
+                    <li>Fix remaining test failures</li>
+                    <li>Full test suite verification</li>
+                </ol>
+            </div>
+        </section>
+
+        <footer class="mt-16 pt-8 border-t border-red-50 text-center text-gray-400 text-sm">
+            <p>&copy; 2025 BBiHub Development Team. Internal Refactoring Report.</p>
+        </footer>
+    </div>
 </body>
+
 </html>
