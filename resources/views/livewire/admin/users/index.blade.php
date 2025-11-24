@@ -18,7 +18,7 @@
           class="h-9 w-64 rounded-lg border-neutral-300 ps-9 focus:border-red-400 focus:ring-red-400"
         />
         <span class="pointer-events-none absolute inset-y-0 start-2 flex items-center text-neutral-400">
-          <img src="{{ asset('icons/search.svg') }}" alt="Search" class="h-4 w-4" />
+          <img src="{{ asset('icons/search.svg') }}" alt="Search" class="h-5 w-5" />
         </span>
       </div>
 
@@ -160,7 +160,7 @@
                   {{-- Lihat --}}
                   <button
                     type="button"
-                    wire:click="view({{ $u->id }})"
+                    wire:click="view('{{ $u->id }}')"
                     class="hover:opacity-80"
                     title="Lihat"
                   >
@@ -174,7 +174,7 @@
                   {{-- Edit --}}
                   <button
                     type="button"
-                    wire:click="edit({{ $u->id }})"
+                    wire:click="edit('{{ $u->id }}')"
                     class="hover:opacity-80"
                     title="Edit"
                   >
@@ -188,7 +188,7 @@
                   {{-- Reset Password --}}
                   <button
                     type="button"
-                    wire:click="resetPassword({{ $u->id }})"
+                    wire:click="resetPassword('{{ $u->id }}')"
                     class="hover:opacity-80"
                     title="Reset Password"
                   >
@@ -202,7 +202,7 @@
                   {{-- Hapus --}}
                   <button
                     type="button"
-                    wire:click="delete({{ $u->id }})"
+                    wire:click="delete('{{ $u->id }}')"
                     class="hover:opacity-80"
                     title="Hapus"
                   >
@@ -230,135 +230,348 @@
     </div>
 
     {{-- Modal Detail --}}
-    <x-modal name="detail-user" wire:model="showDetail">
-      @if ($selectedUser)
-        <div class="space-y-2 text-sm">
-          <div><strong>Nama:</strong> {{ $selectedUser->name }}</div>
-          <div><strong>Email:</strong> {{ $selectedUser->email }}</div>
-          <div>
-            <strong>Role:</strong>
-            {{ $selectedUser->roles->pluck('name')->join(', ') }}
-          </div>
-          <div>
-            <strong>Status:</strong> {{ $selectedUser->status ?? '-' }}
-          </div>
-          <div>
-            <strong>Dibuat:</strong>
-            {{ $selectedUser->created_at->diffForHumans() }}
-          </div>
-        </div>
-      @endif
+      <x-modal name="detail-user" wire:model="showDetail" maxWidth="md">
+        @if ($selectedUser)
+            <div class="bg-white">
+                {{-- Header --}}
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center space-x-3">
+                        {{-- Avatar --}}
+                        <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-lg font-semibold">
+                            {{ strtoupper(substr($selectedUser->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">{{ $selectedUser->name }}</h2>
+                            <p class="text-sm text-gray-500">{{ $selectedUser->email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Content --}}
+                <div class="px-6 py-5">
+                    <div class="space-y-4">
+                        {{-- Role --}}
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <p class="text-xs text-gray-500 mb-1">Role</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $selectedUser->roles->pluck('name')->join(', ') }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <p class="text-xs text-gray-500 mb-1">Status</p>
+                                @if($selectedUser->status)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ $selectedUser->status }}
+                                    </span>
+                                @else
+                                    <span class="text-sm text-gray-400">-</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Created Date --}}
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <p class="text-xs text-gray-500 mb-1">Dibuat</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $selectedUser->created_at->diffForHumans() }}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ $selectedUser->created_at->format('d M Y, H:i') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="border-t border-gray-200 px-6 py-4 bg-gray-50">
+                    <div class="flex justify-end">
+                        <button
+                            type="button"
+                            wire:click="$set('showDetail', false)"
+                            class="px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
     </x-modal>
 
     {{-- Modal Edit --}}
-    <x-modal name="edit-user" wire:model="showEdit">
+    <x-modal name="edit-user" wire:model="showEdit" maxWidth="md">
       @if ($selectedUser)
-        <form wire:submit.prevent="updateUser">
-          <input type="hidden" wire:model="selectedUser.id" />
+          <div class="bg-white">
+              {{-- Header --}}
+              <div class="border-b border-gray-200 px-6 py-4">
+                  <div class="flex items-center space-x-3">
+                      {{-- Avatar --}}
+                      <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-lg font-semibold">
+                          {{ strtoupper(substr($selectedUser->name, 0, 1)) }}
+                      </div>
+                      <div>
+                          <h2 class="text-lg font-semibold text-gray-900">Edit Pengguna</h2>
+                          <p class="text-sm text-gray-500">Perbarui informasi pengguna</p>
+                      </div>
+                  </div>
+              </div>
 
-          <div class="space-y-3">
-            <input
-              type="text"
-              wire:model.defer="selectedUser.name"
-              class="w-full rounded border px-3 py-2"
-              placeholder="Nama"
-            />
-            <input
-              type="email"
-              wire:model.defer="selectedUser.email"
-              class="w-full rounded border px-3 py-2"
-              placeholder="Email"
-            />
-          </div>
+              {{-- Form Content --}}
+              <form wire:submit.prevent="updateUser">
+                  <div class="px-6 py-5 space-y-5">
+                      {{-- Nama Field --}}
+                      <div class="space-y-2">
+                          <label class="flex items-center text-sm font-medium text-gray-700">
+                              <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              Nama
+                          </label>
+                          <input
+                              type="text"
+                              wire:model.defer="selectedUser.name"
+                              class="w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                              placeholder="Masukkan nama lengkap"
+                          />
+                      </div>
 
-          <div class="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              wire:click="$set('showEdit', false)"
-              class="rounded border px-3 py-2"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              class="rounded bg-blue-600 px-3 py-2 text-white"
-            >
-              Simpan
-            </button>
+                      {{-- Email Field --}}
+                      <div class="space-y-2">
+                          <label class="flex items-center text-sm font-medium text-gray-700">
+                              <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              Email
+                          </label>
+                          <input
+                              type="email"
+                              wire:model.defer="selectedUser.email"
+                              class="w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                              placeholder="Masukkan alamat email"/>
+                      </div>
+
+                      {{-- Password Field --}}
+                      <div class="space-y-2">
+                          <label class="flex items-center text-sm font-medium text-gray-700">
+                              <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                              Konfirmasi Kata Sandi <span class="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                              type="password"
+                              wire:model.defer="confirmPassword"
+                              class="w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                              placeholder="Masukkan kata sandi Anda untuk konfirmasi"
+                              required />
+                          <p class="text-xs text-gray-500 mt-1">Masukkan kata sandi Anda untuk mengonfirmasi perubahan</p>
+                      </div>
+                  </div>
+
+                  {{-- Footer --}}
+                  <div class="border-t border-gray-200 px-6 py-4 bg-gray-50">
+                      <div class="flex justify-end gap-3">
+                          <button
+                              type="button"
+                              wire:click="$set('showEdit', false)"
+                              class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                              Batal
+                          </button>
+                          <button
+                              type="submit"
+                              class="px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                              Simpan Perubahan
+                          </button>
+                      </div>
+                  </div>
+              </form>
           </div>
-        </form>
+      @endif
+  </x-modal>
+
+    {{-- Modal Reset Password --}}
+    <x-modal name="reset-user" wire:model="showReset" maxWidth="md">
+      @if ($selectedUser)
+          <div class="bg-white">
+              {{-- Header --}}
+              <div class="border-b border-gray-200 px-6 py-4">
+                  <div class="flex items-center space-x-3">
+                      {{-- Avatar --}}
+                      <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-lg font-semibold">
+                          {{ strtoupper(substr($selectedUser->name, 0, 1)) }}
+                      </div>
+                      <div>
+                          <h2 class="text-lg font-semibold text-gray-900">Reset Kata Sandi</h2>
+                          <p class="text-sm text-gray-500">Ubah kata sandi untuk {{ $selectedUser->name }}</p>
+                      </div>
+                  </div>
+              </div>
+
+              {{-- Form Content --}}
+              <form wire:submit.prevent="updatePassword">
+                  <div class="px-6 py-5 space-y-5">
+                      {{-- Old Password Field --}}
+                      <div class="space-y-2">
+                          <label class="flex items-center text-sm font-medium text-gray-700">
+                              <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                              Kata Sandi Lama <span class="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                              type="password"
+                              wire:model.defer="oldPassword"
+                              class="w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                              placeholder="Masukkan kata sandi lama"
+                              required />
+                          @error('oldPassword')
+                              <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                          @enderror
+                      </div>
+
+                      {{-- New Password Field --}}
+                      <div class="space-y-2">
+                          <label class="flex items-center text-sm font-medium text-gray-700">
+                              <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                              Kata Sandi Baru <span class="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                              type="password"
+                              wire:model.defer="newPassword"
+                              class="w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                              placeholder="Masukkan kata sandi baru"
+                              required />
+                          @error('newPassword')
+                              <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                          @enderror
+                      </div>
+
+                      {{-- Confirm Password Field --}}
+                      <div class="space-y-2">
+                          <label class="flex items-center text-sm font-medium text-gray-700">
+                              <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                              Konfirmasi Kata Sandi Baru <span class="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                              type="password"
+                              wire:model.defer="confirmPassword"
+                              class="w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                              placeholder="Ulangi kata sandi baru"
+                              required />
+                          @error('confirmPassword')
+                              <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                          @enderror
+                      </div>
+                  </div>
+
+                  {{-- Footer --}}
+                  <div class="border-t border-gray-200 px-6 py-4 bg-gray-50">
+                      <div class="flex justify-end gap-3">
+                          <button
+                              type="button"
+                              wire:click="$set('showReset', false)"
+                              class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                              Batal
+                          </button>
+                          <button
+                              type="submit"
+                              class="px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                              Simpan Kata Sandi
+                          </button>
+                      </div>
+                  </div>
+              </form>
+          </div>
       @endif
     </x-modal>
 
-    {{-- Modal Reset Password --}}
-    <x-modal name="reset-user" wire:model="showReset">
-      <form wire:submit.prevent="updatePassword" class="space-y-3">
-        <div>
-          <input
-            type="password"
-            wire:model.defer="newPassword"
-            class="w-full rounded border px-3 py-2"
-            placeholder="Password baru"
-          />
-          @error('newPassword')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-          @enderror
-        </div>
-
-        <div>
-          <input
-            type="password"
-            wire:model.defer="confirmPassword"
-            class="mt-2 w-full rounded border px-3 py-2"
-            placeholder="Konfirmasi password"
-          />
-          @error('confirmPassword')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-          @enderror
-        </div>
-
-        <div class="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            wire:click="$set('showReset', false)"
-            class="rounded border px-3 py-2"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            class="rounded bg-blue-600 px-3 py-2 text-white"
-          >
-            Simpan
-          </button>
-        </div>
-      </form>
-    </x-modal>
-
     {{-- Modal Hapus --}}
-    <x-modal name="delete-user" wire:model="showDelete">
+    <x-modal name="delete-user" wire:model="showDelete" maxWidth="md">
       @if ($selectedUser)
-        <p>
-          Apakah kamu yakin ingin menghapus
-          <strong>{{ $selectedUser->name }}</strong>?
-        </p>
+          <div class="bg-white">
+              {{-- Header --}}
+              <div class="border-b border-gray-200 px-6 py-4">
+                  <div class="flex items-center space-x-3">
+                      {{-- Avatar --}}
+                      <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                      </div>
+                      <div>
+                          <h2 class="text-lg font-semibold text-gray-900">Konfirmasi Hapus</h2>
+                          <p class="text-sm text-gray-500">Tindakan ini tidak dapat dibatalkan</p>
+                      </div>
+                  </div>
+              </div>
 
-        <div class="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            wire:click="$set('showDelete', false)"
-            class="rounded border px-3 py-2"
-          >
-            Batal
-          </button>
-          <button
-            type="button"
-            wire:click="confirmDelete({{ $selectedUser->id }})"
-            class="rounded bg-red-600 px-3 py-2 text-white"
-          >
-            Ya, Hapus
-          </button>
-        </div>
+              {{-- Content --}}
+              <div class="px-6 py-5">
+                  <div class="flex items-start space-x-3">
+                      <div class="flex-shrink-0">
+                          <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                          </div>
+                      </div>
+                      <div class="flex-1">
+                          <p class="text-sm text-gray-700">
+                              Apakah Anda yakin ingin menghapus pengguna
+                          </p>
+                          <p class="text-base font-semibold text-gray-900 mt-1">
+                              {{ $selectedUser->name }}
+                          </p>
+                          <p class="text-xs text-gray-500 mt-1">
+                              {{ $selectedUser->email }}
+                          </p>
+                          <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                              <p class="text-xs text-red-800">
+                                  <strong>Peringatan:</strong> Semua data yang terkait dengan pengguna ini akan dihapus secara permanen.
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              {{-- Footer --}}
+              <div class="border-t border-gray-200 px-6 py-4 bg-gray-50">
+                  <div class="flex justify-end gap-3">
+                      <button
+                          type="button"
+                          wire:click="$set('showDelete', false)"
+                          class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                          Batal
+                      </button>
+                      <button
+                          type="button"
+                          wire:click="confirmDelete({{ $selectedUser->id }})"
+                          class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+                          Ya, Hapus Pengguna
+                      </button>
+                  </div>
+              </div>
+          </div>
       @endif
     </x-modal>
 
@@ -382,11 +595,4 @@
     </div>
   </div>
 
-  {{-- Footer logo --}}
-  <div class="rounded-xl border border-neutral-200 bg-white px-5 py-6">
-    <div class="text-lg font-semibold">
-      <span class="me-2">🛠️</span> BBI HUB
-      <span class="text-red-600">Plus</span>
-    </div>
-  </div>
 </div>

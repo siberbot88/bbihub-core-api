@@ -7,15 +7,15 @@
         <input type="text" wire:model.live.debounce.400ms="q"
                placeholder="Cari Pengguna…"
                class="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 py-2.5 focus:outline-none focus:ring" />
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 102.546 7.032l3.71 3.71a1 1 0 001.415-1.414l-3.71-3.71A4 4 0 008 4z" clip-rule="evenodd"/></svg>
+        <img src="{{ asset('icons/search.svg') }}" alt="Search" class="h-5 w-5" />
       </div>
       <select wire:model.live="status" class="rounded-xl border border-gray-200 bg-white px-3 py-2.5">
         @foreach($statusOptions as $val => $label)
           <option value="{{ $val }}">{{ $label }}</option>
         @endforeach
       </select>
-      <button class="rounded-xl border border-gray-200 bg-white p-2.5" title="Notifikasi">🔔</button>
-      <button class="rounded-xl border border-gray-200 bg-white p-2.5" title="Pengaturan">⚙️</button>
+      <button class="rounded-xl border border-gray-200 bg-white p-2.5" title="Notifikasi" icon="notif" ></button>
+      <button class="rounded-xl border border-gray-200 bg-white p-2.5" title="Pengaturan" icon="setting" ></button>
       <button class="rounded-xl border border-gray-200 bg-white p-2.5" title="Pesan">✉️</button>
       <div class="rounded-xl border border-gray-200 bg-white px-3 py-2.5">🙂 ▾</div>
     </div>

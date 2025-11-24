@@ -19,7 +19,7 @@
 
 <div
     x-data="{
-        show: @entangle($wireModel).live,
+        show: @entangle($wireModel),
         focusables() {
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])';
             return [...$el.querySelectorAll(selector)]

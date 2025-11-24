@@ -128,25 +128,35 @@
               <td class="px-4 py-4 text-gray-500">
                 {{ $w->joined_at ? \Illuminate\Support\Carbon::parse($w->joined_at)->diffForHumans() : '-' }}
               </td>
-              <td class="px-4 py-4">
-                <div class="flex items-center justify-end gap-3 text-[15px]">
-                  <button class="hover:opacity-80" title="Detail">
-                    <img src="{{ asset('icons/aksi_detail.svg') }}" class="h-5 w-5" alt="Detail">
+             <td class="px-1 py-1">
+              <div class="flex items-center justify-center gap-2">
+
+                  {{-- Detail --}}
+                  <button wire:click='view("{{ $w->id }}")' class="p-1 hover:opacity-80" title="Detail">
+                      <img src="{{ asset('icons/aksi_detail.svg') }}" class="w-4 h-4 pointer-events-none">
                   </button>
-                  <button class="hover:opacity-80" title="Edit">
-                    <img src="{{ asset('icons/aksi_edit.svg') }}" class="h-5 w-5" alt="Edit">
+
+                  {{-- Edit --}}
+                  <button wire:click='edit("{{ $w->id }}")' class="p-1 hover:opacity-80" title="Edit">
+                      <img src="{{ asset('icons/aksi_edit.svg') }}" class="w-4 h-4 pointer-events-none">
                   </button>
-                  <button class="hover:opacity-80" title="Reset Password">
-                    <img src="{{ asset('icons/aksi_resetpassword.svg') }}" class="h-5 w-5" alt="Reset Password">
+
+                  {{-- Reset Password --}}
+                  <button wire:click='resetPassword("{{ $w->id }}")' class="p-1 hover:opacity-80" title="Reset Password">
+                      <img src="{{ asset('icons/aksi_resetpassword.svg') }}" class="w-4 h-4 pointer-events-none">
                   </button>
-                  <button class="hover:opacity-80" title="Hapus">
-                    <img src="{{ asset('icons/aksi_hapus.svg') }}" class="h-5 w-5" alt="Hapus">
+
+                  {{-- Hapus --}}
+                  <button wire:click='delete("{{ $w->id }}")' class="p-1 hover:opacity-80" title="Hapus">
+                      <img src="{{ asset('icons/aksi_hapus.svg') }}" class="w-4 h-4 pointer-events-none">
                   </button>
-                  <button class="hover:opacity-80" title="Tangguhkan">
-                    <img src="{{ asset('icons/aksi_tangguhkan.svg') }}" class="h-5 w-5" alt="Tangguhkan">
+
+                  {{-- Tangguhkan --}}
+                  <button wire:click='suspend("{{ $w->id }}")' class="p-1 hover:opacity-80" title="Tangguhkan">
+                      <img src="{{ asset('icons/aksi_tangguhkan.svg') }}" class="w-4 h-4 pointer-events-none">
                   </button>
-                </div>
-              </td>
+              </div>
+            </td>
             </tr>
           @empty
             <tr>
@@ -166,5 +176,185 @@
       </div>
     </div>
   </div>
+  {{-- ========================= --}}
+{{--     MODAL DETAIL          --}}
+{{-- ========================= --}}
+@if($showDetail)
+<div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+    <div class="bg-white w-[450px] rounded-xl p-6">
 
+        <h2 class="text-lg font-semibold mb-4">Detail Bengkel</h2>
+
+        <div class="space-y-2 text-sm">
+            <p><strong>Nama:</strong> {{ $selectedWorkshop->name }}</p>
+            <p><strong>Kode:</strong> {{ $selectedWorkshop->code }}</p>
+            <p><strong>Status:</strong> {{ ucfirst($selectedWorkshop->status) }}</p>
+            <p><strong>Kota:</strong> {{ $selectedWorkshop->city }}</p>
+        </div>
+
+        <div class="text-right mt-6">
+            <button wire:click="$set('showDetail', false)"
+                    class="px-4 py-2 rounded-lg bg-red-500 text-white">
+                Tutup
+            </button>
+        </div>
+
+    </div>
+</div>
+@endif
+
+@if($showEdit)
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+
+    <div class="absolute inset-0" wire:click="$set('showEdit', false)"></div>
+
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+
+        <h2 class="text-xl font-semibold mb-1">Edit Bengkel</h2>
+        <p class="text-sm text-gray-500 mb-4">Perbarui informasi bengkel di bawah.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-sm font-medium">Nama Bengkel</label>
+                <input type="text" wire:model="selectedWorkshop.name"
+                       class="w-full mt-1 rounded-lg border-gray-300">
+            </div>
+
+            <div>
+                <label class="text-sm font-medium">Kota</label>
+                <input type="text" wire:model="selectedWorkshop.city"
+                       class="w-full mt-1 rounded-lg border-gray-300">
+            </div>
+
+            <div>
+                <label class="text-sm font-medium">Status</label>
+                <select wire:model="selectedWorkshop.status"
+                        class="w-full mt-1 rounded-lg border-gray-300">
+                    <option value="pending">Pending</option>
+                    <option value="active">Aktif</option>
+                    <option value="suspended">Ditangguhkan</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <button wire:click="$set('showEdit', false)" class="px-4 py-2 bg-gray-200 rounded-lg">
+                Batal
+            </button>
+            <button wire:click="updateWorkshop" class="px-4 py-2 bg-blue-500 text-white rounded-lg">
+                Simpan
+            </button>
+        </div>
+
+    </div>
+
+</div>
+@endif
+
+
+@if($showReset)
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+
+    <div class="absolute inset-0" wire:click="$set('showReset', false)"></div>
+
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+
+        <h2 class="text-xl font-semibold mb-1">Reset Password</h2>
+        <p class="text-sm text-gray-500 mb-4">Masukkan password baru bengkel.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-sm font-medium">Password Baru</label>
+                <input type="password" wire:model="newPassword"
+                    class="w-full mt-1 rounded-lg border-gray-300">
+            </div>
+
+            <div>
+                <label class="text-sm font-medium">Konfirmasi Password</label>
+                <input type="password" wire:model="confirmPassword"
+                    class="w-full mt-1 rounded-lg border-gray-300">
+            </div>
+        </div>
+
+        <div class="flex justify-end mt-6 gap-2">
+            <button wire:click="$set('showReset', false)"
+                    class="px-4 py-2 bg-gray-200 rounded-lg">
+                Batal
+            </button>
+            <button wire:click="updatePassword"
+                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg">
+                Reset Password
+            </button>
+        </div>
+
+    </div>
+</div>
+@endif
+
+
+    @if($showDelete)
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+
+        <div class="absolute inset-0" wire:click="$set('showDelete', false)"></div>
+
+        <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+
+            <h2 class="text-xl font-semibold mb-1 text-red-600">Hapus Bengkel?</h2>
+            <p class="text-sm text-gray-600">
+                Apakah Anda yakin ingin menghapus bengkel <b>{{ $selectedWorkshop->name }}</b>?
+                Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            <div class="flex justify-end mt-6 gap-2">
+                <button wire:click="$set('showDelete', false)"
+                        class="px-4 py-2 bg-gray-200 rounded-lg">
+                    Batal
+                </button>
+
+                <button wire:click="confirmDelete('{{ $selectedWorkshop->id }}')"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg">
+                    Hapus
+                </button>
+            </div>
+
+        </div>
+    </div>
+    @endif
+
+@if($showSuspend)
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+
+          <div class="absolute inset-0" wire:click="$set('showSuspend', false)"></div>
+
+          <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+
+              @php 
+                  $isSuspended = $selectedWorkshop->status === 'suspended';
+              @endphp
+
+              <h2 class="text-xl font-semibold mb-1">
+                  {{ $isSuspended ? 'Aktifkan Bengkel?' : 'Tangguhkan Bengkel?' }}
+              </h2>
+
+              <p class="text-sm text-gray-600">
+                  Anda yakin ingin
+                  <b>{{ $isSuspended ? 'mengaktifkan kembali' : 'menangguhkan' }}</b>
+                  bengkel <b>{{ $selectedWorkshop->name }}</b>?
+              </p>
+
+              <div class="flex justify-end mt-6 gap-2">
+                  <button wire:click="$set('showSuspend', false)"
+                          class="px-4 py-2 bg-gray-200 rounded-lg">
+                      Batal
+                  </button>
+
+                  <button wire:click="suspend('{{ $selectedWorkshop->id }}')"
+                          class="px-4 py-2 bg-orange-600 text-white rounded-lg">
+                      {{ $isSuspended ? 'Aktifkan' : 'Tangguhkan' }}
+                  </button>
+              </div>
+
+          </div>
+      </div>
+      @endif
 </div>

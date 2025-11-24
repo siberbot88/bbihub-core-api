@@ -12,7 +12,7 @@
         </svg>
       </div>
       <button class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 hover:bg-gray-50">Reset</button>
-      <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white hover:bg-blue-700"
+      <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700"
               wire:click="$refresh">Simpan Semua</button>
     </div>
 
@@ -37,7 +37,7 @@
         @endphp
         @foreach($tabs as $key => $label)
           <button wire:click="$set('tab','{{ $key }}')"
-                  class="rounded-xl px-4 py-2.5 border {{ $tab===$key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50' }}">
+                  class="rounded-xl px-4 py-2.5 border {{ $tab===$key ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50' }}">
             {{ $label }}
           </button>
         @endforeach
@@ -65,7 +65,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveGeneral">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveGeneral">Simpan</button>
           </div>
         @break
 
@@ -97,7 +97,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveBranding">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveBranding">Simpan</button>
           </div>
         @break
 
@@ -132,7 +132,7 @@
             </table>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveRoles">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveRoles">Simpan</button>
           </div>
         @break
 
@@ -153,7 +153,7 @@
             </label>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveNotify">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveNotify">Simpan</button>
           </div>
         @break
 
@@ -180,7 +180,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveSecurity">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveSecurity">Simpan</button>
           </div>
         @break
 
@@ -208,7 +208,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveLocale">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveLocale">Simpan</button>
           </div>
         @break
 
