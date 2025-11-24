@@ -113,13 +113,25 @@ class AuthController extends Controller
             $user->tokens()->delete();
         }
 
-        $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
+        // Support remember-me with extended token expiration
+        $tokenName = 'auth_token_for_' . ($user->username ?? $user->email);
+        $remember = $request->boolean('remember', false);
+        
+        if ($remember) {
+            // Extended expiration: 30 days
+            $token = $user->createToken($tokenName, ['*'], now()->addDays(30))->plainTextToken;
+        } else {
+            // Default expiration based on sanctum config
+            $token = $user->createToken($tokenName)->plainTextToken;
+        }
 
         $this->loadUserRelations($user);
 
         return $this->successResponse('Login berhasil', [
             'access_token' => $token,
             'token_type'   => 'Bearer',
+            'remember'     => $remember,
+            'expires_in'   => $remember ? '30 days' : 'session',
             'user'         => [
                 'id'    => $user->id,
                 'name'  => $user->name,

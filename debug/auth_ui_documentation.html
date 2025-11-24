@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBiHub Authentication UI - Design Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@300..700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+
+        .font-bubble {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .section-title {
+            font-family: 'Fredoka', sans-serif;
+            color: #DC2626;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #fee2e2;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #DC2626;
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-red {
+            background-color: #fee2e2;
+            color: #DC2626;
+        }
+
+        .badge-green {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-blue {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            color: #DC2626;
+            font-size: 0.875rem;
+        }
+
+        .code-block {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .code-block code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-8 md:p-16">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="mb-16 text-center border-b-2 border-red-50 pb-10">
+            <h1 class="text-5xl font-bubble font-bold text-[#DC2626] mb-4">BBiHub Auth UI</h1>
+            <p class="text-xl text-gray-500 font-light">Modern & Interactive Design Documentation</p>
+            <div class="flex justify-center gap-3 mt-6">
+                <span class="badge badge-red">v2.0</span>
+                <span class="badge badge-green">Production Ready</span>
+                <span class="badge badge-blue">Laravel Livewire</span>
+            </div>
+        </header>
+
+        <!-- Overview -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-10 h-10 flex items-center justify-center rounded-full text-xl">01</span>
+                Overview
+            </h2>
+            <div class="card p-8">
+                <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                    Redesign komprehensif dari halaman autentikasi (Login & Register) BBiHub Dashboard dengan fokus pada
+                    <span class="font-semibold text-[#DC2626]">user experience</span>, <span
+                        class="font-semibold text-[#DC2626]">modern design</span>, dan
+                    <span class="font-semibold text-[#DC2626]">interactivity</span>. Design ini menampilkan fullscreen
+                    workshop background image dengan floating form card yang elegant.
+                </p>
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                    <strong class="text-green-700 block mb-1">✅ Project Completed</strong>
+                    <p class="text-green-600">UI design telah selesai diimplementasikan dengan semua fitur: password
+                        toggle, compact layout, fullscreen workshop background, dan Poppins typography.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Features -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-10 h-10 flex items-center justify-center rounded-full text-xl">02</span>
+                Key Features
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h4 class="text-xl font-bubble font-bold text-[#DC2626] mb-3">🖼️ Fullscreen Background</h4>
+                    <p class="text-gray-500">Background image bengkel yang fullscreen dengan dark overlay untuk kontras
+                        optimal.</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-xl font-bubble font-bold text-[#DC2626] mb-3">👁️ Password Toggle</h4>
+                    <p class="text-gray-500">Icon mata interaktif untuk show/hide password dengan smooth animation.</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-xl font-bubble font-bold text-[#DC2626] mb-3">📐 Compact Layout</h4>
+                    <p class="text-gray-500">Grid 2 kolom untuk form register agar card tidak terlalu panjang.</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-xl font-bubble font-bold text-[#DC2626] mb-3">🎯 Fixed Width Card</h4>
+                    <p class="text-gray-500">Form card dengan fixed width (480px/520px) yang konsisten.</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-xl font-bubble font-bold text-[#DC2626] mb-3">🎨 Poppins Typography</h4>
+                    <p class="text-gray-500">Font Poppins modern di seluruh UI untuk consistency.</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-xl font-bubble font-bold text-[#DC2626] mb-3">⚡ Smooth Animations</h4>
+                    <p class="text-gray-500">Fade-in, scale, dan hover effects yang engaging.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Design System -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-10 h-10 flex items-center justify-center rounded-full text-xl">03</span>
+                Design System
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Colors -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-6 border-b border-gray-100 pb-2">Color Palette</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-xl bg-[#DC2626] shadow-md"></div>
+                            <div>
+                                <p class="font-bold text-gray-800">Primary Red</p>
+                                <code class="text-sm">#DC2626</code>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-xl bg-[#B91C1C] shadow-md"></div>
+                            <div>
+                                <p class="font-bold text-gray-800">Primary Hover</p>
+                                <code class="text-sm">#B91C1C</code>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-xl bg-[#1f2937] shadow-md"></div>
+                            <div>
+                                <p class="font-bold text-gray-800">Dark Gray</p>
+                                <code class="text-sm">#1F2937</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typography -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-6 border-b border-gray-100 pb-2">Typography</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-red-50 text-[#DC2626]">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Element</th>
+                                    <th class="p-3">Size</th>
+                                    <th class="p-3 rounded-r-lg">Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600">
+                                <tr class="border-b border-gray-50">
+                                    <td class="p-3 font-semibold">Title (H1)</td>
+                                    <td class="p-3">3rem (48px)</td>
+                                    <td class="p-3">700 (Bold)</td>
+                                </tr>
+                                <tr class="border-b border-gray-50">
+                                    <td class="p-3 font-semibold">Card Title (H2)</td>
+                                    <td class="p-3">1.875rem</td>
+                                    <td class="p-3">700 (Bold)</td>
+                                </tr>
+                                <tr class="border-b border-gray-50">
+                                    <td class="p-3 font-semibold">Input Text</td>
+                                    <td class="p-3">0.875rem</td>
+                                    <td class="p-3">400 (Regular)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-semibold">Label</td>
+                                    <td class="p-3">0.875rem</td>
+                                    <td class="p-3">600 (Semibold)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Implementation -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bubble font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <span
+                    class="bg-red-50 text-[#DC2626] w-10 h-10 flex items-center justify-center rounded-full text-xl">04</span>
+                Technical Implementation
+            </h2>
+
+            <div class="card p-8 mb-6">
+                <h3 class="text-xl font-bold mb-4">Technology Stack</h3>
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <span class="badge badge-red">Laravel 11</span>
+                    <span class="badge badge-blue">Livewire Volt</span>
+                    <span class="badge badge-green">Tailwind CSS</span>
+                    <span class="badge badge-red">Vite</span>
+                </div>
+
+                <h3 class="text-xl font-bold mb-4">Modified Files</h3>
+                <ul class="space-y-2 text-gray-600 mb-8">
+                    <li class="flex items-start gap-2">
+                        <span class="text-[#DC2626] mt-1">•</span>
+                        <span><code>resources/views/layouts/guest.blade.php</code> - Main layout dengan fullscreen
+                            background</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-[#DC2626] mt-1">•</span>
+                        <span><code>resources/views/livewire/pages/auth/login.blade.php</code> - Login form dengan
+                            password toggle</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-[#DC2626] mt-1">•</span>
+                        <span><code>resources/views/livewire/pages/auth/register.blade.php</code> - Compact register
+                            form dengan grid layout</span>
+                    </li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-4">Password Toggle Script</h3>
+                <div class="code-block">
+                    <pre><code>function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        // Show eye-off icon
+    } else {
+        input.type = 'password';
+        // Show eye icon
+    }
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center pt-10 border-t border-red-50">
+            <p class="font-bold text-gray-800">BBiHub Authentication UI Documentation</p>
+            <p class="text-gray-400 text-sm mt-2">Version 2.0 | Updated: November 2025</p>
+            <p class="text-red-300 text-sm mt-4">Created with ❤️ for BBiHub Dashboard</p>
+        </footer>
+    </div>
+</body>
+
+</html>
