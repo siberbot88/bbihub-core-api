@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
-use App\Http\Controllers\Api\ServiceApiContoller;
+use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\TransactionItemController;
 use App\Http\Controllers\Api\VehicleController;
@@ -68,8 +68,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
 
         // List Service
-        Route::get('services',           [ServiceApiContoller::class, 'index']);
-        Route::get('services/{service}', [ServiceApiContoller::class, 'show']);
+        Route::get('services',           [ServiceApiController::class, 'index']);
+        Route::get('services/{service}', [ServiceApiController::class, 'show']);
 
 
         // Kendaraan
@@ -85,12 +85,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::apiResource('vouchers', VoucherApiController::class);
 
         // Service
-        Route::get   ('services',           [ServiceApiContoller::class, 'index']);
-        Route::get   ('services/{service}', [ServiceApiContoller::class, 'show']);
-        Route::post  ('services',           [ServiceApiContoller::class, 'store']);
-        Route::put   ('services/{service}', [ServiceApiContoller::class, 'update']);
-        Route::patch ('services/{service}', [ServiceApiContoller::class, 'update']);
-        Route::delete('services/{service}', [ServiceApiContoller::class, 'destroy']);
+        Route::get   ('services',           [ServiceApiController::class, 'index']);
+        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
+        Route::post  ('services',           [ServiceApiController::class, 'store']);
+        Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
+        Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
+        Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
 
         // Kendaraan
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
@@ -131,10 +131,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('admin')->group(function () {
-    Route::get ('services',               [ServiceApiContoller::class, 'index']);
-    Route::post('services',               [ServiceApiContoller::class, 'store']);
-    Route::get ('services/{service}',     [ServiceApiContoller::class, 'show']);
-
-
+    Route::get ('services',               [ServiceApiController::class, 'index']);
+    Route::post('services',               [ServiceApiController::class, 'store']);
+    Route::get ('services/{service}',     [ServiceApiController::class, 'show']);
 
 });

@@ -46,9 +46,9 @@ class Transaction extends Model
         return $this->belongsTo(Customer::class, 'customer_uuid');
     }
 
-    public function service():  BelongsTo{
-        return $this->belongsTo(Service::class, 'service_uuid');
-    }
+//    public function service():  BelongsTo{
+//        return $this->belongsTo(Service::class, 'service_uuid');
+//    }
 
     public function workshop(): BelongsTo{
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
