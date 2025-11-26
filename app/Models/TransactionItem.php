@@ -27,8 +27,8 @@ class TransactionItem extends Model
         'subtotal',
     ];
 
+    /* ========= RELATIONSHIPS ========= */
     public function transaction(): BelongsTo{
         return $this->belongsTo(Transaction::class, 'transaction_uuid');
     }
-
 }

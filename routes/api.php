@@ -6,10 +6,13 @@ use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use App\Http\Controllers\Api\ServiceApiController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\TransactionItemController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VoucherApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ServiceController;
 
 
 Route::prefix('v1/auth')->group(function () {
@@ -95,6 +98,35 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+    });
+
+    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
+        //
+    });
+
+    Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
+
+        // =========================
+        // SERVICE
+        // =========================
+        Route::get('/admin/services',            [ServiceController::class, 'index']);   // ?status=&date=&q=&per_page=
+        Route::post('/admin/services',           [ServiceController::class, 'store']);
+        Route::get('/admin/services/{service}',  [ServiceController::class, 'show']);
+        Route::post('/admin/services/{service}', [ServiceController::class, 'update']);
+        Route::post('/admin/services{service}',  [ServiceController::class, 'destroy']);
+
+        // =========================
+        // TRANSACTION
+        // =========================
+        Route::post('/transactions', [TransactionController::class, 'store']);
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
+        Route::put('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
+
+
+        // =========================
+        // TRANSACTION ITEMS
+        // =========================
+        Route::post('/transaction-items', [TransactionItemController::class, 'store']);
     });
 });
 
