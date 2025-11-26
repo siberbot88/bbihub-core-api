@@ -1,12 +1,7 @@
-<footer class="w-full border-t bg-white py-4">
-  <div class="max-w-7xl mx-auto px-6 flex items-center justify-start">
-    {{-- Logo --}}
-    <img src="{{ asset('images/logo-bbih.svg') }}" alt="BBI HUB Logo" class="h-8 w-8">
-
-    {{-- Teks --}}
-    <div class="ml-3 leading-tight">
-      <span class="text-lg font-bold text-black">BBI HUB</span><br>
-      <span class="text-red-600 font-semibold text-base">Plus</span>
+<footer class="mt-auto border-t border-gray-200 bg-white px-6 py-4">
+  <div class="flex flex-col items-center justify-center text-center">
+    <div class="text-sm text-gray-500">
+      &copy; {{ date('Y') }} <span class="font-semibold text-gray-900">BBI HUB Plus</span>. All rights reserved.
     </div>
   </div>
 </footer>

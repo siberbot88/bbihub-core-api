@@ -76,4 +76,16 @@ class Service extends Model
         return $this->hasOne(Transaction::class, 'service_uuid', 'id');
     }
 
+    /**
+     * Dummy relationship for mobile app backward compatibility
+     * Returns proper relationship that's always empty
+     */
+    public function extras(): HasMany
+    {
+        // Use existing ServiceLog model but force empty result with WHERE 1=0
+        // This creates a valid relationship for eager loading without errors
+        return $this->hasMany(\App\Models\ServiceLog::class, 'service_uuid', 'id')
+            ->whereRaw('1 = 0');
+    }
+
 }

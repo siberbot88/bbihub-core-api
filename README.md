@@ -1,61 +1,288 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 🔧 BBiHub Backend
 
-## About Laravel
+### _Modern Workshop Management System API_
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![Livewire](https://img.shields.io/badge/Livewire-3.x-FB70A9?style=for-the-badge&logo=livewire&logoColor=white)](https://livewire.laravel.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**A comprehensive workshop management platform built with modern web technologies**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [API Docs](#-api-documentation) • [Contributing](#-contributing)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+</div>
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 📋 About BBiHub
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+BBiHub adalah platform manajemen bengkel yang dirancang untuk mempermudah operasional bengkel kendaraan. Sistem ini menyediakan dashboard web untuk superadmin dan REST API untuk aplikasi mobile, memungkinkan pengelolaan layanan, pelanggan, kendaraan, transaksi, dan karyawan secara efisien.
 
-## Laravel Sponsors
+## ✨ Features
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🎯 Core Features
+- **🔐 Robust Authentication** - Superadmin-only web access, Sanctum-based API auth
+- **👥 User Management** - Role-based access control dengan Spatie Permission
+- **🏢 Workshop Management** - Multi-workshop support dengan custom branding
+- **🔧 Service Management** - Katalog layanan dengan kategori (Engine, Body, Electrical, dll)
+- **🚗 Vehicle Management** - Database kendaraan pelanggan dengan sparepart tracking
+- **💰 Transaction System** - Invoice generation, payment tracking, service logs
+- **👷 Employee Management** - Specialist assignment, performance tracking
+- **🎫 Voucher System** - Discount management dengan expiry handling
+- **📊 Reports & Analytics** - Comprehensive business insights
+- **📱 Mobile API** - RESTful API untuk aplikasi mobile
 
-### Premium Partners
+### 🎨 UI/UX Highlights
+- **Modern Design** - Clean interface dengan Poppins typography
+- **Interactive Forms** - Real-time validation, password toggles
+- **Responsive Layout** - Mobile-first design approach
+- **Error Pages** - Custom error pages with friendly bubble fonts
+- **Dark Mode Ready** - Workshop-themed backgrounds
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🛠️ Tech Stack
 
-## Contributing
+### Backend
+- **Laravel 11** - Modern PHP framework
+- **MySQL** - Primary database
+- **Sanctum** - API authentication
+- **Spatie Permission** - Role & permission management
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Frontend
+- **Livewire Volt** - Reactive components
+- **Tailwind CSS** - Utility-first styling
+- **Alpine.js** - Lightweight JavaScript framework
+- **Vite** - Next-generation frontend tooling
 
-## Code of Conduct
+### Additional Tools
+- **PHPUnit** - Testing framework
+- **Pint** - Laravel code style fixer
+- **Google Fonts** - Poppins & Fredoka fonts
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📦 Installation
 
-## Security Vulnerabilities
+### Prerequisites
+```bash
+PHP >= 8.2
+Composer
+Node.js >= 18
+MySQL >= 8.0
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Quick Start
 
-## License
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/bbihub-backend.git
+   cd bbihub-backend
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+2. **Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+4. **Configure database** (edit `.env`)
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=bbihub
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+5. **Run migrations & seeders**
+   ```bash
+   php artisan migrate --seed
+   ```
+
+6. **Build assets**
+   ```bash
+   npm run build
+   ```
+
+7. **Start development server**
+   ```bash
+   # Terminal 1 - Laravel server
+   php artisan serve
+   
+   # Terminal 2 - Vite dev server
+   npm run dev
+   ```
+
+8. **Access the application**
+   - Web Dashboard: `http://localhost:8000`
+   - Default credentials: `superadmin@gmail.com` / `password`
+
+## 🔑 API Documentation
+
+### Base URL
+```
+http://localhost:8000/api
+```
+
+### Authentication
+All API routes require Bearer token authentication via Laravel Sanctum.
+
+#### Login
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password",
+  "remember": true
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "token": "1|xxxxxxxxxxxxx",
+    "user": { ... }
+  },
+  "message": "Login successful"
+}
+```
+
+### Core Endpoints
+```
+Authentication
+├── POST   /api/auth/register
+├── POST   /api/auth/login
+├── POST   /api/auth/logout
+└── GET    /api/auth/me
+
+Workshops
+├── GET    /api/workshops
+├── POST   /api/workshops
+├── GET    /api/workshops/{uuid}
+├── PUT    /api/workshops/{uuid}
+└── DELETE /api/workshops/{uuid}
+
+Services
+├── GET    /api/services
+├── POST   /api/services
+├── GET    /api/services/{uuid}
+├── PUT    /api/services/{uuid}
+└── DELETE /api/services/{uuid}
+
+... (and more)
+```
+
+For complete API documentation, visit `/api/documentation` (when available).
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test suite
+php artisan test --testsuite=Feature
+
+# Run with coverage
+php artisan test --coverage
+```
+
+## 📁 Project Structure
+
+```
+bbihub-backend/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/Api/    # API Controllers
+│   │   ├── Middleware/         # Custom middleware
+│   │   └── Requests/           # Form requests
+│   ├── Livewire/              # Livewire components
+│   ├── Models/                # Eloquent models
+│   └── Services/              # Business logic
+├── database/
+│   ├── factories/             # Model factories
+│   ├── migrations/            # Database migrations
+│   └── seeders/               # Database seeders
+├── resources/
+│   ├── views/
+│   │   ├── livewire/          # Livewire Volt pages
+│   │   ├── layouts/           # Blade layouts
+│   │   └── errors/            # Custom error pages
+│   └── css/                   # Stylesheets
+├── routes/
+│   ├── api.php                # API routes
+│   ├── web.php                # Web routes
+│   └── auth.php               # Authentication routes
+└── tests/
+    ├── Feature/               # Feature tests
+    └── Unit/                  # Unit tests
+```
+
+## 🎨 Design System
+
+### Colors
+- **Primary**: `#DC2626` (BBiHub Red)
+- **Primary Hover**: `#B91C1C`
+- **Dark Gray**: `#1F2937`
+- **Light Gray**: `#F9FAFB`
+
+### Typography
+- **Body**: Poppins
+- **Accent**: Fredoka (for error codes & headings)
+
+### Components
+For detailed UI/UX documentation, see:
+- [Auth UI Documentation](debug/auth_ui_documentation.html)
+- [Error Pages Documentation](debug/error_pages_documentation.html)
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Coding Standards
+- Follow **PSR-12** coding standards
+- Use Laravel best practices
+- Write tests for new features
+- Update documentation as needed
+
+## 📝 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Team
+
+**BBiHub Development Team**
+- Lead Developer: [Your Name]
+- Contributors: [Contributors List]
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/your-username/bbihub-backend/issues)
+- **Email**: support@bbihub.com
+- **Documentation**: [Wiki](https://github.com/your-username/bbihub-backend/wiki)
+
+---
+
+<div align="center">
+
+**Built with ❤️ using Laravel**
+
+© 2025 BBiHub Development Team. All rights reserved.
+
+</div>

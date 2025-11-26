@@ -24,7 +24,7 @@ class ServiceApiController extends Controller
      * - owner: lihat service di semua workshop dia
      * - admin: lihat service di workshop tempat dia bekerja
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Service::class);
 
@@ -35,8 +35,10 @@ class ServiceApiController extends Controller
                 'workshop',
                 'customer',
                 'vehicle',
+                'mechanic',
                 'mechanic.user',
                 'transaction.items',
+                'extras', // Dummy relation for mobile backward compatibility
             ])
             ->allowedFilters([
                 AllowedFilter::exact('status'),
@@ -77,6 +79,10 @@ class ServiceApiController extends Controller
                 }
             }
         }
+
+        // Always load essential relations for mobile app compatibility
+        // QueryBuilder allowedIncludes will handle additional includes if requested
+        $query->with(['customer', 'vehicle', 'mechanic.user', 'workshop']);
 
         $perPage = (int) $request->get('per_page', 15);
         $services = $query->paginate($perPage)->appends($request->query());
