@@ -118,7 +118,7 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         $data = $request->validate([
-            'status' => ['nullable', Rule::in(['pending','in progress','completed'])],
+            'status' => ['nullable', Rule::in(['pending','in progress','completed', 'menunggu pembayaran','lunas',])],
             'acceptance_status' => ['nullable', Rule::in(['pending','accepted','decline'])],
             'mechanic_uuid' => ['nullable','string'],
             'scheduled_date' => ['nullable','date'],
@@ -167,6 +167,26 @@ class ServiceController extends Controller
                 return response()->json([
                     'message' => 'Tidak dapat set ke in progress karena ada service lain yang aktif untuk kendaraan ini.',
                     'conflict_service_id' => $conflict->id
+                ], 422);
+            }
+        }
+
+        // cek transisi STATUS services
+        if (isset($data['status'])) {
+            $from = $service->status;
+            $to   = $data['status'];
+
+            $allowed = [
+                'pending'             => ['in progress'],
+                'in progress'         => ['completed'],
+                'completed'           => ['menunggu pembayaran'],
+                'menunggu pembayaran' => ['lunas'],
+                'lunas'               => [],
+            ];
+
+            if (!isset($allowed[$from]) || ($from !== $to && !in_array($to, $allowed[$from], true))) {
+                return response()->json([
+                    'message' => "Transisi status dari '{$from}' ke '{$to}' tidak diperbolehkan."
                 ], 422);
             }
         }
