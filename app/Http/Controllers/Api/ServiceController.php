@@ -46,6 +46,23 @@ class ServiceController extends Controller
             'mechanic_uuid' => ['nullable','string'],
         ]);
 
+        //  cek mekanik kalau diisi
+        if (!empty($data['mechanic_uuid'])) {
+            $employment = Employment::with('user')
+                ->active()      // scope status active
+                ->mechanic()    // scope role mechanic
+                ->where('workshop_uuid', $data['workshop_uuid'])
+                ->where('id', $data['mechanic_uuid'])
+                ->first();
+
+            if (!$employment) {
+                return response()->json([
+                    'message' => 'Mekanik tidak valid untuk bengkel ini.'
+                ], 422);
+            }
+        }
+
+
         // Business rule: 1 vehicle hanya boleh 1 service aktif (pending/in progress)
         $existing = Service::where('vehicle_uuid', $data['vehicle_uuid'])
             ->whereIn('status', ['pending', 'in progress'])
@@ -100,6 +117,22 @@ class ServiceController extends Controller
                 return response()->json([
                     'message' => 'Tidak dapat set ke in progress karena ada service lain yang aktif untuk kendaraan ini.',
                     'conflict_service_id' => $conflict->id
+                ], 422);
+            }
+        }
+
+        // ✅ kalau mekanik diubah / diisi
+        if (array_key_exists('mechanic_uuid', $data) && !empty($data['mechanic_uuid'])) {
+            $employment = Employment::with('user')
+                ->active()
+                ->mechanic()
+                ->where('workshop_uuid', $service->workshop_uuid) // bengkel-nya service sekarang
+                ->where('id', $data['mechanic_uuid'])
+                ->first();
+
+            if (!$employment) {
+                return response()->json([
+                    'message' => 'Mekanik tidak valid untuk bengkel ini.'
                 ], 422);
             }
         }

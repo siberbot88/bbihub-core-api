@@ -75,7 +75,6 @@ class Service extends Model
     public function transaction(): HasOne{
         return $this->hasOne(Transaction::class, 'service_uuid', 'id');
     }
-
     /**
      * Dummy relationship for mobile app backward compatibility
      * Returns proper relationship that's always empty

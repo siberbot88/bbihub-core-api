@@ -46,6 +46,29 @@ class Employment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_uuid');
+
+    }
+
+    /* ========= SCOPES BANTUAN ========= */
+
+    // hanya employment yang status = active
+    public function scopeActive($q)
+    {
+        return $q->where('status', 'active');
+    }
+
+    // hanya employment yang user-nya punya role mechanic
+    public function scopeMechanic($q)
+    {
+        return $q->whereHas('user', function ($u) {
+            $u->role('mechanic'); // dari Spatie
+        });
+    }
+
+    // semua transaksi yang di-handle mekanik ini
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'mechanic_uuid', 'id');
     }
 
 }
