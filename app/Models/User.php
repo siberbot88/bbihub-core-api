@@ -24,6 +24,7 @@ class User extends Authenticatable
     protected $keyType = 'string';
     protected string $guard_name = 'web';
 
+
     /**
      * The attributes that are mass assignable.
      *

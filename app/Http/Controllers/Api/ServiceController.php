@@ -185,6 +185,10 @@ class ServiceController extends Controller
                     'message' => 'Mekanik tidak valid untuk bengkel ini.'
                 ], 422);
             }
+            //  langsung set status in progress kalau mau
+            if ($service->status === 'pending' && !isset($data['status'])) {
+                $data['status'] = 'in progress';
+            }
         }
 
         $service->update($data);

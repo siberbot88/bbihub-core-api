@@ -60,8 +60,8 @@ class Employment extends Model
     // hanya employment yang user-nya punya role mechanic
     public function scopeMechanic($q)
     {
-        return $q->whereHas('user', function ($u) {
-            $u->role('mechanic'); // dari Spatie
+        return $q->whereHas('user.roles', function ($r) {
+            $r->where('name', 'mechanic');
         });
     }
 
