@@ -70,6 +70,7 @@ class ServiceResource extends JsonResource
             }),
 
             'reason'            => $this->reason,
+            'reason_description'=> $this->reason_description,
             'feedback_mechanic' => $this->feedback_mechanic,
             'note'              => $this->note,
 

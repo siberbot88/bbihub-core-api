@@ -34,6 +34,7 @@ class Service extends Model
         'vehicle_uuid',
         'mechanic_uuid',
         'reason',
+        'reason_description',
         'feedback_mechanic',
         'accepted_at',
         'completed_at',
