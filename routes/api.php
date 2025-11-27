@@ -115,6 +115,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/admin/services/{service}', [ServiceController::class, 'update']);
         Route::post('/admin/services{service}',  [ServiceController::class, 'destroy']);
 
+        // ✅ endpoint khusus admin
+        Route::post('services/{service}/accept', [ServiceController::class, 'accept']);
+        Route::post('services/{service}/decline', [ServiceController::class, 'decline']);
+        Route::post('services/{service}/assign-mechanic', [ServiceController::class, 'assignMechanic']);
+
         // =========================
         // TRANSACTION
         // =========================

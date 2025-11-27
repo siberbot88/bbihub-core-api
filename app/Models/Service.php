@@ -34,6 +34,7 @@ class Service extends Model
         'vehicle_uuid',
         'mechanic_uuid',
         'reason',
+        'reason_description',
         'feedback_mechanic',
         'accepted_at',
         'completed_at',
@@ -75,7 +76,6 @@ class Service extends Model
     public function transaction(): HasOne{
         return $this->hasOne(Transaction::class, 'service_uuid', 'id');
     }
-
     /**
      * Dummy relationship for mobile app backward compatibility
      * Returns proper relationship that's always empty

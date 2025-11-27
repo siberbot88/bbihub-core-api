@@ -29,7 +29,6 @@ class Transaction extends Model
         'status',
         'amount',
         'payment_method',
-        'service_uuid',
     ];
 
     /* ========= RELATIONSHIPS ========= */
@@ -46,7 +45,7 @@ class Transaction extends Model
         return $this->belongsTo(Customer::class, 'customer_uuid');
     }
 
-//    public function service():  BelongsTo{
+//    public function service():   BelongsTo{
 //        return $this->belongsTo(Service::class, 'service_uuid');
 //    }
 
@@ -55,7 +54,7 @@ class Transaction extends Model
     }
 
     public function mechanic(): BelongsTo{
-        return $this->belongsTo(User::class, 'mechanic_uuid');
+        return $this->belongsTo(Employment::class, 'mechanic_uuid')->with('user');
     }
 
     public function admin(): BelongsTo{

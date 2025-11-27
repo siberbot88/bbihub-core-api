@@ -5,11 +5,32 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
+use App\Models\Employment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 class ServiceController extends Controller
 {
+
+    private function assertCanChangeAcceptance(Service $service, string $target)
+    {
+        $from = $service->acceptance_status;
+
+        if ($from === $target) {
+            return; // nggak ada perubahan, aman
+        }
+
+        $allowedTargets = [
+            'pending'  => ['accepted', 'decline'],
+            'accepted' => [],   // final
+            'decline'  => [],   // final
+        ];
+
+        if (! isset($allowedTargets[$from]) || ! in_array($target, $allowedTargets[$from], true)) {
+            abort(422, "Perubahan acceptance_status dari '{$from}' ke '{$target}' tidak diperbolehkan. Status 'accepted' / 'decline' bersifat final.");
+        }
+    }
+
 // GET /api/v1/services
     public function index(Request $request)
     {
@@ -45,6 +66,23 @@ class ServiceController extends Controller
             'vehicle_uuid' => ['required','string'],
             'mechanic_uuid' => ['nullable','string'],
         ]);
+
+        //  cek mekanik kalau diisi
+        if (!empty($data['mechanic_uuid'])) {
+            $employment = Employment::with('user')
+                ->active()      // scope status active
+                ->mechanic()    // scope role mechanic
+                ->where('workshop_uuid', $data['workshop_uuid'])
+                ->where('id', $data['mechanic_uuid'])
+                ->first();
+
+            if (!$employment) {
+                return response()->json([
+                    'message' => 'Mekanik tidak valid untuk bengkel ini.'
+                ], 422);
+            }
+        }
+
 
         // Business rule: 1 vehicle hanya boleh 1 service aktif (pending/in progress)
         $existing = Service::where('vehicle_uuid', $data['vehicle_uuid'])
@@ -87,7 +125,36 @@ class ServiceController extends Controller
             'estimated_time' => ['nullable','date'],
             'price' => ['nullable','numeric'],
             'description' => ['nullable','string'],
+
+            // ✅ alasan di update juga
+            'reason'             => ['nullable', Rule::in(['antrian sedang full','jadwal bentrok','lokasi terlalu jauh','lainnya'])],
+            'reason_description' => ['nullable','string'],
+
         ]);
+
+        /* ========= 1. LOCK acceptance_status ========= */
+
+        if (array_key_exists('acceptance_status', $data)) {
+            $from = $service->acceptance_status;   // nilai sebelum diupdate
+            $to   = $data['acceptance_status'];    // nilai yang diminta
+
+            // kalau tidak berubah, ya udah biarin (no-op)
+            if ($from !== $to) {
+                // HANYA boleh dari 'pending' → 'accepted' atau 'decline'
+                $allowedTargets = [
+                    'pending' => ['accepted','decline'],
+                    'accepted' => [],   // tidak boleh kemana-mana
+                    'decline' => [],    // tidak boleh kemana-mana
+                ];
+
+                if (! isset($allowedTargets[$from]) || ! in_array($to, $allowedTargets[$from], true)) {
+                    return response()->json([
+                        'message' => "Perubahan acceptance_status dari '{$from}' ke '{$to}' tidak diperbolehkan. " .
+                            "Status 'accepted' atau 'decline' bersifat final."
+                    ], 422);
+                }
+            }
+        }
 
         // Jika mengubah status menjadi 'in progress', pastikan vehicle tidak conflict
         if (isset($data['status']) && $data['status'] === 'in progress') {
@@ -104,6 +171,26 @@ class ServiceController extends Controller
             }
         }
 
+        // ✅ kalau mekanik diubah / diisi
+        if (array_key_exists('mechanic_uuid', $data) && !empty($data['mechanic_uuid'])) {
+            $employment = Employment::with('user')
+                ->active()
+                ->mechanic()
+                ->where('workshop_uuid', $service->workshop_uuid) // bengkel-nya service sekarang
+                ->where('id', $data['mechanic_uuid'])
+                ->first();
+
+            if (!$employment) {
+                return response()->json([
+                    'message' => 'Mekanik tidak valid untuk bengkel ini.'
+                ], 422);
+            }
+            //  langsung set status in progress kalau mau
+            if ($service->status === 'pending' && !isset($data['status'])) {
+                $data['status'] = 'in progress';
+            }
+        }
+
         $service->update($data);
 
         // Jika status berubah ke 'completed' bisa lakukan cleanup: hapus/selesaikan task, buat log akhir, dsb.
@@ -111,6 +198,101 @@ class ServiceController extends Controller
         // if (isset($data['status']) && $data['status'] === 'completed') { ... }
 
         return new ServiceResource($service->fresh()->load(['workshop','customer','vehicle','mechanic','items','log','task']));
+    }
+
+    public function accept(Request $request, Service $service)
+    {
+        // pastikan transition allowed
+        $this->assertCanChangeAcceptance($service, 'accepted');
+
+        // kalau mau, boleh update jadwal dan harga sekalian
+        $data = $request->validate([
+            'scheduled_date'  => ['nullable', 'date'],
+            'estimated_time'  => ['nullable', 'date'],
+            'price'           => ['nullable', 'numeric'],
+            'category_service'=> ['nullable', Rule::in(['ringan','sedang','berat','maintenance'])],
+        ]);
+
+        $update = array_merge($data, [
+            'acceptance_status' => 'accepted',
+            'accepted_at'       => now(),
+            // status pengerjaan tetap 'pending', nanti pindah ke 'in progress' lewat alur logging
+        ]);
+
+        $service->update($update);
+
+        return new ServiceResource(
+            $service->fresh()->load(['workshop','customer','vehicle','mechanic','transaction.items','log','task'])
+        );
+    }
+
+    public function decline(Request $request, Service $service)
+    {
+        // pastikan transition allowed
+        $this->assertCanChangeAcceptance($service, 'decline');
+
+        $data = $request->validate([
+            'reason' => [
+                'required',
+                Rule::in(['antrian sedang full', 'jadwal bentrok', 'lokasi terlalu jauh', 'lainnya']),
+            ],
+            'reason_description' => ['nullable', 'string'],
+        ]);
+
+        $service->update([
+            'acceptance_status' => 'decline',
+            'reason'            => $data['reason'],
+            'reason_description'=> $data['reason_description'] ?? null,
+            // status pengerjaan biasanya tetap 'pending' (artinya: request sudah ditolak)
+        ]);
+
+        return new ServiceResource(
+            $service->fresh()->load(['workshop','customer','vehicle','mechanic','transaction.items','log','task'])
+        );
+    }
+
+    public function assignMechanic(Request $request, Service $service)
+    {
+        // Service harus SUDAH accepted, dan BELUM decline
+        if ($service->acceptance_status !== 'accepted') {
+            return response()->json([
+                'message' => "Service harus berstatus acceptance 'accepted' sebelum menetapkan mekanik."
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'mechanic_uuid' => ['required', 'string', 'exists:employments,id'],
+        ]);
+
+        // Pastikan employment ada di workshop yg sama
+        $employment = \App\Models\Employment::with('user.roles')
+            ->where('id', $data['mechanic_uuid'])
+            ->where('workshop_uuid', $service->workshop_uuid)
+            ->first();
+
+        if (! $employment) {
+            return response()->json([
+                'message' => 'Mekanik tidak ditemukan di workshop ini.'
+            ], 422);
+        }
+
+        // Pastikan rolenya benar-benar mechanic (Spatie)
+        if (! $employment->user || ! $employment->user->hasRole('mechanic')) {
+            return response()->json([
+                'message' => 'User ini bukan mekanik yang valid.'
+            ], 422);
+        }
+
+        // Update service: tetapkan mechanic, boleh sekalian geser status ke "in progress" kalau mau
+        $service->update([
+            'mechanic_uuid' => $employment->id,
+            // opsional: otomatis in progress ketika mekanik ditetapkan
+            // 'status'        => 'in progress',
+        ]);
+
+        return new ServiceResource(
+            $service->fresh()->load(['workshop','customer','vehicle','mechanic','transaction.items','log','task'])
+        );
     }
 
     // DELETE /api/v1/services/{id}
