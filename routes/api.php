@@ -41,7 +41,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
         // Workshops
         Route::post('workshops',[WorkshopApiController::class, 'store'])->name('workshops.store');
-//        Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
+        Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
 
         // Documents
         Route::post('documents',[WorkshopDocumentApiController::class, 'store'])->name('documents.store');

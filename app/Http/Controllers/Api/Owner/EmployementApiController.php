@@ -31,12 +31,10 @@ class EmployementApiController extends Controller
         $owner = $request->user();
         $workshopIds = $owner->workshops()->pluck('id');
 
-        $employees = Employment::whereIn('workshop_uuid', $workshopIds)
-            ->with([
-                'user',
-                'user.roles:name',
-                'workshop:id,name,user_uuid',
-            ])->get();
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 15);
+
+        $employees = $this->employmentService->getEmployees($workshopIds, $search, $perPage);
 
         return $this->successResponse('Data karyawan berhasil diambil', $employees);
     }
