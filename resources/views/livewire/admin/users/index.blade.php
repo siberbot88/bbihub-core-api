@@ -29,49 +29,12 @@
       <p class="mt-1 text-sm text-gray-500">Ringkasan kondisi akun pengguna dan komunitas aplikasi</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      {{-- Search --}}
-      <div class="relative">
-        <input
-          type="text"
-          wire:model.live.debounce.400ms="q"
-          placeholder="Cari Pengguna…"
-          class="h-9 w-64 rounded-lg border-neutral-300 ps-9 focus:border-red-400 focus:ring-red-400"
-        />
-        <span class="pointer-events-none absolute inset-y-0 start-2 flex items-center text-neutral-400">
-          <img src="{{ asset('icons/search.svg') }}" alt="Search" class="h-5 w-5" />
-        </span>
-      </div>
-
-      {{-- Filter Status --}}
-      <select
-        wire:model.live="status"
-        class="h-9 rounded-lg border-neutral-300 focus:border-red-400 focus:ring-red-400"
-      >
-        @foreach ($this->statusOptions as $key => $label)
-          <option value="{{ $key }}">{{ $label }}</option>
-        @endforeach
-      </select>
-
-      {{-- Filter Role --}}
-      <select
-        wire:model.live="role"
-        class="h-9 rounded-lg border-neutral-300 focus:border-red-400 focus:ring-red-400"
-      >
-        @foreach ($this->roleOptions as $key => $label)
-          <option value="{{ $key }}">{{ $label }}</option>
-        @endforeach
-      </select>
-
-      <div class="ms-auto">
-        <a
-          href="{{ route('admin.users.create') }}"
-          class="flex h-9 items-center justify-center rounded-lg bg-red-600 px-3 text-white shadow hover:bg-red-700"
-        >
-          + Tambah Pengguna
-        </a>
-      </div>
-    </div>
+    <button wire:click="create" class="flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-red-700 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Tambah Pengguna
+    </button>
   </div>
 
   {{-- Filters --}}
@@ -295,6 +258,7 @@
                   {{ $last ? \Illuminate\Support\Carbon::parse($last)->diffForHumans() : '-' }}
                 </span>
               </td>
+
               {{-- Actions --}}
               <td class="px-6 py-4">
                 <div class="flex items-center justify-center gap-2">
@@ -342,8 +306,6 @@
       </table>
     </div>
 
-    {{-- Pagination + perPage --}}
-    <div class="flex items-center justify-between border-t px-4 py-3 text-sm">
     {{-- Pagination --}}
     <div class="flex items-center justify-between border-t border-gray-100 px-6 py-4">
       <div class="flex items-center gap-2">

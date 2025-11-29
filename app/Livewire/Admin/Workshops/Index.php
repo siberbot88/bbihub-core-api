@@ -9,7 +9,6 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Workshop;
 
@@ -27,12 +26,11 @@ class Index extends Component
     #[Url] public string $city = 'all';
     #[Url] public int $perPage = 10;
 
-    // Modal states
-    public bool $showDetail  = false;
-    public bool $showEdit    = false;
-    public bool $showDelete  = false;
+    // Modal control
+    public bool $showDetail = false;
+    public bool $showEdit = false;
+    public bool $showDelete = false;
     public bool $showSuspend = false;
-    public bool $showReset   = false;
 
     // Selected workshop
     public ?Workshop $selectedWorkshop = null;
@@ -54,7 +52,7 @@ class Index extends Component
 
     public function mount(): void
     {
-        // Cache city options
+        // Cache city options for 1 hour
         $this->cityOptions = Cache::remember('workshop_cities', 3600, function () {
             $cities = Workshop::query()
                 ->select('city')
@@ -94,11 +92,19 @@ class Index extends Component
     public function updatingCity()    { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
 
+    /**
+     * Computed property for summary cards with lazy loading
+     */
     #[Computed]
     public function cards(): array
     {
-        $base = Workshop::query();
         $hasStatus = Schema::hasColumn('workshops', 'status');
+
+        // Use selectRaw for better performance
+        $total = Workshop::count();
+        $pending = $hasStatus ? Workshop::where('status', 'pending')->count() : 0;
+        $active = $hasStatus ? Workshop::where('status', 'active')->count() : 0;
+        $suspended = $hasStatus ? Workshop::where('status', 'suspended')->count() : 0;
 
         return [
             [
@@ -242,6 +248,7 @@ class Index extends Component
             });
         }
 
+        // Filter status - only if column exists
         if ($this->status !== 'all' && $hasStatus) {
             $query->where('status', $this->status);
         }
@@ -253,14 +260,10 @@ class Index extends Component
         return $query->latest('id')->paginate($this->perPage);
     }
 
-    // ==========================
-    // RENDER
-    // ==========================
+
     public function render()
     {
         return view('livewire.admin.workshops.index', [
-            'rows' => $this->workshops(),
-            'cards' => $this->cards,
             'statusOptions' => $this->statusOptions,
             'cityOptions' => $this->cityOptions,
         ]);

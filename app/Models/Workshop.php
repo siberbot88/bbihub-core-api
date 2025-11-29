@@ -21,6 +21,11 @@ class Workshop extends Model
         'is_active' => true,
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'operational_days' => 'array', // Assuming it's stored as JSON, or we can leave it as string if it's just a string like "Senin-Jumat"
+    ];
+
     /**
      * The "booted" method of the model.
      *

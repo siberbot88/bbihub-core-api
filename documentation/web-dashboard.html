@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Dashboard - BBI HUB Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626',
+                        'primary-hover': '#B91C1C',
+                        text: { main: '#EDEDEF', muted: '#8A8F98' }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                        B</div>
+                    <span class="font-semibold text-sm tracking-tight">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="design.html" class="nav-link">Design</a>
+                    <a href="web-dashboard.html" class="nav-link active">Web Dashboard</a>
+                    <a href="mobile-app.html" class="nav-link">Mobile App</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <section class="mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4 reveal-bottom">Web Dashboard Documentation</h1>
+            <p class="text-text-muted text-lg mb-8 reveal-bottom delay-100">Comprehensive guide to the BBI HUB admin web
+                dashboard, covering UI components, navigation, and key functionalities.</p>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Dashboard Overview</h2>
+            <div class="card">
+                <p class="text-text-muted mb-4">The dashboard provides real‑time insights, workshop management tools,
+                    and user administration capabilities. It is built with Tailwind CSS, Alpine.js and follows the dark
+                    theme used across the documentation.</p>
+                <ul class="list-disc list-inside text-text-muted">
+                    <li>Responsive layout for desktop and tablet screens.</li>
+                    <li>Quick access panels for workshops, employees, and vouchers.</li>
+                    <li>Analytics charts powered by Chart.js.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Key Sections</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">User Management</h3>
+                    <p class="text-text-muted">Create, edit, and assign roles (owner, admin, mechanic). Includes
+                        password reset flow and activity logs.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Workshop Management</h3>
+                    <p class="text-text-muted">Add new workshops, configure services, upload documents, and view
+                        performance metrics.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Voucher Administration</h3>
+                    <p class="text-text-muted">Generate, edit, and track usage of promotional vouchers across workshops.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Analytics & Reports</h3>
+                    <p class="text-text-muted">Visual dashboards for revenue, service popularity, and employee
+                        performance.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        ScrollReveal().reveal('.reveal-bottom', { distance: '20px', origin: 'bottom', duration: 800, interval: 100 });
+    </script>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-5 h-5 bg-primary rounded flex items-center justify-center text-white font-bold text-[10px]">
+                    B</div>
+                <span class="text-sm text-text-muted">© 2025 BBI HUB</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Terms</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Twitter</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

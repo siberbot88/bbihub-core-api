@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile App - BBI HUB Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626',
+                        'primary-hover': '#B91C1C',
+                        text: { main: '#EDEDEF', muted: '#8A8F98' }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                        B</div>
+                    <span class="font-semibold text-sm tracking-tight">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="design.html" class="nav-link">Design</a>
+                    <a href="web-dashboard.html" class="nav-link">Web Dashboard</a>
+                    <a href="mobile-app.html" class="nav-link active">Mobile App</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <section class="mb-12 text-center">
+            <h1 class="text-4xl font-bold text-white mb-4 reveal-bottom">Mobile App Documentation</h1>
+            <p class="text-text-muted text-lg mb-8 reveal-bottom delay-100">Documentation for the BBI HUB mobile
+                application is coming soon.</p>
+
+            <div class="card max-w-2xl mx-auto reveal-bottom delay-200">
+                <div class="flex flex-col items-center justify-center py-12">
+                    <div
+                        class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-primary mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white mb-2">Under Development</h2>
+                    <p class="text-text-muted text-center max-w-md">
+                        We are currently finalizing the documentation for the mobile application.
+                        Please check back later for detailed guides on installation, features, and usage.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        ScrollReveal().reveal('.reveal-bottom', { distance: '20px', origin: 'bottom', duration: 800, interval: 100 });
+    </script>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-5 h-5 bg-primary rounded flex items-center justify-center text-white font-bold text-[10px]">
+                    B</div>
+                <span class="text-sm text-text-muted">© 2025 BBI HUB</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Terms</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Twitter</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
