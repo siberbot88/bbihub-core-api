@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management System - Complete Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@300..700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+
+        .font-bubble {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .section-title {
+            font-family: 'Fredoka', sans-serif;
+            color: #DC2626;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #fee2e2;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #DC2626;
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-primary {
+            background-color: #fee2e2;
+            color: #DC2626;
+        }
+
+        .badge-success {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-info {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        pre {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fee2e2 0%, #fee2e2 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 bg-red-600 rounded-xl flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">BH</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold font-bubble text-gray-900">BBI HUB Admin</h1>
+                        <p class="text-xs text-gray-500">Complete Management System Documentation</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="badge badge-primary">v1.0.0</span>
+                    <span class="badge badge-success">Production Ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-10">
+
+        <!-- Overview -->
+        <section class="mb-12">
+            <div class="card p-8">
+                <h2 class="section-title text-3xl font-bold mb-4">📋 Ringkasan Implementasi</h2>
+                <p class="text-gray-600 mb-6">
+                    Dokumentasi lengkap untuk sistem manajemen admin BBI HUB yang telah dimodernisasi dengan UI terbaru,
+                    fitur CRUD lengkap, dan optimasi performa mengikuti Laravel & Livewire best practices.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-red-50 border border-red-100 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-red-600 mb-1">2</div>
+                        <div class="text-sm text-gray-600">Modul Direfactor</div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-emerald-600 mb-1">100%</div>
+                        <div class="text-sm text-gray-600">Heroicons Migration</div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-blue-600 mb-1">⚡</div>
+                        <div class="text-sm text-gray-600">Performance Optimized</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table of Contents -->
+        <section class="mb-12">
+            <div class="card p-8">
+                <h2 class="section-title text-2xl font-bold mb-6">📑 Daftar Isi</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="#user-management" class="p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors">
+                        <div class="font-semibold text-gray-900">1. User Management</div>
+                        <div class="text-sm text-gray-500 mt-1">Redesign dengan CRUD lengkap</div>
+                    </a>
+                    <a href="#workshop-management" class="p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors">
+                        <div class="font-semibold text-gray-900">2. Workshop Management</div>
+                        <div class="text-sm text-gray-500 mt-1">Refactor dengan lazy loading</div>
+                    </a>
+                    <a href="#best-practices" class="p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors">
+                        <div class="font-semibold text-gray-900">3. Best Practices</div>
+                        <div class="text-sm text-gray-500 mt-1">Laravel & Livewire patterns</div>
+                    </a>
+                    <a href="#testing" class="p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors">
+                        <div class="font-semibold text-gray-900">4. Testing Guide</div>
+                        <div class="text-sm text-gray-500 mt-1">Checklist untuk QA</div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Management Section -->
+        <section id="user-management" class="mb-12">
+            <div class="card p-8">
+                <h2 class="section-title text-2xl font-bold mb-6">👥 1. User Management Redesign</h2>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">✨ Fitur Utama</h3>
+                    <ul class="feature-list space-y-2">
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 mt-1">✓</span>
+                            <div>
+                                <strong>Full CRUD Operations</strong>
+                                <p class="text-sm text-gray-600">Create, Read, Update, Delete dengan modal modern</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 mt-1">✓</span>
+                            <div>
+                                <strong>Kolom Bengkel</strong>
+                                <p class="text-sm text-gray-600">Menampilkan workshop dari relasi employment</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 mt-1">✓</span>
+                            <div>
+                                <strong>Employment-based Status</strong>
+                                <p class="text-sm text-gray-600">Superadmin & Owner selalu aktif, lainnya cek employment
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 mt-1">✓</span>
+                            <div>
+                                <strong>Modern UI dengan Heroicons</strong>
+                                <p class="text-sm text-gray-600">Ganti semua emoji/SVG dengan Heroicons inline</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">🏗️ Struktur Backend</h3>
+
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Livewire Form Object</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <code class="text-sm">app/Livewire/Forms/UserForm.php</code>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">Centralized validation rules untuk create & update</p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Main Component</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <code class="text-sm">app/Livewire/Admin/Users/Index.php</code>
+                            </div>
+                            <pre class="mt-2 text-xs"><code>public function createUser()
+{
+    $this->form->validate();
+    
+    DB::beginTransaction();
+    try {
+        $user = User::create([...]);
+        $user->assignRole($this->form->role);
+        
+        if ($this->form->workshop_id) {
+            Employment::create([...]);
+        }
+        
+        DB::commit();
+    } catch (\Exception $e) {
+        DB::rollBack();
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">🎨 Frontend Components</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                            <h4 class="font-semibold text-blue-900 mb-2">index.blade.php</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• Modern header (text-2xl font-bold)</li>
+                                <li>• Summary cards dengan Heroicons</li>
+                                <li>• Table dengan workshop column</li>
+                                <li>• Status badges dengan icons</li>
+                            </ul>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-100 rounded-lg p-4">
+                            <h4 class="font-semibold text-purple-900 mb-2">modals.blade.php</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• Create Modal</li>
+                                <li>• Edit Modal</li>
+                                <li>• Delete Confirmation</li>
+                                <li>• Reset Password</li>
+                                <li>• View Detail</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">🔐 Status Logic</h3>
+                    <pre class="text-xs"><code>public function getUserStatus(User $user): string
+{
+    // Superadmin and Owner always active
+    if ($user->hasRole('superadmin') || $user->hasRole('owner')) {
+        return 'Aktif';
+    }
+
+    // Check employment status for other roles
+    $employment = $user->employment;
+    if ($employment) {
+        return $employment->status === 'active' ? 'Aktif' : 'Tidak Aktif';
+    }
+
+    return 'Tidak Ada Data';
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workshop Management Section -->
+        <section id="workshop-management" class="mb-12">
+            <div class="card p-8">
+                <h2 class="section-title text-2xl font-bold mb-6">🏪 2. Workshop Management Refactor</h2>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">⚡ Performance Optimizations</h3>
+                    <ul class="feature-list space-y-2">
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-600 mt-1">⚙️</span>
+                            <div>
+                                <strong>Computed Properties (#[Computed])</strong>
+                                <p class="text-sm text-gray-600">Lazy loading untuk summary cards dan workshops</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-600 mt-1">⚙️</span>
+                            <div>
+                                <strong>Query Optimization</strong>
+                                <p class="text-sm text-gray-600">Select hanya kolom yang dibutuhkan, check column
+                                    existence</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-600 mt-1">⚙️</span>
+                            <div>
+                                <strong>Caching</strong>
+                                <p class="text-sm text-gray-600">City dropdown di-cache selama 1 jam</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">📊 Backend Implementation</h3>
+
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Computed Property Example</h4>
+                            <pre class="text-xs"><code>#[Computed]
+public function workshops()
+{
+    $hasStatus = Schema::hasColumn('workshops', 'status');
+    $hasRating = Schema::hasColumn('workshops', 'rating');
+    
+    $columns = ['id', 'name', 'code', 'city', 'created_at'];
+    
+    if ($hasStatus) $columns[] = 'status';
+    if ($hasRating) $columns[] = 'rating';
+    
+    return Workshop::query()
+        ->select($columns)
+        ->when($this->q, fn($q) => $q->where('name', 'like', "%{$this->q}%"))
+        ->latest('id')
+        ->paginate($this->perPage);
+}</code></pre>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">City Caching</h4>
+                            <pre class="text-xs"><code>public function mount(): void
+{
+    $this->cityOptions = Cache::remember('workshop_cities', 3600, function () {
+        $cities = Workshop::query()
+            ->select('city')
+            ->distinct()
+            ->whereNotNull('city')
+            ->pluck('city')
+            ->filter()
+            ->values();
+
+        $options = ['all' => 'Semua Kota'];
+        foreach ($cities as $c) {
+            $options[$c] = $c;
+        }
+        return $options;
+    });
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">🎭 UI Modernization</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                            <h4 class="font-semibold text-amber-900 mb-2">Summary Cards</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• Hover effects (translateY + shadow)</li>
+                                <li>• Icon animations (scale-110)</li>
+                                <li>• Colored backgrounds</li>
+                                <li>• Smooth transitions (300ms)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-green-50 border border-green-100 rounded-lg p-4">
+                            <h4 class="font-semibold text-green-900 mb-2">Table Improvements</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• Removed checkbox column</li>
+                                <li>• Workshop logo initials</li>
+                                <li>• Status badges dengan Heroicons</li>
+                                <li>• Modern action buttons</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">🔧 CRUD Actions</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                            <span class="text-2xl">👁️</span>
+                            <div>
+                                <div class="font-semibold text-gray-900">View Detail</div>
+                                <div class="text-sm text-gray-600">Modal dengan informasi lengkap bengkel</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                            <span class="text-2xl">⏸️</span>
+                            <div>
+                                <div class="font-semibold text-gray-900">Suspend/Activate</div>
+                                <div class="text-sm text-gray-600">Toggle status active/suspended</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
+                            <span class="text-2xl">🗑️</span>
+                            <div>
+                                <div class="font-semibold text-gray-900">Delete</div>
+                                <div class="text-sm text-gray-600">Hapus bengkel dengan konfirmasi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Practices Section -->
+        <section id="best-practices" class="mb-12">
+            <div class="card p-8">
+                <h2 class="section-title text-2xl font-bold mb-6">💡 3. Laravel & Livewire Best Practices</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">✅ Yang Sudah Diterapkan</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="border-l-4 border-emerald-500 bg-emerald-50 p-4 rounded">
+                                <h4 class="font-semibold text-emerald-900 mb-2">#[Computed] Properties</h4>
+                                <p class="text-sm text-gray-700">Untuk expensive calculations dan lazy loading</p>
+                            </div>
+                            <div class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded">
+                                <h4 class="font-semibold text-blue-900 mb-2">Wire:model.live.debounce</h4>
+                                <p class="text-sm text-gray-700">Untuk search dengan debounce 400ms</p>
+                            </div>
+                            <div class="border-l-4 border-purple-500 bg-purple-50 p-4 rounded">
+                                <h4 class="font-semibold text-purple-900 mb-2">URL Query Strings</h4>
+                                <p class="text-sm text-gray-700">#[Url] untuk shareable filter states</p>
+                            </div>
+                            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded">
+                                <h4 class="font-semibold text-amber-900 mb-2">Transaction Handling</h4>
+                                <p class="text-sm text-gray-700">DB::beginTransaction() untuk data integrity</p>
+                            </div>
+                            <div class="border-l-4 border-red-500 bg-red-50 p-4 rounded">
+                                <h4 class="font-semibold text-red-900 mb-2">Form Objects</h4>
+                                <p class="text-sm text-gray-700">Livewire Forms untuk centralized validation</p>
+                            </div>
+                            <div class="border-l-4 border-gray-500 bg-gray-50 p-4 rounded">
+                                <h4 class="font-semibold text-gray-900 mb-2">Proper Eager Loading</h4>
+                                <p class="text-sm text-gray-700">->with() untuk menghindari N+1 queries</p>
+                            </div>
+                            <div class="border-l-4 border-teal-500 bg-teal-50 p-4 rounded">
+                                <h4 class="font-semibold text-teal-900 mb-2">Cache Strategy</h4>
+                                <p class="text-sm text-gray-700">Cache::remember() untuk static data</p>
+                            </div>
+                            <div class="border-l-4 border-pink-500 bg-pink-50 p-4 rounded">
+                                <h4 class="font-semibold text-pink-900 mb-2">Column Existence Check</h4>
+                                <p class="text-sm text-gray-700">Schema::hasColumn() sebelum query</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">📐 Code Structure</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <pre class="text-xs"><code>app/
+├── Livewire/
+│   ├── Forms/
+│   │   └── UserForm.php          # Centralized validation
+│   └── Admin/
+│       ├── Users/
+│       │   └── Index.php         # Main component
+│       └── Workshops/
+│           └── Index.php         # Optimized queries
+resources/
+└── views/
+    └── livewire/
+        └── admin/
+            ├── users/
+            │   ├── index.blade.php   # Modern UI
+            │   └── modals.blade.php  # All modals
+            └── workshops/
+                ├── index.blade.php   # Animated UI
+                └── modals.blade.php  # CRUD modals</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testing Guide -->
+        <section id="testing" class="mb-12">
+            <div class="card p-8">
+                <h2 class="section-title text-2xl font-bold mb-6">🧪 4. Testing & Verification Guide</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">User Management Checklist</h3>
+                        <div class="space-y-2">
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Create user dengan workshop assignment</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Edit user dan ganti workshop</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Delete user dengan employment check</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Reset password user</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Verify status logic (superadmin & owner always
+                                    active)</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Verify workshop column displays correctly</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Workshop Management Checklist</h3>
+                        <div class="space-y-2">
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Page loads tanpa error SQL</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Summary cards tampil dengan benar</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Search filtering works</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">City filter works</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">View detail modal displays workshop info</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Suspend/activate toggles status</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Delete works with confirmation</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Hover animations are smooth</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Performance Checklist</h3>
+                        <div class="space-y-2">
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Check Network tab - reduced initial load</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Verify lazy loading dengan computed
+                                    properties</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Test responsive design (mobile/tablet)</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input type="checkbox" class="w-5 h-5 text-red-600 rounded">
+                                <span class="text-sm text-gray-700">Verify cache works (city dropdown)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Achievements -->
+        <section class="mb-12">
+            <div class="card p-8 bg-gradient-to-br from-red-50 to-white">
+                <h2 class="section-title text-2xl font-bold mb-6">🎯 Key Achievements</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">✨ UI/UX Improvements</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• 100% migration dari emoji/SVG ke Heroicons</li>
+                            <li>• Smooth animations (hover, transitions)</li>
+                            <li>• Modern typography (text-2xl, font-bold)</li>
+                            <li>• Consistent color scheme</li>
+                            <li>• Responsive design</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">⚡ Performance Gains</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• Lazy loading dengan #[Computed]</li>
+                            <li>• Query optimization (select needed columns)</li>
+                            <li>• Caching strategy (1 hour TTL)</li>
+                            <li>• Reduced database queries</li>
+                            <li>• Faster page load times</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">🏗️ Code Quality</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• Laravel best practices</li>
+                            <li>• Livewire best practices</li>
+                            <li>• Form objects untuk validation</li>
+                            <li>• Transaction handling</li>
+                            <li>• Proper error handling</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">🔧 CRUD Functionality</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• Full CRUD operations</li>
+                            <li>• Modern modal components</li>
+                            <li>• Flash messages</li>
+                            <li>• Confirmation dialogs</li>
+                            <li>• Intuitive user flows</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-20">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold font-bubble mb-2">BBI HUB Admin Documentation</h3>
+                <p class="text-gray-400 text-sm">Complete System Management Documentation v1.0.0</p>
+            </div>
+            <div class="text-gray-500 text-sm">
+                <p>Generated: {{ now()->format('d F Y, H:i') }} WIB</p>
+                <p class="mt-2">© 2025 BBI HUB. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

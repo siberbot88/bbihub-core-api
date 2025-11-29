@@ -10,7 +10,6 @@ use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\Workshop;
-// Vehicle opsional – guard saat class tak ada
 use App\Models\Vehicle;
 
 #[Title('Pusat Data')]
@@ -22,10 +21,14 @@ class Index extends Component
     protected string $paginationTheme = 'tailwind';
 
     // Query params tersimpan di URL
-    #[Url(as: 'q')]       public string $q = '';
-    #[Url(as: 'status')]  public string $status = 'all';
-    #[Url(as: 'cat')]     public string $category = '';    // '', 'users', 'workshops', 'vehicles'
-    #[Url(as: 'pp')]      public int $perPage = 8;
+    #[Url(as: 'q')]      public string $q        = '';
+    #[Url(as: 'status')] public string $status   = 'all';
+    #[Url(as: 'cat')]    public string $category = '';      // '', 'users', 'workshops', 'vehicles'
+    #[Url(as: 'pp')]     public int    $perPage  = 8;
+
+    // Modal Detail User
+    public bool $showDetailModal = false;
+    public ?User $selectedUser   = null;
 
     public array $categoryOptions = [
         ''           => 'Pilih data…',
@@ -42,23 +45,29 @@ class Index extends Component
     ];
 
     // Reset halaman saat filter berubah
-    public function updatingCategory() { $this->resetPage(); $this->q=''; $this->status='all'; }
-    public function updatingQ()        { $this->resetPage(); }
-    public function updatingStatus()   { $this->resetPage(); }
-    public function updatingPerPage()  { $this->resetPage(); }
+    public function updatingCategory()
+    {
+        $this->resetPage();
+        $this->q      = '';
+        $this->status = 'all';
+    }
+
+    public function updatingQ()       { $this->resetPage(); }
+    public function updatingStatus()  { $this->resetPage(); }
+    public function updatingPerPage() { $this->resetPage(); }
 
     /** Accessor rows: hasil sesuai kategori */
     public function getRowsProperty()
     {
         return match ($this->category) {
-            'users' => $this->queryUsers(),
+            'users'     => $this->queryUsers(),
             'workshops' => $this->queryWorkshops(),
-            'vehicles' => $this->queryVehicles(),
-            default => null,
+            'vehicles'  => $this->queryVehicles(),
+            default     => null,
         };
     }
 
-    /** Query Users (aman bila tak ada kolom status) */
+    /** Query Users */
     protected function queryUsers()
     {
         $q = User::query();
@@ -66,17 +75,15 @@ class Index extends Component
         if ($this->q !== '') {
             $term = $this->q;
             $q->where(function ($w) use ($term) {
-                $w->where('name','like',"%{$term}%")
-                  ->orWhere('email','like',"%{$term}%");
+                $w->where('name', 'like', "%{$term}%")
+                  ->orWhere('email','like', "%{$term}%");
             });
         }
 
         if ($this->status !== 'all') {
-            // gunakan kolom yang ada: status / email_verified_at / is_active dll.
             if (Schema::hasColumn('users', 'status')) {
                 $q->where('status', $this->status);
             } elseif (Schema::hasColumn('users', 'email_verified_at')) {
-                // contoh mapping sederhana
                 if ($this->status === 'active') {
                     $q->whereNotNull('email_verified_at');
                 } elseif ($this->status === 'inactive') {
@@ -88,7 +95,7 @@ class Index extends Component
         return $q->latest('id')->paginate($this->perPage);
     }
 
-    /** Query Workshops (cek kolom status dulu) */
+    /** Query Workshops */
     protected function queryWorkshops()
     {
         $q = Workshop::query();
@@ -108,10 +115,9 @@ class Index extends Component
         return $q->latest('id')->paginate($this->perPage);
     }
 
-    /** Query Vehicles (opsional; guard jika model/tabel/kolom belum ada) */
+    /** Query Vehicles (opsional) */
     protected function queryVehicles()
     {
-        // Jika model Vehicle belum dibuat, kembalikan koleksi kosong ter-paginate
         if (!class_exists(Vehicle::class)) {
             return collect([])->paginate($this->perPage);
         }
@@ -133,12 +139,29 @@ class Index extends Component
         return $q->latest('id')->paginate($this->perPage);
     }
 
+    /** Ketika tombol Detail user diklik */
+    public function detail(string $userId): void
+    {
+        if ($this->category !== 'users') {
+            return;
+        }
+
+        $this->selectedUser    = User::findOrFail($userId);
+        $this->showDetailModal = true;
+    }
+
+    /** Tutup modal */
+    public function closeDetail(): void
+    {
+        $this->reset(['showDetailModal', 'selectedUser']);
+    }
+
     public function render()
     {
         return view('livewire.admin.data-center.index', [
-            'rows'           => $this->rows,            // bisa null bila category kosong
-            'categoryOptions'=> $this->categoryOptions,
-            'statusOptions'  => $this->statusOptions,
+            'rows'            => $this->rows,           // bisa null kalau kategori belum dipilih
+            'categoryOptions' => $this->categoryOptions,
+            'statusOptions'   => $this->statusOptions,
         ]);
     }
 }

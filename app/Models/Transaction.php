@@ -53,7 +53,7 @@ class Transaction extends Model
     }
 
     public function items(): HasMany{
-        return $this->hasMany(TransactionItem::class, 'service_uuid');
+        return $this->hasMany(TransactionItem::class, 'transaction_uuid');
     }
 
     public function logs(): HasMany{

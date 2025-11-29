@@ -11,17 +11,67 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Tambah kolom baru
         Schema::table('transaction_items', function (Blueprint $table) {
-            $table->string('name')->after('transaction_uuid');
-            $table->enum('service_type', ['servis ringan', 'servis sedang', 'servis berat','sparepart', 'biaya tambahan', 'lainnya'])->after('name');
+            if (! Schema::hasColumn('transaction_items', 'name')) {
+                $table->string('name')->after('transaction_uuid');
+            }
 
-            // Hapus kolom yang tidak dibutuhkan
-            $table->dropForeign(['service_uuid']);
-            $table->dropColumn('service_uuid');
-
-            $table->dropForeign(['service_type_uuid']);
-            $table->dropColumn('service_type_uuid');
+            if (! Schema::hasColumn('transaction_items', 'service_type')) {
+                $table->enum('service_type', [
+                    'servis ringan',
+                    'servis sedang',
+                    'servis berat',
+                    'sparepart',
+                    'biaya tambahan',
+                    'lainnya',
+                ])->after('name');
+            }
         });
+
+        // ===============================
+        // HAPUS FK & KOLOM service_uuid
+        // ===============================
+        if (Schema::hasColumn('transaction_items', 'service_uuid')) {
+
+            // Drop foreign key-nya (kalau masih ada)
+            try {
+                Schema::table('transaction_items', function (Blueprint $table) {
+                    $table->dropForeign(['service_uuid']);
+                });
+            } catch (\Throwable $e) {
+                // Kalau FK sudah nggak ada, di-skip aja
+            }
+
+            // Drop kolomnya
+            Schema::table('transaction_items', function (Blueprint $table) {
+                if (Schema::hasColumn('transaction_items', 'service_uuid')) {
+                    $table->dropColumn('service_uuid');
+                }
+            });
+        }
+
+        // =====================================
+        // HAPUS FK & KOLOM service_type_uuid
+        // =====================================
+        if (Schema::hasColumn('transaction_items', 'service_type_uuid')) {
+
+            // Drop foreign key-nya
+            try {
+                Schema::table('transaction_items', function (Blueprint $table) {
+                    $table->dropForeign(['service_type_uuid']);
+                });
+            } catch (\Throwable $e) {
+                // Kalau FK sudah nggak ada, di-skip
+            }
+
+            // Drop kolomnya
+            Schema::table('transaction_items', function (Blueprint $table) {
+                if (Schema::hasColumn('transaction_items', 'service_type_uuid')) {
+                    $table->dropColumn('service_type_uuid');
+                }
+            });
+        }
     }
 
     /**
@@ -29,12 +79,30 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Balikin kolom lama
         Schema::table('transaction_items', function (Blueprint $table) {
-            $table->foreignUuid('service_uuid')->constrained('services');
-            $table->foreignUuid('service_type_uuid')->constrained('service_types');
+            if (! Schema::hasColumn('transaction_items', 'service_uuid')) {
+                $table->foreignUuid('service_uuid')
+                    ->nullable()
+                    ->constrained('services');
+            }
 
-            // Hapus kolom baru yang ditambahkan
-            $table->dropColumn(['name', 'service_type']);
+            if (! Schema::hasColumn('transaction_items', 'service_type_uuid')) {
+                $table->foreignUuid('service_type_uuid')
+                    ->nullable()
+                    ->constrained('service_types');
+            }
+        });
+
+        // Hapus kolom baru yang ditambahkan
+        Schema::table('transaction_items', function (Blueprint $table) {
+            if (Schema::hasColumn('transaction_items', 'name')) {
+                $table->dropColumn('name');
+            }
+
+            if (Schema::hasColumn('transaction_items', 'service_type')) {
+                $table->dropColumn('service_type');
+            }
         });
     }
 };

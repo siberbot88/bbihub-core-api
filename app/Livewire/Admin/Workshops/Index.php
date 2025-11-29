@@ -7,8 +7,10 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Workshop;
 
 #[Title('Manajemen Bengkel')]
@@ -23,14 +25,14 @@ class Index extends Component
     #[Url] public string $q = '';
     #[Url] public string $status = 'all';
     #[Url] public string $city = 'all';
-    #[Url] public int $perPage = 8;
+    #[Url] public int $perPage = 10;
 
-    // Modal control
-    public bool $showDetail = false;
-    public bool $showEdit   = false;
-    public bool $showDelete = false;
-    public bool $showReset  = false;
-    public bool $showSuspend = false; // ⬅ WAJIB ADA
+    // Modal states
+    public bool $showDetail  = false;
+    public bool $showEdit    = false;
+    public bool $showDelete  = false;
+    public bool $showSuspend = false;
+    public bool $showReset   = false;
 
     // Selected workshop
     public ?Workshop $selectedWorkshop = null;
@@ -40,7 +42,7 @@ class Index extends Component
     public string $newPassword = '';
     public string $confirmPassword = '';
 
-    // Dropdown options
+    // Dropdowns
     public array $statusOptions = [
         'all'       => 'Semua Status',
         'pending'   => 'Menunggu Verifikasi',
@@ -52,46 +54,48 @@ class Index extends Component
 
     public function mount(): void
     {
-        // Generate city dropdown from DB
-        $cities = Workshop::query()
-            ->select('city')
-            ->distinct()
-            ->pluck('city')
-            ->filter()
-            ->values();
+        // Cache city options
+        $this->cityOptions = Cache::remember('workshop_cities', 3600, function () {
+            $cities = Workshop::query()
+                ->select('city')
+                ->distinct()
+                ->whereNotNull('city')
+                ->pluck('city')
+                ->filter()
+                ->values();
 
-        foreach ($cities as $c) {
-            $this->cityOptions[$c] = ucfirst($c);
-        }
+            $options = ['all' => 'Semua Kota'];
+            foreach ($cities as $c) {
+                $options[$c] = ucfirst($c);
+            }
+            return $options;
+        });
 
         $this->resetModal();
     }
 
     private function resetModal(): void
     {
-        $this->showDetail = false;
-        $this->showEdit   = false;
-        $this->showDelete = false;
-        $this->showReset  = false;
+        $this->showDetail  = false;
+        $this->showEdit    = false;
+        $this->showDelete  = false;
         $this->showSuspend = false;
+        $this->showReset   = false;
 
         $this->selectedWorkshop = null;
-
         $this->oldPassword = '';
         $this->newPassword = '';
         $this->confirmPassword = '';
     }
 
-    // Reset pagination on filter change
+    // Reset pagination
     public function updatingQ()       { $this->resetPage(); }
     public function updatingStatus()  { $this->resetPage(); }
     public function updatingCity()    { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
 
-    /**
-     * Summary Cards (same format as user management)
-     */
-    public function getCardsProperty(): array
+    #[Computed]
+    public function cards(): array
     {
         $base = Workshop::query();
         $hasStatus = Schema::hasColumn('workshops', 'status');
@@ -99,37 +103,33 @@ class Index extends Component
         return [
             [
                 'label' => 'Total Bengkel',
-                'value' => (clone $base)->count(),
+                'value' => $base->count(),
                 'hint'  => 'update +5%',
-                'icon'  => 'total_bengkel',
                 'color' => 'blue',
             ],
             [
                 'label' => 'Menunggu Verifikasi',
                 'value' => $hasStatus ? (clone $base)->where('status', 'pending')->count() : 0,
                 'hint'  => 'update +2%',
-                'icon'  => 'total_verifikasi',
                 'color' => 'yellow',
             ],
             [
                 'label' => 'Bengkel Aktif',
                 'value' => $hasStatus ? (clone $base)->where('status', 'active')->count() : 0,
                 'hint'  => 'update +5%',
-                'icon'  => 'akun_aktif',
                 'color' => 'green',
             ],
             [
                 'label' => 'Bengkel Ditangguhkan',
                 'value' => $hasStatus ? (clone $base)->where('status', 'suspended')->count() : 0,
                 'hint'  => 'update +5%',
-                'icon'  => 'akun_tidak_aktif',
                 'color' => 'red',
             ],
         ];
     }
 
     // ==========================
-    // MODAL OPENERS
+    // Modal Openers
     // ==========================
     public function view($id)
     {
@@ -158,11 +158,11 @@ class Index extends Component
     public function suspend($id)
     {
         $this->selectedWorkshop = Workshop::findOrFail($id);
-        $this->showSuspend = true; // ⬅ modal explicit
+        $this->showSuspend = true;
     }
 
     // ==========================
-    // ACTION HANDLERS
+    // ACTIONS
     // ==========================
     public function updateWorkshop()
     {
@@ -170,7 +170,6 @@ class Index extends Component
             $this->selectedWorkshop->save();
             session()->flash('message', 'Data bengkel berhasil diperbarui.');
         }
-
         $this->resetModal();
     }
 
@@ -185,31 +184,30 @@ class Index extends Component
             $this->selectedWorkshop->update([
                 'password' => Hash::make($this->newPassword),
             ]);
-
             session()->flash('message', 'Password berhasil diubah.');
         }
 
         $this->resetModal();
     }
 
-    public function confirmDelete($id)
+    public function confirmDelete()
     {
-        $workshop = Workshop::findOrFail($id);
-        $workshop->delete();
-
+        if ($this->selectedWorkshop) {
+            $this->selectedWorkshop->delete();
+            session()->flash('message', 'Bengkel berhasil dihapus.');
+        }
         $this->resetModal();
-        session()->flash('message', 'Bengkel berhasil dihapus.');
     }
 
     public function confirmSuspend()
     {
         if ($this->selectedWorkshop && Schema::hasColumn('workshops', 'status')) {
 
-            $new = $this->selectedWorkshop->status === 'suspended'
+            $newStatus = $this->selectedWorkshop->status === 'suspended'
                 ? 'active'
                 : 'suspended';
 
-            $this->selectedWorkshop->update(['status' => $new]);
+            $this->selectedWorkshop->update(['status' => $newStatus]);
 
             session()->flash('message', 'Status bengkel berhasil diperbarui.');
         }
@@ -217,12 +215,25 @@ class Index extends Component
         $this->resetModal();
     }
 
-    // ==========================
-    // RENDER
-    // ==========================
-    public function render()
+    public function closeModal()
     {
-        $query = Workshop::query();
+        $this->resetModal();
+    }
+
+    // ==========================
+    // WORKSHOP LIST
+    // ==========================
+    #[Computed]
+    public function workshops()
+    {
+        $hasStatus = Schema::hasColumn('workshops', 'status');
+        $hasRating = Schema::hasColumn('workshops', 'rating');
+
+        $columns = ['id', 'name', 'code', 'city', 'created_at'];
+        if ($hasStatus) $columns[] = 'status';
+        if ($hasRating) $columns[] = 'rating';
+
+        $query = Workshop::query()->select($columns);
 
         if ($this->q !== '') {
             $query->where(function ($w) {
@@ -231,7 +242,7 @@ class Index extends Component
             });
         }
 
-        if ($this->status !== 'all' && Schema::hasColumn('workshops', 'status')) {
+        if ($this->status !== 'all' && $hasStatus) {
             $query->where('status', $this->status);
         }
 
@@ -239,13 +250,19 @@ class Index extends Component
             $query->where('city', $this->city);
         }
 
-        $rows = $query->latest('id')->paginate($this->perPage);
+        return $query->latest('id')->paginate($this->perPage);
+    }
 
+    // ==========================
+    // RENDER
+    // ==========================
+    public function render()
+    {
         return view('livewire.admin.workshops.index', [
-            'rows'     => $rows,
-            'cards'    => $this->cards,
+            'rows' => $this->workshops(),
+            'cards' => $this->cards,
             'statusOptions' => $this->statusOptions,
-            'cityOptions'   => $this->cityOptions,
+            'cityOptions' => $this->cityOptions,
         ]);
     }
 }

@@ -12,7 +12,7 @@
         <th class="px-4 py-3">MEREK / TIPE</th>
         <th class="px-4 py-3">STATUS</th>
         <th class="px-4 py-3">AKTIF TERAKHIR</th>
-        <th class="px-4 py-3 text-right">AKSI</th>
+        <th class="px-4 py-3 text-left">AKSI</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-gray-100 text-sm">

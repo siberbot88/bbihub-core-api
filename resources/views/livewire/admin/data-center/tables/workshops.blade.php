@@ -12,7 +12,7 @@
         <th class="px-4 py-3">LOKASI</th>
         <th class="px-4 py-3">RATING</th>
         <th class="px-4 py-3">BERGABUNG</th>
-        <th class="px-4 py-3 text-right">AKSI</th>
+        <th class="px-4 py-3 text-left">AKSI</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-gray-100 text-sm">

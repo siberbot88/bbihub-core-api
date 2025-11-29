@@ -19,17 +19,7 @@ class AuthController extends Controller
 {
     use ApiResponseTrait;
 
-    /**
-     * Helper: pastikan role tersedia di guard tertentu, kalau belum ada dibuat.
-     */
-    private function ensureRoleExistsForGuard(string $roleName, string $guard): Role
-    {
-        try {
-            return Role::findByName($roleName, $guard);
-        } catch (\Throwable $e) {
-            return Role::create(['name' => $roleName, 'guard_name' => $guard]);
-        }
-    }
+
 
     /**
      * Helper: muat relasi sesuai role agar payload user ringkas & kontekstual.
@@ -76,9 +66,11 @@ class AuthController extends Controller
                 'must_change_password' => false,
             ]);
 
-            $role = $this->ensureRoleExistsForGuard('owner', 'sanctum');
-            $user->guard_name = 'sanctum';
-            $user->assignRole($role);
+            // Role 'owner' must exist in database (seeded)
+            $user->assignRole('owner');
+            // Force guard name if needed, though assignRole usually handles it based on config
+            // But to be safe with previous logic:
+            // $user->guard_name = 'sanctum'; // Usually not needed if model has guard_name property or default
 
             $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
 
@@ -121,13 +113,25 @@ class AuthController extends Controller
             $user->tokens()->delete();
         }
 
-        $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
+        // Support remember-me with extended token expiration
+        $tokenName = 'auth_token_for_' . ($user->username ?? $user->email);
+        $remember = $request->boolean('remember', false);
+        
+        if ($remember) {
+            // Extended expiration: 30 days
+            $token = $user->createToken($tokenName, ['*'], now()->addDays(30))->plainTextToken;
+        } else {
+            // Default expiration based on sanctum config
+            $token = $user->createToken($tokenName)->plainTextToken;
+        }
 
         $this->loadUserRelations($user);
 
         return $this->successResponse('Login berhasil', [
             'access_token' => $token,
             'token_type'   => 'Bearer',
+            'remember'     => $remember,
+            'expires_in'   => $remember ? '30 days' : 'session',
             'user'         => [
                 'id'    => $user->id,
                 'name'  => $user->name,
