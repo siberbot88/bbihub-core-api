@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System - BBI HUB Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626', // Red-600
+                        'primary-hover': '#B91C1C', // Red-700
+                        text: {
+                            main: '#EDEDEF',
+                            muted: '#8A8F98',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .color-swatch {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.05);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #EDEDEF;
+            color: #0B0C0E;
+            text-align: center;
+            border-radius: 6px;
+            padding: 12px;
+            position: fixed;
+            z-index: 100;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                        B</div>
+                    <span class="font-semibold text-sm tracking-tight">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="design.html" class="nav-link active">Design</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+
+        <div class="mb-12">
+            <h1 class="text-3xl font-bold text-white mb-4 reveal-bottom">Design System</h1>
+            <p class="text-text-muted text-lg reveal-bottom delay-100">Visual guidelines and components for BBI HUB.</p>
+        </div>
+
+        <!-- Colors -->
+        <section class="mb-16 reveal-bottom delay-200">
+            <h2 class="text-lg font-semibold text-white mb-6 border-b border-white/10 pb-2">Color Palette</h2>
+            <p class="text-text-muted text-sm mb-6">Click to copy HEX code.</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="color-swatch group" onclick="copyColor('#DC2626', 'Primary (Red 600)')">
+                    <div class="h-24 rounded-lg bg-[#DC2626] mb-2"></div>
+                    <p class="font-medium text-white text-sm">Primary</p>
+                    <p class="text-text-muted text-xs">#DC2626</p>
+                </div>
+                <div class="color-swatch group" onclick="copyColor('#B91C1C', 'Primary Hover (Red 700)')">
+                    <div class="h-24 rounded-lg bg-[#B91C1C] mb-2"></div>
+                    <p class="font-medium text-white text-sm">Primary Hover</p>
+                    <p class="text-text-muted text-xs">#B91C1C</p>
+                </div>
+                <div class="color-swatch group" onclick="copyColor('#0B0C0E', 'Background')">
+                    <div class="h-24 rounded-lg bg-[#0B0C0E] mb-2 border border-white/10"></div>
+                    <p class="font-medium text-white text-sm">Background</p>
+                    <p class="text-text-muted text-xs">#0B0C0E</p>
+                </div>
+                <div class="color-swatch group" onclick="copyColor('#141518', 'Surface')">
+                    <div class="h-24 rounded-lg bg-[#141518] mb-2 border border-white/10"></div>
+                    <p class="font-medium text-white text-sm">Surface</p>
+                    <p class="text-text-muted text-xs">#141518</p>
+                </div>
+                <div class="color-swatch group" onclick="copyColor('#EDEDEF', 'Text Main')">
+                    <div class="h-24 rounded-lg bg-[#EDEDEF] mb-2"></div>
+                    <p class="font-medium text-white text-sm">Text Main</p>
+                    <p class="text-text-muted text-xs">#EDEDEF</p>
+                </div>
+                <div class="color-swatch group" onclick="copyColor('#8A8F98', 'Text Muted')">
+                    <div class="h-24 rounded-lg bg-[#8A8F98] mb-2"></div>
+                    <p class="font-medium text-white text-sm">Text Muted</p>
+                    <p class="text-text-muted text-xs">#8A8F98</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typography -->
+        <section class="mb-16 reveal-bottom delay-300">
+            <h2 class="text-lg font-semibold text-white mb-6 border-b border-white/10 pb-2">Typography</h2>
+
+            <div class="card space-y-8">
+                <div>
+                    <h3 class="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">Inter</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-baseline gap-8">
+                            <span class="text-text-muted text-sm w-20">H1</span>
+                            <h1 class="text-4xl font-bold text-white">The quick brown fox</h1>
+                        </div>
+                        <div class="flex items-baseline gap-8">
+                            <span class="text-text-muted text-sm w-20">H2</span>
+                            <h2 class="text-3xl font-bold text-white">The quick brown fox</h2>
+                        </div>
+                        <div class="flex items-baseline gap-8">
+                            <span class="text-text-muted text-sm w-20">H3</span>
+                            <h3 class="text-2xl font-semibold text-white">The quick brown fox</h3>
+                        </div>
+                        <div class="flex items-baseline gap-8">
+                            <span class="text-text-muted text-sm w-20">Body</span>
+                            <p class="text-text-muted max-w-2xl leading-relaxed">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Components -->
+        <section class="mb-16 reveal-bottom delay-400">
+            <h2 class="text-lg font-semibold text-white mb-6 border-b border-white/10 pb-2">Components</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Buttons -->
+                <div class="card">
+                    <h3 class="text-sm font-medium text-white mb-4">Buttons</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <button
+                            class="px-4 py-2 bg-[#EDEDEF] text-[#0B0C0E] rounded-md font-medium hover:opacity-90 transition-opacity text-sm">
+                            Primary
+                        </button>
+                        <button
+                            class="px-4 py-2 bg-white/10 text-white border border-white/5 rounded-md font-medium hover:bg-white/15 transition-colors text-sm">
+                            Secondary
+                        </button>
+                        <button
+                            class="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-md font-medium hover:bg-red-500/20 transition-colors text-sm">
+                            Danger
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Badges -->
+                <div class="card">
+                    <h3 class="text-sm font-medium text-white mb-4">Badges</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <span
+                            class="px-2 py-1 rounded text-[11px] font-semibold bg-primary/20 text-primary uppercase tracking-wide">
+                            Primary
+                        </span>
+                        <span
+                            class="px-2 py-1 rounded text-[11px] font-semibold bg-green-500/20 text-green-400 uppercase tracking-wide">
+                            Success
+                        </span>
+                        <span
+                            class="px-2 py-1 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-400 uppercase tracking-wide">
+                            Warning
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Element -->
+    <div id="toast">Copied to clipboard!</div>
+
+    <!-- JavaScript for Interaction -->
+    <script>
+        ScrollReveal().reveal('.reveal-bottom', { distance: '20px', origin: 'bottom', duration: 800, interval: 100 });
+
+        function copyColor(hex, name) {
+            navigator.clipboard.writeText(hex).then(() => {
+                showToast(`Copied ${name} (${hex})`);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+    </script>
+
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-5 h-5 bg-primary rounded flex items-center justify-center text-white font-bold text-[10px]">
+                    B</div>
+                <span class="text-sm text-text-muted">© 2025 BBI HUB</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Terms</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Twitter</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

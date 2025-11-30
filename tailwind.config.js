@@ -33,7 +33,8 @@ export default {
         extend: {
             // Pakai font yang sama dengan Figma (ganti sesuai desain)
             fontFamily: {
-                sans: ["Inter", "Figtree", ...defaultTheme.fontFamily.sans],
+                sans: ["Poppins", "Figtree", ...defaultTheme.fontFamily.sans],
+                poppins: ["Poppins", ...defaultTheme.fontFamily.sans],
             },
 
             // Token warna (contoh – ganti sesuai Figma)

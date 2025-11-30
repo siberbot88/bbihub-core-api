@@ -18,7 +18,11 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'code' => 'CUST-' . strtoupper($this->faker->bothify('???-###')),
+            'name' => $this->faker->name(),
+            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'address' => $this->faker->address(),
         ];
     }
 }

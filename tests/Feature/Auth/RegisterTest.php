@@ -13,6 +13,15 @@ class RegisterTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Create roles needed for testing
+        Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
+        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        Role::create(['name' => 'mechanic', 'guard_name' => 'sanctum']);
+    }
+
     /**
      * Test user registration successfully.
      */

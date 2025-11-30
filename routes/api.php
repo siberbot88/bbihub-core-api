@@ -5,11 +5,14 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
-use App\Http\Controllers\Api\ServiceApiContoller;
+use App\Http\Controllers\Api\ServiceApiController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\TransactionItemController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VoucherApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ServiceController;
 
 
 Route::prefix('v1/auth')->group(function () {
@@ -34,12 +37,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         ];
     });
 
-    // ... sisa file ...
 
     Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
         // Workshops
         Route::post('workshops',[WorkshopApiController::class, 'store'])->name('workshops.store');
-//        Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
+        Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
 
         // Documents
         Route::post('documents',[WorkshopDocumentApiController::class, 'store'])->name('documents.store');
@@ -66,8 +68,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
 
         // List Service
-        Route::get('services',           [ServiceApiContoller::class, 'index']);
-        Route::get('services/{service}', [ServiceApiContoller::class, 'show']);
+        Route::get('services',           [ServiceApiController::class, 'index']);
+        Route::get('services/{service}', [ServiceApiController::class, 'show']);
 
 
         // Kendaraan
@@ -83,12 +85,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::apiResource('vouchers', VoucherApiController::class);
 
         // Service
-        Route::get   ('services',           [ServiceApiContoller::class, 'index']);
-        Route::get   ('services/{service}', [ServiceApiContoller::class, 'show']);
-        Route::post  ('services',           [ServiceApiContoller::class, 'store']);
-        Route::put   ('services/{service}', [ServiceApiContoller::class, 'update']);
-        Route::patch ('services/{service}', [ServiceApiContoller::class, 'update']);
-        Route::delete('services/{service}', [ServiceApiContoller::class, 'destroy']);
+        Route::get   ('services',           [ServiceApiController::class, 'index']);
+        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
+        Route::post  ('services',           [ServiceApiController::class, 'store']);
+        Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
+        Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
+        Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
 
         // Kendaraan
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
@@ -97,12 +99,46 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
+
+    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
+        //
+    });
+
+    Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
+
+        // =========================
+        // SERVICE
+        // =========================
+        Route::get('/admin/services',            [ServiceController::class, 'index']);   // ?status=&date=&q=&per_page=
+        Route::post('/admin/services',           [ServiceController::class, 'store']);
+        Route::get('/admin/services/{service}',  [ServiceController::class, 'show']);
+        Route::post('/admin/services/{service}', [ServiceController::class, 'update']);
+        Route::post('/admin/services{service}',  [ServiceController::class, 'destroy']);
+
+        // ✅ endpoint khusus admin
+        Route::post('services/{service}/accept', [ServiceController::class, 'accept']);
+        Route::post('services/{service}/decline', [ServiceController::class, 'decline']);
+        Route::post('services/{service}/assign-mechanic', [ServiceController::class, 'assignMechanic']);
+
+        // =========================
+        // TRANSACTION
+        // =========================
+        Route::post('/transactions', [TransactionController::class, 'store']);
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
+        Route::put('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
+
+
+        // =========================
+        // TRANSACTION ITEMS
+        // =========================
+        Route::post('/transaction-items', [TransactionItemController::class, 'store']);
+    });
 });
 
 Route::prefix('admin')->group(function () {
-    Route::get ('services',               [ServiceApiContoller::class, 'index']);
-    Route::post('services',               [ServiceApiContoller::class, 'store']);
-    Route::get ('services/{service}',     [ServiceApiContoller::class, 'show']);
+    Route::get ('services',               [ServiceApiController::class, 'index']);
+    Route::post('services',               [ServiceApiController::class, 'store']);
+    Route::get ('services/{service}',     [ServiceApiController::class, 'show']);
 
 
 

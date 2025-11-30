@@ -21,6 +21,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'id',
+        'service_uuid',
         'customer_uuid',
         'workshop_uuid',
         'admin_uuid',
@@ -28,24 +29,32 @@ class Transaction extends Model
         'status',
         'amount',
         'payment_method',
-        'service_uuid',
     ];
 
+    /* ========= RELATIONSHIPS ========= */
 
+    /**
+     * Transaksi milik satu service
+     */
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class, 'service_uuid', 'id');
+    }
     public function customer(): BelongsTo{
         return $this->belongsTo(Customer::class, 'customer_uuid');
     }
 
-    public function service():  BelongsTo{
-        return $this->belongsTo(Service::class, 'service_uuid');
-    }
+//    public function service():   BelongsTo{
+//        return $this->belongsTo(Service::class, 'service_uuid');
+//    }
 
     public function workshop(): BelongsTo{
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
     }
 
     public function mechanic(): BelongsTo{
-        return $this->belongsTo(User::class, 'mechanic_uuid');
+        return $this->belongsTo(Employment::class, 'mechanic_uuid')->with('user');
     }
 
     public function admin(): BelongsTo{
@@ -53,7 +62,7 @@ class Transaction extends Model
     }
 
     public function items(): HasMany{
-        return $this->hasMany(TransactionItem::class, 'service_uuid');
+        return $this->hasMany(TransactionItem::class, 'transaction_uuid');
     }
 
     public function logs(): HasMany{
