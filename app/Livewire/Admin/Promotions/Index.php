@@ -11,14 +11,13 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Title('Manajemen Promosi')]
-#[Layout('layouts.app')] // <-- path layout yang benar
+#[Layout('layouts.app')]
 class Index extends Component
 {
     use WithPagination;
 
     protected string $paginationTheme = 'tailwind';
 
-    // Query params
     #[Url(as: 'q')]      public string $q = '';
     #[Url(as: 'status')] public string $status = 'all';
     #[Url(as: 'pp')]     public int    $perPage = 10;
@@ -30,10 +29,25 @@ class Index extends Component
         'expired' => 'Kadaluarsa',
     ];
 
-    // Reset page ketika filter berubah
     public function updatingQ()       { $this->resetPage(); }
     public function updatingStatus()  { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
+
+    // 🔹 dipanggil dari tombol "Refresh"
+    public function refresh()
+    {
+        // Kalau mau sekalian balik ke page 1:
+        $this->resetPage();
+        // Livewire otomatis re-render setelah method dipanggil,
+        // jadi nggak perlu ngapa-ngapain lagi di sini.
+    }
+
+    // 🔹 dipanggil dari tombol "Tambah Banner"
+    public function openCreate()
+    {
+        // arahkan ke halaman form create banner
+        return redirect()->route('admin.promotions.create');
+    }
 
     public function render()
     {
@@ -54,8 +68,8 @@ class Index extends Component
         $promos = $q->latest()->paginate($this->perPage);
 
         return view('livewire.admin.promotions.index', [
-        'promotions'    => $promos,
-        'statusOptions' => $this->statusOptions,
-    ]);
+            'promotions'    => $promos,
+            'statusOptions' => $this->statusOptions,
+        ]);
     }
 }

@@ -53,7 +53,7 @@
                 ],
                 [
                     'label' => 'Manajemen Promosi',
-                    'route' => 'admin.promotions',
+                    'route' => 'admin.promotions.index',
                     'icon' => 'megaphone'
                 ],
                 [
