@@ -20,6 +20,7 @@
         "spatie/laravel-query-builder": "^6.3"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.6",
         "doctrine/dbal": "^4.3",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",

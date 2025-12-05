@@ -4,53 +4,85 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
-use App\Models\Service;
 use App\Models\Transaction;
+use App\Services\TransactionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
 {
+    public function __construct(
+        protected TransactionService $transactionService
+    ) {}
+
+    // POST /api/v1/transactions
     public function store(Request $request)
     {
         $data = $request->validate([
-            'service_uuid' => 'required|string|exists:services,id',
-            'payment_method' => 'nullable|string'
+            'service_uuid'   => 'required|string|exists:services,id',
+            'payment_method' => 'nullable|string',
         ]);
 
-        $service = Service::findOrFail($data['service_uuid']);
+        try {
+            $trx = $this->transactionService->createTransaction($data, $request->user());
 
-        // Buat transaksi
-        $trx = Transaction::create([
-            'id' => Str::uuid(),
-            'service_uuid' => $service->id,
-            'customer_uuid' => $service->customer_uuid,
-            'workshop_uuid' => $service->workshop_uuid,
-            'mechanic_uuid' => $service->mechanic_uuid,
-            'admin_uuid' => auth()->id(),
-            'status' => 'pending',
-            'amount' => 0,
-            'payment_method' => $data['payment_method'] ?? null
-        ]);
+            return (new TransactionResource($trx->load(['service', 'items'])))
+                ->response()
+                ->setStatusCode(201);
 
-        return new TransactionResource($trx->load('items'));
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], 422);
+        }
     }
 
-
+    // GET /api/v1/transactions/{transaction}
     public function show(Transaction $transaction)
     {
-        return new TransactionResource($transaction->load('items'));
+        return new TransactionResource(
+            $transaction->load(['service', 'items'])
+        );
     }
 
-
+    // PATCH /api/v1/transactions/{transaction}/status
     public function updateStatus(Request $request, Transaction $transaction)
     {
         $data = $request->validate([
-            'status' => 'required|in:pending,paid,cancelled'
+            'status' => 'required|in:pending,process,success',
         ]);
 
-        $transaction->update($data);
+        try {
+            $updated = $this->transactionService->updateStatus($transaction, $data['status']);
 
-        return new TransactionResource($transaction->load('items'));
+            return new TransactionResource(
+                $updated->fresh()->load(['items','service'])
+            );
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+    }
+
+    // POST /api/v1/transactions/{transaction}/finalize
+    public function finalize(Transaction $transaction)
+    {
+        try {
+            $updated = $this->transactionService->finalize($transaction);
+
+            return new TransactionResource(
+                $updated->fresh()->load(['items','service'])
+            );
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], 422);
+        }
     }
 }
