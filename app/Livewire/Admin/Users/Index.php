@@ -158,7 +158,7 @@ class Index extends Component
     // ==========================
     // MODAL OPENERS
     // ==========================
-
+    
     public function create()
     {
         $this->form->reset();
