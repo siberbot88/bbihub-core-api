@@ -121,12 +121,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         // ===== TRANSACTIONS =====
         Route::post('transactions', [TransactionController::class, 'store']);
         Route::get ('transactions/{transaction}', [TransactionController::class, 'show']);
+        Route::patch ('transactions/{transaction}/items', [TransactionController::class, 'store']);
+        Route::put ('transactions/{transaction}', [TransactionController::class, 'update']);
         Route::put ('transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
         Route::post('transactions/{transaction}/finalize', [TransactionController::class, 'finalize']);
 
         // ===== TRANSACTION ITEMS =====
+
         Route::post  ('transaction-items', [TransactionItemController::class, 'store']);
-        Route::patch ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
+        Route::patch  ('transaction-items/{item}', [TransactionItemController::class, 'store']);
+        Route::get  ('transaction-items/{item}', [TransactionItemController::class, 'show']);
+        Route::put ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
         Route::delete('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'destroy']);
     });
 });

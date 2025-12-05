@@ -60,9 +60,38 @@ class TransactionService
      * Aturan tetap sama:
      * - sebelum process/success harus ada item & total > 0
      */
-    public function updateTransactionStatus(Transaction $transaction, string $newStatus): Transaction
+
+    public function updateTransaction(Transaction $transaction, array $data): Transaction
+    {
+        // Update payment method
+        if (isset($data['payment_method'])) {
+            $transaction->payment_method = $data['payment_method'];
+        }
+
+        // Update notes atau kolom lain jika ada
+        if (isset($data['notes'])) {
+            $transaction->notes = $data['notes'];
+        }
+
+        // Update amount manual (opsional)
+        if (isset($data['amount'])) {
+            $transaction->amount = $data['amount'];
+        }
+
+        $transaction->save();
+
+        return $transaction;
+    }
+
+    public function updateStatus(Transaction $transaction, string $newStatus): Transaction
     {
         $oldStatus = $transaction->status;
+        // === RULE: Tidak boleh success kalau belum ada metode pembayaran ===
+        if ($newStatus === 'success' && $transaction->payment_method === null) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'Metode pembayaran wajib diisi sebelum menyelesaikan transaksi.'
+            ]);
+        }
 
         if (in_array($newStatus, ['process', 'success'], true)) {
             $hasItems = $transaction->items()->exists();
@@ -87,6 +116,29 @@ class TransactionService
 
         $transaction->status = $newStatus;
         $transaction->save();
+
+        // === SINKRON KE SERVICE ===
+        $service = $transaction->service;
+
+        if ($service) {
+            // Kalau invoice sudah siap dan menunggu bayar
+            if ($newStatus === 'process') {
+                // Jangan paksa kalau sudah lunas (misal diubah mundur)
+                if ($service->status !== 'lunas') {
+                    $service->update([
+                        'status' => 'menunggu pembayaran',
+                    ]);
+                }
+            }
+
+            // Kalau transaksi sudah sukses dibayar
+            if ($newStatus === 'success') {
+                $service->update([
+                    'status' => 'lunas',
+                ]);
+            }
+        }
+
 
         return $transaction;
     }

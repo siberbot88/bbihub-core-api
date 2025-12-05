@@ -100,8 +100,6 @@ class ServiceService
         if ($service->wasChanged('status') && $service->status === 'completed') {
             $this->ensureTransactionCreated($service, $user);
         }
-
-
         return $service;
     }
 

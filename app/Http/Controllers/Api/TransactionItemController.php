@@ -6,16 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Services\TransactionItemService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TransactionItemController extends Controller
 {
+    public function __construct(
+        protected TransactionItemService $transactionItemService
+    ) {}
+
     // POST /api/v1/transactions/{transaction}/items
-    public function store(Request $request, Transaction $transaction)
+    public function store(Request $request)
     {
         $data = $request->validate([
+            'transaction_uuid' => 'required|string|exists:transactions,id',
+            'service_uuid'     => 'nullable|string|exists:services,id',
             'name'         => 'required|string|max:255',
             'service_uuid' => 'nullable|string|exists:services,id',
             'service_type' => [
@@ -33,36 +40,28 @@ class TransactionItemController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $subtotal = $data['price'] * $data['quantity'];
+        // Ambil transaksi yang valid
+        $transaction = Transaction::findOrFail($data['transaction_uuid']);
 
-        TransactionItem::create([
-            'id'               => (string) Str::uuid(),
-            'transaction_uuid' => $transaction->id,
-            'service_uuid'     => $data['service_uuid'] ?? $transaction->service_uuid,
-            'name'             => $data['name'],
-            'service_type'     => $data['service_type'],
-            'price'            => $data['price'],
-            'quantity'         => $data['quantity'],
-            'subtotal'         => $subtotal,
-        ]);
 
-        // Update total amount
-        $total = $transaction->items()->sum('subtotal');
-        $transaction->update(['amount' => $total]);
+        try {
+            $trx = $this->transactionItemService->addItem($transaction, $data);
 
-        return new TransactionResource(
-            $transaction->fresh()->load(['items', 'service'])
-        );
+            return new TransactionResource(
+                $trx->load(['items', 'service'])
+            );
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], 422);
+        }
     }
 
     // PATCH /api/v1/transactions/{transaction}/items/{item}
     public function update(Request $request, Transaction $transaction, TransactionItem $item)
     {
-        // Pastikan item memang milik transaksi ini
-        if ($item->transaction_uuid !== $transaction->id) {
-            return response()->json(['message' => 'Item tidak termasuk transaksi ini'], 404);
-        }
-
         $data = $request->validate([
             'name'         => 'sometimes|required|string|max:255',
             'service_type' => [
@@ -81,38 +80,36 @@ class TransactionItemController extends Controller
             'quantity' => 'sometimes|required|integer|min:1',
         ]);
 
-        // kalau price/quantity berubah, hitung lagi subtotal
-        if (array_key_exists('price', $data) || array_key_exists('quantity', $data)) {
-            $price    = $data['price']    ?? $item->price;
-            $quantity = $data['quantity'] ?? $item->quantity;
-            $data['subtotal'] = $price * $quantity;
+        try {
+            $trx = $this->transactionItemService->updateItem($transaction, $item, $data);
+
+            return new TransactionResource(
+                $trx->load(['items', 'service'])
+            );
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], 422);
         }
-
-        $item->update($data);
-
-        // update total amount transaksi
-        $total = $transaction->items()->sum('subtotal');
-        $transaction->update(['amount' => $total]);
-
-        return new TransactionResource(
-            $transaction->fresh()->load(['items', 'service'])
-        );
     }
 
     // DELETE /api/v1/transactions/{transaction}/items/{item}
     public function destroy(Transaction $transaction, TransactionItem $item)
     {
-        if ($item->transaction_uuid !== $transaction->id) {
-            return response()->json(['message' => 'Item tidak termasuk transaksi ini'], 404);
+        try {
+            $trx = $this->transactionItemService->deleteItem($transaction, $item);
+
+            return new TransactionResource(
+                $trx->load(['items', 'service'])
+            );
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], 422);
         }
-
-        $item->delete();
-
-        $total = $transaction->items()->sum('subtotal');
-        $transaction->update(['amount' => $total]);
-
-        return new TransactionResource(
-            $transaction->fresh()->load(['items', 'service'])
-        );
     }
 }

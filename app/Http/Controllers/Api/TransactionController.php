@@ -46,6 +46,22 @@ class TransactionController extends Controller
         );
     }
 
+    public function update(Request $request, Transaction $transaction)
+    {
+        $data = $request->validate([
+            'payment_method' => 'nullable|in:QRIS,Cash,Bank',
+            'amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string',
+        ]);
+
+        $updated = $this->transactionService->updateTransaction($transaction, $data);
+
+        return new TransactionResource(
+            $updated->fresh()->load(['items','service'])
+        );
+    }
+
+
     // PATCH /api/v1/transactions/{transaction}/status
     public function updateStatus(Request $request, Transaction $transaction)
     {
