@@ -28,7 +28,7 @@ class AuthController extends Controller
     private function loadUserRelations(User $user): void
     {
         if ($user->hasRole('owner', 'sanctum')) {
-            $user->load('roles:name', 'workshops');
+            $user->load('roles:name', 'workshops', 'ownerSubscription.subscriptionPlan');
         } else {
             $user->load('roles:name', 'employment.workshop');
         }
@@ -87,6 +87,7 @@ class AuthController extends Controller
                     'roles' => $user->roles,
                     'must_change_password' => (bool) $user->must_change_password,
                     'workshops' => $user->relationLoaded('workshops') ? $user->workshops : null,
+                    'owner_subscription' => $user->relationLoaded('ownerSubscription') ? $user->ownerSubscription : null,
                 ],
             ], 201);
         } catch (\Throwable $e) {
@@ -141,6 +142,7 @@ class AuthController extends Controller
                 'must_change_password' => (bool) $user->must_change_password,
                 'workshops' => $user->relationLoaded('workshops') ? $user->workshops : null,
                 'employment' => $user->relationLoaded('employment') ? $user->employment : null,
+                'owner_subscription' => $user->relationLoaded('ownerSubscription') ? $user->ownerSubscription : null,
             ],
         ]);
     }

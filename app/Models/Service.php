@@ -36,18 +36,27 @@ class Service extends Model
         'reason',
         'feedback_mechanic',
         'accepted_at',
+        'accepted_at',
         'completed_at',
+        'assigned_to_user_id',
+        'technician_name',
     ];
 
     protected $casts = [
         'price'          => 'decimal:2',
         'scheduled_date' => 'date',
         'estimated_time' => 'date',
+        'completed_at'   => 'datetime',
     ];
 
 
     public function workshop(): BelongsTo{
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
+    }
+
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to_user_id');
     }
 
     public function log(): HasOne{

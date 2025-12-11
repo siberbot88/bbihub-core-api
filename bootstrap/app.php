@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin' => \App\Http\Middleware\EnsureSuperadmin::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
+            'api/v1/webhooks/midtrans', // Exclude Midtrans Webhook
+        ]);
+        
         $middleware->redirectGuestsTo(function ($request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return null;

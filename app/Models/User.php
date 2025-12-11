@@ -101,5 +101,13 @@ class User extends Authenticatable
     public function notifications(): HasMany{
         return $this->HasMany(Notification::class, 'mechanic_uuid', 'id');
     }
+
+    /**
+     * Relasi Subscription (Owner Only)
+     */
+    public function ownerSubscription(): HasOne
+    {
+        return $this->hasOne(OwnerSubscription::class, 'user_id', 'id')->latestOfMany();
+    }
 }
 
