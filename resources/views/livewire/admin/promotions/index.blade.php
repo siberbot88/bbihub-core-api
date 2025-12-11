@@ -1,5 +1,5 @@
 <div wire:key="promotions-root"
-     class="w-full max-w-7xl mx-auto px-4 lg:px-6 space-y-5">
+     class="w-full px-2 lg:px-4 space-y-5">
 
 
   {{-- PAGE TITLE + ACTIONS --}}

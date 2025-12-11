@@ -1,14 +1,14 @@
 
 <div class="space-y-6">
-  <div class="mx-auto max-w-7xl px-4 py-6">
+  <div class="w-full px-2 lg:px-4 space-y-5">
 
     {{-- TOP TOOLBAR (mirip) --}}
     <div class="flex items-center gap-3">
       <div class="relative flex-1">
         <input type="text" placeholder="Cari pengaturan…"
                class="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 py-2.5 focus:outline-none focus:ring" />
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M8 4a4 4 0 102.546 7.032l3.71 3.71a1 1 0 001.415-1.414l-3.71-3.71A4 4 0 008 4z" clip-rule="evenodd"/>
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none">
+          <path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
       <button class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 hover:bg-gray-50">Reset</button>

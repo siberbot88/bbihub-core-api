@@ -1,5 +1,5 @@
 <div class="min-h-screen">
-  <div class="mx-auto max-w-7xl px-4 py-6">
+  <div class="w-full px-2 lg:px-4 space-y-5">
 
     {{-- BAR ATAS: search + status --}}
     <div class="flex items-center gap-3">
@@ -192,4 +192,4 @@
     @endif
     
   </div>
-</div>
+ </div>

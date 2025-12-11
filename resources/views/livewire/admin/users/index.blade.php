@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="w-full px-2 lg:px-4 space-y-5">
   {{-- Flash Messages --}}
   @if (session()->has('message'))
     <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">

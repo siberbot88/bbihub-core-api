@@ -1,4 +1,4 @@
-<div id="feedback-page" class="mx-auto max-w-screen-2xl p-4 md:p-6 lg:p-8 space-y-6">
+<div id="feedback-page" class="w-full px-2 lg:px-4 space-y-5">
 
     {{-- Top search --}}
     <div class="flex items-center gap-3">
