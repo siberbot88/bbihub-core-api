@@ -65,6 +65,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])->name('staff.performance.index');
         Route::get('staff/{user_id}/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'show'])->name('staff.performance.show');
 
+        // Analytics Report
+        Route::get('analytics/report', [\App\Http\Controllers\Api\Owner\ReportAnalyticsController::class, 'getReport'])->name('analytics.report');
 
         // Customers (optional)
         Route::apiResource('customers', CustomerApiController::class);
