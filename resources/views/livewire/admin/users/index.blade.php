@@ -173,6 +173,11 @@
             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Pengguna</th>
             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Bengkel</th>
             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Role</th>
+
+            {{-- NEW --}}
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Membership</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Masa Berlaku Berakhir</th>
+
             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Login Terakhir</th>
             <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Aksi</th>
@@ -181,16 +186,44 @@
 
         <tbody class="divide-y divide-gray-100 bg-white">
           @forelse ($users as $u)
+            @php
+              // Ambil nama membership dari beberapa kemungkinan field/relasi
+              $membershipName =
+                  $u->membership?->name
+                  ?? $u->membership?->plan_name
+                  ?? $u->membership_name
+                  ?? $u->plan_name
+                  ?? $u->plan
+                  ?? $u->membership
+                  ?? null;
+
+              // Ambil expiry membership dari beberapa kemungkinan field/relasi
+              $expiresAtRaw =
+                  $u->membership?->expires_at
+                  ?? $u->membership?->ends_at
+                  ?? $u->membership_expires_at
+                  ?? $u->membership_end_at
+                  ?? $u->expires_at
+                  ?? $u->ends_at
+                  ?? null;
+
+              $expiresAt = $expiresAtRaw ? \Illuminate\Support\Carbon::parse($expiresAtRaw) : null;
+              $isActiveMembership = $expiresAt ? $expiresAt->isFuture() : false;
+
+              $status = $this->getUserStatus($u);
+              $last = $u->last_login_at ?? $u->updated_at ?? null;
+            @endphp
+
             <tr class="hover:bg-gray-50 transition-colors">
               {{-- User Info --}}
               <td class="px-6 py-4">
                 <div class="flex items-center gap-4">
                   <div class="h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-white shadow-sm bg-gray-100">
                     @if($u->photo && \Illuminate\Support\Facades\Storage::exists($u->photo))
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($u->photo) }}" 
-                             alt="{{ $u->name }}" 
-                             class="h-full w-full object-cover"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($u->photo) }}"
+                            alt="{{ $u->name }}"
+                            class="h-full w-full object-cover"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
                         <div class="hidden h-full w-full place-items-center bg-gradient-to-br from-red-100 to-red-200 text-sm font-bold text-red-700" style="display: none;">
                             {{ strtoupper(mb_substr($u->name ?? 'U', 0, 1)) }}
                         </div>
@@ -223,15 +256,39 @@
                     </span>
                   @endforeach
                 @else
-                  <span class="rounded-full bg-gray-100 px-2.5 py-1 text200xs font-medium text-gray-600">-</span>
+                  <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">-</span>
+                @endif
+              </td>
+
+              {{-- NEW: Membership --}}
+              <td class="px-6 py-4">
+                @if($membershipName)
+                  <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
+                    {{ $isActiveMembership ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700' }}">
+                    {{ $membershipName }}
+                  </span>
+                @else
+                  <span class="text-gray-400">-</span>
+                @endif
+              </td>
+
+              {{-- NEW: Masa Berlaku Berakhir --}}
+              <td class="px-6 py-4">
+                @if($expiresAt)
+                  @if($expiresAt->isPast())
+                    <div class="text-sm text-gray-900">{{ $expiresAt->format('d M Y H:i') }}</div>
+                    <div class="text-xs text-gray-500">{{ $expiresAt->diffForHumans() }}</div>
+                  @else
+                    <div class="text-sm text-emerald-700 font-medium">Aktif</div>
+                    <div class="text-xs text-gray-500">Berakhir {{ $expiresAt->diffForHumans() }}</div>
+                  @endif
+                @else
+                  <span class="text-gray-400">-</span>
                 @endif
               </td>
 
               {{-- Status --}}
               <td class="px-6 py-4">
-                @php
-                  $status = $this->getUserStatus($u);
-                @endphp
                 @if ($status === 'Aktif')
                   <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
@@ -251,9 +308,6 @@
 
               {{-- Last Login --}}
               <td class="px-6 py-4">
-                @php
-                  $last = $u->last_login_at ?? $u->updated_at ?? null;
-                @endphp
                 <span class="text-gray-600">
                   {{ $last ? \Illuminate\Support\Carbon::parse($last)->diffForHumans() : '-' }}
                 </span>
@@ -263,25 +317,22 @@
               <td class="px-6 py-4">
                 <div class="flex items-center justify-center gap-2">
                   <button wire:click="view('{{ $u->id }}')" class="rounded-lg p-2 text-blue-600 hover:bg-blue-50 transition-colors" title="Lihat Detail">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                       <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
                       <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                     </svg>
                   </button>
-
                   <button wire:click="edit('{{ $u->id }}')" class="rounded-lg p-2 text-orange-600 hover:bg-orange-50 transition-colors" title="Edit">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                       <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
                       <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
                     </svg>
                   </button>
-
                   <button wire:click="resetPassword('{{ $u->id }}')" class="rounded-lg p-2 text-purple-600 hover:bg-purple-50 transition-colors" title="Reset Password">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                       <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
                     </svg>
                   </button>
-
                   <button wire:click="delete('{{ $u->id }}')" class="rounded-lg p-2 text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                       <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
@@ -292,7 +343,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="px-6 py-12 text-center">
+              <td colspan="8" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center gap-3 text-gray-400">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
@@ -322,6 +373,5 @@
       </div>
     </div>
   </div>
-
   @include('livewire.admin.users.modals')
 </div>

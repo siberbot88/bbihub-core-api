@@ -1,51 +1,9 @@
 <div id="feedback-page" class="w-full px-2 lg:px-4 space-y-5">
 
-    {{-- Top search --}}
-    <div class="flex items-center gap-3">
-        <div class="relative w-full">
-            <input
-                type="text"
-                placeholder="Cari Laporan…"
-                wire:model.live.debounce.500ms="q"
-                class="h-11 w-full rounded-xl border border-neutral-200 bg-white ps-11 pe-4 text-sm placeholder:text-neutral-400 focus:border-red-400 focus:ring-red-400"
-            />
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none">
-                <path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </div>
-
-        <div class="flex items-center gap-2">
-            <button class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50">
-                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </button>
-            <button class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50">
-                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <button class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50">
-                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-
     {{-- Header panel "Feedback/Laporan" --}}
-    <div class="rounded-2xl border border-neutral-200 bg-white p-5 md:p-6">
-        <div class="flex items-start gap-3">
-            <div class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600">
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
-            <div>
-                <div class="font-semibold">Feedback/Laporan</div>
-                <div class="text-sm text-neutral-500">Monitor dan kelola seluruh laporan dari pengguna</div>
-            </div>
-        </div>
+    <div>
+      <h1 class="text-2xl font-bold text-neutral-800">Feedback/Laporan</h1>
+      <div class="text-neutral-500">Monitor dan kelola seluruh laporan dari pengguna</div>
     </div>
 
     {{-- Summary Cards Laporan --}}

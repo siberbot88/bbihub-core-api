@@ -48,7 +48,7 @@
                 ],
                 [
                     'label' => 'Manajemen Bengkel',
-                    'route' => 'admin.workshops',
+                    'route' => 'admin.workshops.index',
                     'icon' => 'wrench'
                 ],
                 [

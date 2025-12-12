@@ -8,10 +8,11 @@ use Livewire\Attributes\Url;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Pagination\LengthAwarePaginator;
+
 use App\Models\User;
 use App\Models\Workshop;
 use App\Models\Promotion;
-// Vehicle opsional – guard saat class tak ada
 use App\Models\Vehicle;
 
 #[Title('Pusat Data')]
@@ -22,13 +23,16 @@ class Index extends Component
 
     protected string $paginationTheme = 'tailwind';
 
+    /** ID yang dicentang di tabel (users/workshops/promotions/vehicles) */
+    public array $selected = [];
+
     public bool $showDetailModal = false;
     public ?User $selectedUser   = null;
 
     // Query params tersimpan di URL
     #[Url(as: 'q')]       public string $q = '';
     #[Url(as: 'status')]  public string $status = 'all';
-    #[Url(as: 'cat')]     public string $category = '';    // '', 'users', 'workshops', 'vehicles'
+    #[Url(as: 'cat')]     public string $category = '';    // '', 'users', 'workshops', 'promotions', 'vehicles'
     #[Url(as: 'pp')]      public int $perPage = 8;
 
     public array $categoryOptions = [
@@ -45,42 +49,93 @@ class Index extends Component
         'inactive' => 'Nonaktif',
         'pending'  => 'Menunggu verifikasi',
     ];
-    
 
+    /* ============================================
+     * HELPERS
+     * ============================================ */
 
-    public function detail(string $userId): void
+    /** Paginator kosong yang aman */
+    protected function emptyPaginator(): LengthAwarePaginator
     {
-        if ($this->category !== 'users') {
+        return new LengthAwarePaginator([], 0, $this->perPage, $this->page, [
+            'path' => request()->url(),
+            'query' => request()->query(),
+        ]);
+    }
+
+    /** Ambil semua ID baris pada halaman saat ini (untuk select all per halaman) */
+    protected function currentRowIds(): array
+    {
+        $rows = $this->rows;
+
+        if (! $rows) return [];
+
+        // LengthAwarePaginator punya items()
+        $items = method_exists($rows, 'items') ? $rows->items() : (is_iterable($rows) ? $rows : []);
+
+        return collect($items)
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->values()
+            ->all();
+    }
+
+    public function editSelected(): void
+    {
+        if (count($this->selected) !== 1) {
+            $this->dispatch('notify', message: 'Pilih satu baris untuk diedit.');
             return;
         }
 
-        $this->selectedUser    = User::findOrFail($userId);
-        $this->showDetailModal = true;
-    }
+        $id = $this->selected[0];
 
-    public function deleteRow(string $id): void
-    {
         if ($this->category === 'users') {
-            $u = \App\Models\User::find($id);
-            if ($u) {
-                $u->delete();
-                session()->flash('message', 'Pengguna berhasil dihapus.');
-            }
-        } elseif ($this->category === 'workshops') {
-            $w = \App\Models\Workshop::find($id);
-            if ($w) {
-                $w->delete();
-                session()->flash('message', 'Bengkel berhasil dihapus.');
-            }
-        } elseif ($this->category === 'promotions') {
-            $p = \App\Models\Promotion::find($id);
-            if ($p) {
-                $p->delete();
-                session()->flash('message', 'Promosi berhasil dihapus.');
-            }
+            $this->redirectRoute('admin.users.edit', ['user' => $id], navigate: true);
+            return;
         }
 
-        $this->resetPage();
+        if ($this->category === 'workshops') {
+            $this->redirectRoute('admin.workshops.edit', ['workshop' => $id], navigate: true);
+            return;
+        }
+
+        if ($this->category === 'promotions') {
+            $this->redirectRoute('admin.promotions.edit', ['promotion' => $id], navigate: true);
+            return;
+        }
+
+        $this->dispatch('notify', message: 'Edit untuk kategori ini belum tersedia.');
+    }
+
+
+    /* ============================================
+     * UI ACTIONS
+     * ============================================ */
+
+    /** Checkbox Select All (per halaman) */
+    public function toggleSelectAll(): void
+    {
+        $ids = $this->currentRowIds();
+
+        if (empty($ids)) {
+            $this->selected = [];
+            return;
+        }
+
+        // kalau semua id pada halaman sudah kepilih -> unselect semua, else select semua
+        $this->selected = (count($this->selected) === count($ids)) ? [] : $ids;
+    }
+
+    /* ============================================
+     * DETAIL USER (MODAL)
+     * ============================================ */
+    public function detail(string $userId): void
+    {
+        if ($this->category !== 'users') return;
+
+        $this->selectedUser    = User::findOrFail($userId);
+        $this->showDetailModal = true;
     }
 
     public function closeDetail(): void
@@ -89,77 +144,125 @@ class Index extends Component
         $this->selectedUser    = null;
     }
 
-    /** Delete selected rows based on category */
-    public function deleteSelected($ids): void
+    /* ============================================
+     * DELETE SINGLE
+     * ============================================ */
+    public function deleteRow(string $id): void
     {
+        if ($this->category === 'users') {
+            if ($u = User::find($id)) $u->delete();
+        } elseif ($this->category === 'workshops') {
+            if ($w = Workshop::find($id)) $w->delete();
+        } elseif ($this->category === 'promotions') {
+            if ($p = Promotion::find($id)) $p->delete();
+        } elseif ($this->category === 'vehicles' && class_exists(Vehicle::class)) {
+            if ($v = Vehicle::find($id)) $v->delete();
+        }
+
+        session()->flash('message', 'Item berhasil dihapus.');
+        $this->selected = [];
+        $this->resetPage();
+    }
+
+    /* ============================================
+     * DELETE SELECTED
+     * ============================================ */
+    public function deleteSelected($ids = null): void
+    {
+        // kalau tidak dikirim dari view, pakai property selected
+        if ($ids === null) {
+            $ids = $this->selected;
+        }
+
+        // kalau dikirim sebagai string JSON
         if (is_string($ids)) {
             $ids = json_decode($ids, true) ?: [];
         }
 
-        if (!is_array($ids) || empty($ids)) {
-            return;
-        }
+        if (!is_array($ids) || empty($ids)) return;
 
         $deleted = 0;
+
         foreach ($ids as $id) {
             if ($this->category === 'users') {
-                $u = User::find($id);
-                if ($u) {
-                    $u->delete();
-                    $deleted++;
-                }
+                if ($u = User::find($id)) { $u->delete(); $deleted++; }
             } elseif ($this->category === 'workshops') {
-                $w = Workshop::find($id);
-                if ($w) {
-                    $w->delete();
-                    $deleted++;
-                }
+                if ($w = Workshop::find($id)) { $w->delete(); $deleted++; }
             } elseif ($this->category === 'promotions') {
-                $p = Promotion::find($id);
-                if ($p) {
-                    $p->delete();
-                    $deleted++;
-                }
+                if ($p = Promotion::find($id)) { $p->delete(); $deleted++; }
+            } elseif ($this->category === 'vehicles' && class_exists(Vehicle::class)) {
+                if ($v = Vehicle::find($id)) { $v->delete(); $deleted++; }
             }
         }
 
         if ($deleted > 0) {
-            session()->flash('message', "$deleted item berhasil dihapus.");
+            session()->flash('message', "{$deleted} item berhasil dihapus.");
         }
+
+        $this->selected = [];
         $this->resetPage();
     }
-    
-    // Reset halaman saat filter berubah
-    public function updatingCategory() { $this->resetPage(); $this->q=''; $this->status='all'; }
-    public function updatingQ()        { $this->resetPage(); }
-    public function updatingStatus()   { $this->resetPage(); }
-    public function updatingPerPage()  { $this->resetPage(); }
 
-    /** Accessor rows: hasil sesuai kategori */
+    /* ============================================
+     * RESET PAGE / SELECTED saat filter berubah
+     * ============================================ */
+    public function updatingCategory(): void
+    {
+        $this->resetPage();
+        $this->q = '';
+        $this->status = 'all';
+        $this->selected = [];
+    }
+
+    public function updatingQ(): void
+    {
+        $this->resetPage();
+        $this->selected = [];
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+        $this->selected = [];
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+        $this->selected = [];
+    }
+
+    /** Saat pindah halaman pagination */
+    public function updatedPage(): void
+    {
+        $this->selected = [];
+    }
+
+    /* ============================================
+     * ROWS (Computed)
+     * ============================================ */
     public function getRowsProperty()
     {
         return match ($this->category) {
-            'users' => $this->queryUsers(),
-            'workshops' => $this->queryWorkshops(),
+            'users'      => $this->queryUsers(),
+            'workshops'  => $this->queryWorkshops(),
             'promotions' => $this->queryPromotions(),
-            'vehicles' => $this->queryVehicles(),
-            default => null,
+            'vehicles'   => $this->queryVehicles(),
+            default      => null,
         };
     }
 
     protected function queryPromotions()
     {
-        if (!class_exists(Promotion::class)) {
-            return collect([])->paginate($this->perPage);
-        }
+        if (!class_exists(Promotion::class)) return $this->emptyPaginator();
 
         $q = Promotion::query();
 
         if ($this->q !== '') {
             $term = $this->q;
             $q->where(function ($w) use ($term) {
-                $w->where('title','like',"%{$term}%")
-                  ->orWhere('code','like',"%{$term}%");
+                $w->where('title', 'like', "%{$term}%")
+                  ->orWhere('code', 'like', "%{$term}%");
             });
         }
 
@@ -170,7 +273,6 @@ class Index extends Component
         return $q->latest('id')->paginate($this->perPage);
     }
 
-    /** Query Users (aman bila tak ada kolom status) */
     protected function queryUsers()
     {
         $q = User::query();
@@ -178,29 +280,23 @@ class Index extends Component
         if ($this->q !== '') {
             $term = $this->q;
             $q->where(function ($w) use ($term) {
-                $w->where('name','like',"%{$term}%")
-                  ->orWhere('email','like',"%{$term}%");
+                $w->where('name', 'like', "%{$term}%")
+                  ->orWhere('email', 'like', "%{$term}%");
             });
         }
 
         if ($this->status !== 'all') {
-            // gunakan kolom yang ada: status / email_verified_at / is_active dll.
             if (Schema::hasColumn('users', 'status')) {
                 $q->where('status', $this->status);
             } elseif (Schema::hasColumn('users', 'email_verified_at')) {
-                // contoh mapping sederhana
-                if ($this->status === 'active') {
-                    $q->whereNotNull('email_verified_at');
-                } elseif ($this->status === 'inactive') {
-                    $q->whereNull('email_verified_at');
-                }
+                if ($this->status === 'active') $q->whereNotNull('email_verified_at');
+                if ($this->status === 'inactive') $q->whereNull('email_verified_at');
             }
         }
 
         return $q->latest('id')->paginate($this->perPage);
     }
 
-    /** Query Workshops (cek kolom status dulu) */
     protected function queryWorkshops()
     {
         $q = Workshop::query();
@@ -208,8 +304,8 @@ class Index extends Component
         if ($this->q !== '') {
             $term = $this->q;
             $q->where(function ($w) use ($term) {
-                $w->where('name','like',"%{$term}%")
-                  ->orWhere('code','like',"%{$term}%");
+                $w->where('name', 'like', "%{$term}%")
+                  ->orWhere('code', 'like', "%{$term}%");
             });
         }
 
@@ -220,21 +316,17 @@ class Index extends Component
         return $q->latest('id')->paginate($this->perPage);
     }
 
-    /** Query Vehicles (opsional; guard jika model/tabel/kolom belum ada) */
     protected function queryVehicles()
     {
-        // Jika model Vehicle belum dibuat, kembalikan koleksi kosong ter-paginate
-        if (!class_exists(Vehicle::class)) {
-            return collect([])->paginate($this->perPage);
-        }
+        if (!class_exists(Vehicle::class)) return $this->emptyPaginator();
 
         $q = Vehicle::query();
 
         if ($this->q !== '') {
             $term = $this->q;
             $q->where(function ($w) use ($term) {
-                $w->where('plate_number','like',"%{$term}%")
-                  ->orWhere('owner_name','like',"%{$term}%");
+                $w->where('plate_number', 'like', "%{$term}%")
+                  ->orWhere('owner_name', 'like', "%{$term}%");
             });
         }
 
@@ -248,9 +340,9 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.data-center.index', [
-            'rows'           => $this->rows,            // bisa null bila category kosong
-            'categoryOptions'=> $this->categoryOptions,
-            'statusOptions'  => $this->statusOptions,
+            'rows'            => $this->rows,
+            'categoryOptions' => $this->categoryOptions,
+            'statusOptions'   => $this->statusOptions,
         ]);
     }
 }
