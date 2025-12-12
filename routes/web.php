@@ -76,6 +76,13 @@ Route::middleware(['auth', 'verified', 'superadmin'])
             ->name('data-center')
             ->middleware('throttle:60,1');
 
+        // Data Center - create
+        Route::get('/data-center/create', \App\Livewire\Admin\DataCenter\Create::class)
+            ->name('data-center.create');
+        // Data Center - edit
+        Route::get('/data-center/edit', \App\Livewire\Admin\DataCenter\Edit::class)
+            ->name('data-center.edit');
+
         // Reports
         Route::get('/reports', ReportsIndex::class)
             ->name('reports')

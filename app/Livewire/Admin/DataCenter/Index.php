@@ -10,6 +10,7 @@ use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\Workshop;
+use App\Models\Promotion;
 // Vehicle opsional – guard saat class tak ada
 use App\Models\Vehicle;
 
@@ -34,6 +35,7 @@ class Index extends Component
         ''           => 'Pilih data…',
         'users'      => 'Pengguna',
         'workshops'  => 'Bengkel',
+        'promotions' => 'Promosi',
         'vehicles'   => 'Kendaraan',
     ];
 
@@ -56,10 +58,75 @@ class Index extends Component
         $this->showDetailModal = true;
     }
 
+    public function deleteRow(string $id): void
+    {
+        if ($this->category === 'users') {
+            $u = \App\Models\User::find($id);
+            if ($u) {
+                $u->delete();
+                session()->flash('message', 'Pengguna berhasil dihapus.');
+            }
+        } elseif ($this->category === 'workshops') {
+            $w = \App\Models\Workshop::find($id);
+            if ($w) {
+                $w->delete();
+                session()->flash('message', 'Bengkel berhasil dihapus.');
+            }
+        } elseif ($this->category === 'promotions') {
+            $p = \App\Models\Promotion::find($id);
+            if ($p) {
+                $p->delete();
+                session()->flash('message', 'Promosi berhasil dihapus.');
+            }
+        }
+
+        $this->resetPage();
+    }
+
     public function closeDetail(): void
     {
         $this->showDetailModal = false;
         $this->selectedUser    = null;
+    }
+
+    /** Delete selected rows based on category */
+    public function deleteSelected($ids): void
+    {
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true) ?: [];
+        }
+
+        if (!is_array($ids) || empty($ids)) {
+            return;
+        }
+
+        $deleted = 0;
+        foreach ($ids as $id) {
+            if ($this->category === 'users') {
+                $u = User::find($id);
+                if ($u) {
+                    $u->delete();
+                    $deleted++;
+                }
+            } elseif ($this->category === 'workshops') {
+                $w = Workshop::find($id);
+                if ($w) {
+                    $w->delete();
+                    $deleted++;
+                }
+            } elseif ($this->category === 'promotions') {
+                $p = Promotion::find($id);
+                if ($p) {
+                    $p->delete();
+                    $deleted++;
+                }
+            }
+        }
+
+        if ($deleted > 0) {
+            session()->flash('message', "$deleted item berhasil dihapus.");
+        }
+        $this->resetPage();
     }
     
     // Reset halaman saat filter berubah
@@ -74,9 +141,33 @@ class Index extends Component
         return match ($this->category) {
             'users' => $this->queryUsers(),
             'workshops' => $this->queryWorkshops(),
+            'promotions' => $this->queryPromotions(),
             'vehicles' => $this->queryVehicles(),
             default => null,
         };
+    }
+
+    protected function queryPromotions()
+    {
+        if (!class_exists(Promotion::class)) {
+            return collect([])->paginate($this->perPage);
+        }
+
+        $q = Promotion::query();
+
+        if ($this->q !== '') {
+            $term = $this->q;
+            $q->where(function ($w) use ($term) {
+                $w->where('title','like',"%{$term}%")
+                  ->orWhere('code','like',"%{$term}%");
+            });
+        }
+
+        if ($this->status !== 'all' && Schema::hasColumn('promotions', 'status')) {
+            $q->where('status', $this->status);
+        }
+
+        return $q->latest('id')->paginate($this->perPage);
     }
 
     /** Query Users (aman bila tak ada kolom status) */

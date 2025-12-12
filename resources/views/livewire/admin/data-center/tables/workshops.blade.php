@@ -17,8 +17,8 @@
     </thead>
     <tbody class="divide-y divide-gray-100 text-sm">
       @forelse($rows as $w)
-        <tr class="hover:bg-gray-50/60">
-          <td class="px-4 py-4"><input type="checkbox" class="rounded border-gray-300"></td>
+        <tr class="hover:bg-gray-50/60" data-id="{{ $w->id }}">
+          <td class="px-4 py-4"><input type="checkbox" class="row-checkbox rounded border-gray-300" value="{{ $w->id }}"></td>
           <td class="px-4 py-4">
             <div class="font-medium text-gray-900">{{ $w->name }}</div>
             <div class="text-xs text-gray-500">ID: {{ $w->code }}</div>
@@ -33,10 +33,9 @@
           </td>
           <td class="px-4 py-4 text-gray-500">{{ $w->joined_at ? \Illuminate\Support\Carbon::parse($w->joined_at)->diffForHumans() : '-' }}</td>
           <td class="px-4 py-4">
-            <div class="flex justify-end gap-3">
-              <a href="#" title="Edit">✏️</a>
-              <button class="text-rose-600" title="Hapus">🗑</button>
-            </div>
+              <div class="flex justify-end gap-3">
+                <button wire:click="detail('{{ $w->id }}')" class="text-neutral-700">Detail</button>
+              </div>
           </td>
         </tr>
       @empty

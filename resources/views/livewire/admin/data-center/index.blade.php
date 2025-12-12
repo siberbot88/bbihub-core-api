@@ -78,9 +78,17 @@
         @endforeach
       </select>
 
-      <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700">+ Tambah Data</button>
-      <button class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 hover:bg-gray-50">Edit</button>
-     <button class="flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-rose-600 hover:bg-rose-50">
+      @if($category === 'users')
+        <a href="{{ route('admin.data-center.create', ['category' => 'users']) }}" class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700">+ Tambah Pengguna</a>
+      @elseif($category === 'workshops')
+        <a href="{{ route('admin.data-center.create', ['category' => 'workshops']) }}" class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700">+ Tambah Bengkel</a>
+      @elseif($category === 'promotions')
+        <a href="{{ route('admin.data-center.create', ['category' => 'promotions']) }}" class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700">+ Tambah Promosi</a>
+      @else
+        <a href="{{ route('admin.data-center.create') }}" class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700">+ Tambah Data</a>
+      @endif
+      <button id="bulk-edit-btn" class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 hover:bg-gray-50">Edit</button>
+     <button id="bulk-delete-btn" class="flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-rose-600 hover:bg-rose-50">
           <svg xmlns="http://www.w3.org/2000/svg" 
               fill="none" 
               viewBox="0 0 24 24" 
@@ -101,6 +109,49 @@
       </div>
     </div>
 
+    <script>
+      (function(){
+        // Edit button
+        const editBtn = document.getElementById('bulk-edit-btn');
+        if (editBtn) {
+          editBtn.addEventListener('click', function(){
+            const rows = document.querySelectorAll('.row-checkbox:checked');
+            if (!rows || rows.length === 0) {
+              alert('Pilih satu baris untuk diedit.');
+              return;
+            }
+            if (rows.length > 1) {
+              alert('Pilih hanya satu baris untuk diedit.');
+              return;
+            }
+            const id = rows[0].value;
+            const category = document.querySelector('select[wire\\:model\\.live="category"], select[wire\\:model="category"]').value || '{{ $category }}';
+            const url = new URL('{{ route('admin.data-center.edit') }}', window.location.origin);
+            url.searchParams.set('category', category);
+            url.searchParams.set('id', id);
+            window.location.href = url.toString();
+          });
+        }
+
+        // Delete button
+        const deleteBtn = document.getElementById('bulk-delete-btn');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', function(){
+            const rows = document.querySelectorAll('.row-checkbox:checked');
+            if (!rows || rows.length === 0) {
+              alert('Pilih minimal satu baris untuk dihapus.');
+              return;
+            }
+            if (!confirm(`Yakin ingin menghapus ${rows.length} item terpilih?`)) {
+              return;
+            }
+            const ids = Array.from(rows).map(r => r.value);
+            @this.call('deleteSelected', ids);
+          });
+        }
+      })();
+    </script>
+
     {{-- WRAPPER TABEL --}}
     <div class="mt-4 rounded-2xl border border-gray-200 bg-white">
       @if(!$category)
@@ -119,6 +170,9 @@
 
           @case('vehicles')
             @include('livewire.admin.data-center.tables.vehicles', ['rows' => $rows])
+          @break
+          @case('promotions')
+            @include('livewire.admin.data-center.tables.promotions', ['rows' => $rows])
           @break
         @endswitch
       @endif

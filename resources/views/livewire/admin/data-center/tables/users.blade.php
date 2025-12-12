@@ -20,8 +20,8 @@
       </thead>
       <tbody class="divide-y divide-neutral-100">
         @forelse($rows as $u)
-          <tr class="hover:bg-neutral-50">
-            <td class="px-4 py-3"><input type="checkbox" class="rounded border-neutral-300"></td>
+          <tr class="hover:bg-neutral-50" data-id="{{ $u->id }}">
+            <td class="px-4 py-3"><input type="checkbox" class="row-checkbox rounded border-neutral-300" value="{{ $u->id }}"></td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <div class="grid h-9 w-9 place-items-center rounded-full bg-neutral-200 text-sm font-semibold text-neutral-700">
@@ -54,15 +54,15 @@
               {{ ($u->last_login_at ?? $u->updated_at) ? \Illuminate\Support\Carbon::parse($u->last_login_at ?? $u->updated_at)->diffForHumans() : '-' }}
             </td>
             <td class="px-4 py-3">
-              {{-- Aksi --}}
-            <td class="px-4 py-3">
-              <button
-                type="button"
-                wire:click='detail("{{ $u->id }}")'
-                class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
-              >
-                Detail
-              </button>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  wire:click="detail('{{ $u->id }}')"
+                  class="rounded-md bg-neutral-50 border border-neutral-200 px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-100"
+                >
+                  Detail
+                </button>
+              </div>
             </td>
           </tr>
         @empty
