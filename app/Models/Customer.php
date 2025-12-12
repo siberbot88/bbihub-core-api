@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
@@ -37,5 +38,43 @@ class Customer extends Model
 
     public function services(): HasMany{
         return $this->hasMany(Service::class, 'customer_uuid');
+    }
+
+    /**
+     * Get the customer's active membership.
+     */
+    public function activeMembership(): HasOne
+    {
+        return $this->hasOne(CustomerMembership::class)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->latest();
+    }
+
+    /**
+     * Get all customer memberships.
+     */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(CustomerMembership::class);
+    }
+
+    /**
+     * Check if customer has an active membership.
+     */
+    public function hasMembership(): bool
+    {
+        return $this->activeMembership()->exists();
+    }
+
+    /**
+     * Get the membership discount percentage.
+     */
+    public function getMembershipDiscount(): float
+    {
+        $membership = $this->activeMembership;
+        return $membership && $membership->isActive() 
+            ? $membership->membership->discount_percentage 
+            : 0;
     }
 }

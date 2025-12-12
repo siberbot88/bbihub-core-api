@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerApiController;
+use App\Http\Controllers\Api\MembershipController;
+use App\Http\Controllers\Api\CustomerMembershipController;
+use App\Http\Controllers\Api\MidtransWebhookController;
 use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
@@ -14,6 +17,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AdminController;
 
+
+// Midtrans Webhook (no auth required)
+Route::post('v1/webhooks/midtrans', [MidtransWebhookController::class, 'handle'])->name('webhook.midtrans');
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');
@@ -55,6 +61,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::delete('employee/{employee}',[EmployementApiController::class, 'destroy'])->name('employee.destroy');
         Route::patch ('employee/{employee}/status',[EmployementApiController::class, 'updateStatus'])->name('employee.updateStatus');
 
+        // Staff Performance
+        Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])->name('staff.performance.index');
+        Route::get('staff/{user_id}/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'show'])->name('staff.performance.show');
+
+
         // Customers (optional)
         Route::apiResource('customers', CustomerApiController::class);
 
@@ -80,43 +91,29 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
 
-
+    // ADMIN ROUTES (Consolidated)
     Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
         Route::apiResource('vouchers', VoucherApiController::class);
 
-        // Service
+        // ===== SERVICES (CRUD & Flow) =====
         Route::get   ('services',           [ServiceApiController::class, 'index']);
-        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
         Route::post  ('services',           [ServiceApiController::class, 'store']);
+        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
         Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
         Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
         Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
+        
+        // Flow
+        Route::post('services/{service}/accept',          [AdminController::class, 'accept']);
+        Route::post('services/{service}/decline',         [AdminController::class, 'decline']);
+        Route::post('services/{service}/assign-mechanic', [AdminController::class, 'assignMechanic']);
 
-        // Kendaraan
+        // ===== VEHICLES =====
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
-    });
-
-    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
-        //
-    });
-
-    Route::prefix('admins')->middleware('role:admin')->name('api.admin.')->group(function () {
-        // ===== SERVICES (CRUD) =====
-        Route::get   ('services',           [ServiceApiController::class, 'index']);
-        Route::post  ('services',           [ServiceApiController::class, 'store']);
-        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
-        Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
-        Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
-        Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
-
-        // ===== ADMIN FLOW =====
-        Route::post('services/{service}/accept',          [AdminController::class, 'accept']);
-        Route::post('services/{service}/decline',         [AdminController::class, 'decline']);
-        Route::post('services/{service}/assign-mechanic', [AdminController::class, 'assignMechanic']);
 
         // ===== TRANSACTIONS =====
         Route::post('transactions', [TransactionController::class, 'store']);
@@ -127,20 +124,36 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('transactions/{transaction}/finalize', [TransactionController::class, 'finalize']);
 
         // ===== TRANSACTION ITEMS =====
-
         Route::post  ('transaction-items', [TransactionItemController::class, 'store']);
         Route::patch  ('transaction-items/{item}', [TransactionItemController::class, 'store']);
         Route::get  ('transaction-items/{item}', [TransactionItemController::class, 'show']);
         Route::put ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
         Route::delete('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'destroy']);
     });
+
+    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
+        //
+    });
+
+    // Owner SaaS Subscription
+    Route::prefix('owner/subscription')->group(function () {
+        Route::post('checkout', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkout'])->name('owner.subscription.checkout');
+        Route::post('cancel', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'cancel'])->name('owner.subscription.cancel');
+Route::post('check-status', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkStatus'])->name('owner.subscription.check-status');
+    });
+
+    // Membership Routes (for customers)
+    Route::prefix('memberships')->group(function () {
+        // Get available memberships for a workshop
+        Route::get('workshops/{workshop}', [MembershipController::class, 'index'])->name('memberships.index');
+        Route::get('{membership}', [MembershipController::class, 'show'])->name('memberships.show');
+        
+        // Customer membership management
+        Route::get('customer/active', [CustomerMembershipController::class, 'show'])->name('customer.membership.show');
+        Route::post('customer/purchase', [CustomerMembershipController::class, 'purchase'])->name('customer.membership.purchase');
+        Route::post('customer/cancel', [CustomerMembershipController::class, 'cancel'])->name('customer.membership.cancel');
+        Route::put('customer/auto-renew', [CustomerMembershipController::class, 'updateAutoRenew'])->name('customer.membership.auto-renew');
+        Route::get('customer/payment-status/{orderId}', [CustomerMembershipController::class, 'checkPaymentStatus'])->name('customer.membership.payment-status');
+    });
 });
 
-Route::prefix('admin')->group(function () {
-    Route::get ('services',               [ServiceApiController::class, 'index']);
-    Route::post('services',               [ServiceApiController::class, 'store']);
-    Route::get ('services/{service}',     [ServiceApiController::class, 'show']);
-
-
-
-});

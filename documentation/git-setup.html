@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Setup - BBI HUB Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626',
+                        'primary-hover': '#B91C1C',
+                        text: {
+                            main: '#EDEDEF',
+                            muted: '#8A8F98',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .content-card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        pre {
+            background: #0B0C0E;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        code {
+            color: #DC2626;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .warning-box {
+            background: rgba(220, 38, 38, 0.1);
+            border-left: 4px solid #DC2626;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">B</div>
+                    <span class="font-semibold text-sm tracking-tight">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="design.html" class="nav-link">Design</a>
+                    <a href="git-setup.html" class="nav-link active">Git Setup</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="hidden md:inline-block text-xs text-text-muted font-mono border border-white/10 px-2 py-1 rounded">v1.0.0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-6 pt-32 pb-20">
+        
+        <div class="mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">🔄 Git Repository Structure</h1>
+            <p class="text-lg text-text-muted">Understanding the dual repository setup for BBI HUB project</p>
+        </div>
+
+        <div class="warning-box">
+            <h3 class="text-white font-semibold mb-2">⚠️ IMPORTANT: Separate Git Repositories</h3>
+            <p class="text-text-muted">This project uses <strong>SEPARATE</strong> Git repositories for backend and mobile. They are NOT in a single monorepo!</p>
+        </div>
+
+        <!-- Repository Structure -->
+        <section class="content-card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">📂 Repository Structure</h2>
+            <pre><code>BBIHUB/
+├── backend/.git/  → https://github.com/*/bbihub-core-api.git
+└── mobile/.git/   → https://github.com/*/bbi-hub-flutter-app.git</code></pre>
+            
+            <div class="mt-4">
+                <p class="text-text-muted mb-4">The project consists of:</p>
+                <ul class="space-y-2 text-text-muted">
+                    <li class="flex items-start gap-2">
+                        <span class="text-primary mt-1">•</span>
+                        <span><strong class="text-white">backend/</strong> - Laravel API (separate GitHub repository: <code>bbihub-core-api.git</code>)</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-primary mt-1">•</span>
+                        <span><strong class="text-white">mobile/</strong> - Flutter Mobile App (separate GitHub repository: <code>bbi-hub-flutter-app.git</code>)</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-primary mt-1">•</span>
+                        <span><strong class="text-white">BBIHUB/</strong> - Parent folder (NOT a git repository, just for organization)</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Why This Setup -->
+        <section class="content-card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">🤔 Why Separate Repositories?</h2>
+            <div class="space-y-4 text-text-muted">
+                <div>
+                    <h3 class="text-white font-semibold mb-2">✅ Benefits:</h3>
+                    <ul class="space-y-2 ml-4">
+                        <li class="flex items-start gap-2">
+                            <span class="text-primary">•</span>
+                            <span><strong>Independent Deployment</strong> - Backend and mobile can be deployed separately</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-primary">•</span>
+                            <span><strong>Separate Version Control</strong> - Each project has its own history and branches</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-primary">•</span>
+                            <span><strong>Team Collaboration</strong> - Different teams can work independently</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-primary">•</span>
+                            <span><strong>Easy Synchronization</strong> - Both projects in one folder for easier development</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-primary">•</span>
+                            <span><strong>Clean History</strong> - No mixed commits between frontend and backend</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Git Commands -->
+        <section class="content-card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">💻 Git Commands</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-white mb-3">For Backend Changes</h3>
+                <pre><code># Navigate to backend
+cd E:\BBIHUB\backend
+
+# Check status
+git status
+
+# Stage changes
+git add .
+
+# Commit
+git commit -m "Your commit message"
+
+# Push to GitHub
+git push origin main</code></pre>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-white mb-3">For Mobile Changes</h3>
+                <pre><code># Navigate to mobile
+cd E:\BBIHUB\mobile
+
+# Check status
+git status
+
+# Stage changes
+git add .
+
+# Commit
+git commit -m "Your commit message"
+
+# Push to GitHub
+git push origin main</code></pre>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-3">Check Status of Both Repositories</h3>
+                <pre><code># Quick status check for both repos
+# Backend
+cd E:\BBIHUB\backend && git status
+
+# Mobile
+cd E:\BBIHUB\mobile && git status</code></pre>
+            </div>
+        </section>
+
+        <!-- Best Practices -->
+        <section class="content-card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">📋 Best Practices</h2>
+            <div class="space-y-4">
+                <div class="warning-box">
+                    <h4 class="text-white font-semibold mb-2">⚠️ ALWAYS specify which repository</h4>
+                    <p class="text-text-muted">When working with Git commands, always navigate to the specific folder (backend or mobile) first.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4 class="text-white font-semibold mb-2">💡 Commit Separately</h4>
+                    <p class="text-text-muted">Changes in backend and mobile should be committed to their respective repositories. Don't assume changes in one repo affect the other.</p>
+                </div>
+
+                <div class="space-y-3 text-text-muted">
+                    <h3 class="text-white font-semibold">Recommended Workflow:</h3>
+                    <ol class="space-y-2 ml-4 list-decimal">
+                        <li>Make changes in backend or mobile</li>
+                        <li>Navigate to the specific folder (<code>cd backend</code> or <code>cd mobile</code>)</li>
+                        <li>Check status: <code>git status</code></li>
+                        <li>Review changes: <code>git diff</code></li>
+                        <li>Stage changes: <code>git add .</code></li>
+                        <li>Commit: <code>git commit -m "Descriptive message"</code></li>
+                        <li>Push: <code>git push origin main</code></li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="content-card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">🔧 Troubleshooting</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-white mb-2">Git Ownership Warning</h3>
+                <p class="text-text-muted mb-3">If you see a "dubious ownership" error, run:</p>
+                <pre><code>git config --global --add safe.directory E:/BBIHUB/backend
+git config --global --add safe.directory E:/BBIHUB/mobile</code></pre>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-2">Check Remote URLs</h3>
+                <p class="text-text-muted mb-3">To verify which GitHub repository each folder is connected to:</p>
+                <pre><code># For backend
+cd E:\BBIHUB\backend
+git remote -v
+
+# For mobile
+cd E:\BBIHUB\mobile
+git remote -v</code></pre>
+            </div>
+        </section>
+
+        <!-- Quick Reference -->
+        <section class="content-card">
+            <h2 class="text-2xl font-bold text-white mb-4">📖 Quick Reference</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-text-muted">
+                    <thead class="text-white border-b border-white/10">
+                        <tr>
+                            <th class="text-left py-3 px-4">Command</th>
+                            <th class="text-left py-3 px-4">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        <tr>
+                            <td class="py-3 px-4"><code>git status</code></td>
+                            <td class="py-3 px-4">Check current changes</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><code>git add .</code></td>
+                            <td class="py-3 px-4">Stage all changes</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><code>git commit -m "..."</code></td>
+                            <td class="py-3 px-4">Commit with message</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><code>git push origin main</code></td>
+                            <td class="py-3 px-4">Push to GitHub</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><code>git pull origin main</code></td>
+                            <td class="py-3 px-4">Pull latest changes</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><code>git branch</code></td>
+                            <td class="py-3 px-4">List all branches</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><code>git checkout -b feature</code></td>
+                            <td class="py-3 px-4">Create new branch</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-5 h-5 bg-primary rounded flex items-center justify-center text-white font-bold text-[10px]">B</div>
+                <span class="text-sm text-text-muted">© 2025 BBI HUB</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        ScrollReveal().reveal('.content-card', { distance: '20px', origin: 'bottom', duration: 800, interval: 100 });
+    </script>
+
+</body>
+
+</html>

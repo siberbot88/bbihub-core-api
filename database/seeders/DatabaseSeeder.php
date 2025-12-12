@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ServiceTypeSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
+            DevelopmentSeeder::class,
         ]);
     }
 }
