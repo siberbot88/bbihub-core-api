@@ -53,4 +53,9 @@ class OwnerSubscription extends Model
     {
         return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
     }
+
+    public function subscriptionPlan()
+    {
+        return $this->plan();
+    }
 }

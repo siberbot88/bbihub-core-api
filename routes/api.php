@@ -138,6 +138,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Owner SaaS Subscription
     Route::prefix('owner/subscription')->group(function () {
         Route::post('checkout', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkout'])->name('owner.subscription.checkout');
+        Route::post('cancel', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'cancel'])->name('owner.subscription.cancel');
+Route::post('check-status', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkStatus'])->name('owner.subscription.check-status');
     });
 
     // Membership Routes (for customers)
@@ -155,8 +157,3 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('admin')->group(function () {
-    Route::get ('services',               [ServiceApiController::class, 'index']);
-    Route::post('services',               [ServiceApiController::class, 'store']);
-    Route::get ('services/{service}',     [ServiceApiController::class, 'show']);
-});

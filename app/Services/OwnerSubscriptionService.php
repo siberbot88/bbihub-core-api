@@ -109,4 +109,79 @@ class OwnerSubscriptionService
             ]);
         }
     }
+
+
+    /**
+     * Manually verify and update subscription status (for polling/manual check)
+     */
+    public function verifySubscriptionStatus(User $user)
+    {
+        // Find latest subscription regardless of status
+        $subscription = $user->ownerSubscription;
+
+        if (!$subscription) {
+            throw new \Exception("Tidak ada data langganan ditemukan.");
+        }
+
+        // Only check if we have an order_id (from Midtrans)
+        if (!$subscription->order_id) {
+             return $subscription;
+        }
+
+        try {
+            $midtransStatus = $this->midtransService->getTransactionStatus($subscription->order_id);
+            $transactionStatus = $midtransStatus->transaction_status;
+            $fraudStatus = $midtransStatus->fraud_status ?? null;
+            $paymentType = $midtransStatus->payment_type ?? null;
+            $grossAmount = $midtransStatus->gross_amount ?? null;
+
+            // Determine new status
+            $newStatus = null;
+            if ($transactionStatus == 'capture') {
+                if ($fraudStatus == 'challenge') {
+                    $newStatus = 'pending';
+                } else {
+                    $newStatus = 'active';
+                }
+            } else if ($transactionStatus == 'settlement') {
+                $newStatus = 'active';
+            } else if ($transactionStatus == 'pending') {
+                $newStatus = 'pending';
+            } else if ($transactionStatus == 'deny') {
+                $newStatus = 'canceled';
+            } else if ($transactionStatus == 'expire') {
+                $newStatus = 'expired';
+            } else if ($transactionStatus == 'cancel') {
+                $newStatus = 'canceled';
+            }
+
+            // Update if changed
+            if ($newStatus && $subscription->status !== $newStatus) {
+                $subscription->status = $newStatus;
+                $subscription->transaction_id = $midtransStatus->transaction_id ?? null;
+                $subscription->payment_type = $paymentType;
+                $subscription->gross_amount = $grossAmount;
+
+                // Sync dates if becoming active
+                if ($newStatus === 'active') {
+                     $startsAt = Carbon::now();
+                     $expiresAt = ($subscription->billing_cycle === 'yearly') 
+                        ? $startsAt->copy()->addYear() 
+                        : $startsAt->copy()->addMonth();
+                     
+                     $subscription->starts_at = $startsAt;
+                     $subscription->expires_at = $expiresAt;
+                }
+                
+                $subscription->save();
+            }
+
+            return $subscription;
+
+        } catch (\Exception $e) {
+            // Midtrans might throw 404 if transaction is really new or invalid order_id
+            // Just return current subscription in that case
+            return $subscription;
+        }
+    }
 }

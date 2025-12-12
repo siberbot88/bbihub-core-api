@@ -28,7 +28,7 @@ class AuthController extends Controller
     private function loadUserRelations(User $user): void
     {
         if ($user->hasRole('owner', 'sanctum')) {
-            $user->load('roles:name', 'workshops', 'ownerSubscription.subscriptionPlan');
+            $user->load('roles:name', 'workshops', 'ownerSubscription.plan');
         } else {
             $user->load('roles:name', 'employment.workshop');
         }

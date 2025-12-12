@@ -71,6 +71,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Helper relation for single-workshop owners or primary workshop.
+     * Often used in controllers expecting $user->workshop.
+     */
+    public function workshop(): HasOne {
+        // Assuming the first workshop is the primary one for now
+        return $this->hasOne(Workshop::class, 'user_uuid', 'id')->latest();
+    }
+
+    /**
      * Relasi untuk Karyawan: Mendapatkan SATU data kepegawaian
      */
     public function employment(): HasOne
