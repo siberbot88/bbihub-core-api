@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 
 class Employment extends Model
@@ -46,6 +47,29 @@ class Employment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_uuid');
+
+    }
+
+    /* ========= SCOPES BANTUAN ========= */
+
+    // hanya employment yang status = active
+    public function scopeActive($q)
+    {
+        return $q->where('status', 'active');
+    }
+
+    // hanya employment yang user-nya punya role mechanic
+    public function scopeMechanic($q)
+    {
+        return $q->whereHas('user.roles', function ($r) {
+            $r->where('name', 'mechanic');
+        });
+    }
+
+    // semua transaksi yang di-handle mekanik ini
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'mechanic_uuid', 'id');
     }
 
 }

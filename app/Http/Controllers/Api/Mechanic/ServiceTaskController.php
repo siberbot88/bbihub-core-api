@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Mechanic;
+namespace App\Http\Controllers\Api\Admin\Admin\Mechanic;
 
 use App\Http\Controllers\Controller;
 

@@ -5,7 +5,8 @@
         <div class="relative w-full">
             <input
                 type="text"
-                placeholder="Cari Pengguna…"
+                placeholder="Cari Laporan…"
+                wire:model.live.debounce.500ms="q"
                 class="h-11 w-full rounded-xl border border-neutral-200 bg-white ps-11 pe-4 text-sm placeholder:text-neutral-400 focus:border-red-400 focus:ring-red-400"
             />
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none">
@@ -42,50 +43,99 @@
             </div>
             <div>
                 <div class="font-semibold">Feedback/Laporan</div>
-                <div class="text-sm text-neutral-500">Monitor dan kelola seluruh booking dan transaksi</div>
+                <div class="text-sm text-neutral-500">Monitor dan kelola seluruh laporan dari pengguna</div>
             </div>
         </div>
     </div>
 
-    {{-- Stat cards --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+    {{-- Summary Cards Laporan --}}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @php
+            use App\Models\Report;
+            use Carbon\Carbon;
+
+            $today = Carbon::today();
+
+            $total      = Report::count();
+            $todayCount = Report::whereDate('created_at', $today)->count();
+            $processing = Report::where('status', 'diproses')->count();
+            $done       = Report::where('status', 'selesai')->count();
+
             $stats = [
-                ['title'=>'Total laporan masuk','value'=>20,'trend'=>'+5%','icon'=>'inbox'],
-                ['title'=>'Laporan masuk hari ini','value'=>12,'trend'=>'+2%','icon'=>'calendar'],
-                ['title'=>'Diproses','value'=>10,'trend'=>'+5%','icon'=>'progress'],
-                ['title'=>'Selesai','value'=>50,'trend'=>'+5%','icon'=>'check'],
-                ['title'=>'','value'=>null,'trend'=>null,'icon'=>null], // spacer for layout identical to figma (optional)
+                [
+                    'title' => 'Total laporan masuk',
+                    'value' => $total,
+                    'trend' => '+0%',
+                    'icon'  => 'mail',
+                    'color' => 'blue',
+                ],
+                [
+                    'title' => 'Laporan masuk hari ini',
+                    'value' => $todayCount,
+                    'trend' => '+0%',
+                    'icon'  => 'calendar',
+                    'color' => 'yellow',
+                ],
+                [
+                    'title' => 'Diproses',
+                    'value' => $processing,
+                    'trend' => '+0%',
+                    'icon'  => 'chart',
+                    'color' => 'purple',
+                ],
+                [
+                    'title' => 'Selesai',
+                    'value' => $done,
+                    'trend' => '+0%',
+                    'icon'  => 'check',
+                    'color' => 'green',
+                ],
             ];
         @endphp
-        @foreach ($stats as $s)
-            @if($s['value']!==null)
-            <div class="rounded-2xl border border-neutral-200 bg-white p-4">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm font-medium text-neutral-600">{{ $s['title'] }}</div>
-                    <div class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100">
-                        @switch($s['icon'])
-                            @case('inbox')
-                                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none"><path d="M3 12h4l2 3h6l2-3h4M7 12V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                            @break
-                            @case('calendar')
-                                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4M3 11h18" stroke="currentColor" stroke-width="2"/></svg>
-                            @break
-                            @case('progress')
-                                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 17V7m6 10V5m6 12v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                            @break
-                            @case('check')
-                                <svg class="h-5 w-5 text-neutral-600" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                            @break
-                        @endswitch
-                    </div>
-                </div>
-                <div class="mt-3 text-2xl font-bold text-neutral-900">{{ $s['value'] }}</div>
-                <div class="mt-1 text-xs text-neutral-400">update {{ $s['trend'] }}</div>
+
+        @php
+            $iconColors = [
+                'blue'   => 'bg-blue-50 text-blue-600',
+                'yellow' => 'bg-yellow-50 text-yellow-600',
+                'purple' => 'bg-purple-50 text-purple-600',
+                'green'  => 'bg-emerald-50 text-emerald-600',
+            ];
+        @endphp
+
+        @foreach ($stats as $card)
+        <div class="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <div class="text-sm text-gray-500">{{ $card['title'] }}</div>
+                <div class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($card['value']) }}</div>
+                <div class="mt-1 text-xs text-emerald-600">update {{ $card['trend'] }}</div>
             </div>
-            @else
-            <div class="hidden xl:block"></div>
-            @endif
+
+            <div class="h-12 w-12 rounded-xl {{ $iconColors[$card['color']] ?? 'bg-gray-50 text-gray-600' }} flex items-center justify-center transition-transform group-hover:scale-110">
+                @if($card['icon'] === 'mail')
+                {{-- envelope --}}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a1.5 1.5 0 01-1.5 1.5h-15a1.5 1.5 0 01-1.5-1.5V6.75m18 0A1.5 1.5 0 0019.5 5.25h-15A1.5 1.5 0 003 6.75m18 0v.243a1.5 1.5 0 01-.553 1.154l-7.5 6.25a1.5 1.5 0 01-1.894 0l-7.5-6.25A1.5 1.5 0 013 6.993V6.75" />
+                </svg>
+                @elseif($card['icon'] === 'calendar')
+                {{-- calendar --}}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 9h18m-1.5 12H4.5a1.5 1.5 0 01-1.5-1.5V6.75a1.5 1.5 0 011.5-1.5h15a1.5 1.5 0 011.5 1.5V19.5a1.5 1.5 0 01-1.5 1.5z" />
+                </svg>
+                @elseif($card['icon'] === 'chart')
+                {{-- chart bar --}}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18m0 0h18M9 17V9m4 8V5m4 12v-6" />
+                </svg>
+                @elseif($card['icon'] === 'check')
+                {{-- check circle --}}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                @endif
+            </div>
+            </div>
+        </div>
         @endforeach
     </div>
 
@@ -94,30 +144,55 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <div class="sm:col-span-2">
                 <div class="relative">
-                    <input type="text" placeholder="Cari Laporan…" class="h-10 w-full rounded-xl border border-neutral-200 bg-white ps-10 pe-4 text-sm placeholder:text-neutral-400 focus:border-red-400 focus:ring-red-400">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <input
+                        type="text"
+                        placeholder="Cari Laporan…"
+                        wire:model.live.debounce.500ms="q"
+                        class="h-10 w-full rounded-xl border border-neutral-200 bg-white ps-10 pe-4 text-sm placeholder:text-neutral-400 focus:border-red-400 focus:ring-red-400">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                 </div>
             </div>
-            <select class="h-10 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-red-400 focus:ring-red-400">
-                <option>Semua Status</option>
-                <option>Baru</option>
-                <option>Diproses</option>
-                <option>Diterima</option>
-                <option>Selesai</option>
+
+            {{-- Status --}}
+            <select
+                wire:model.live="status"
+                class="h-10 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-red-400 focus:ring-red-400">
+                <option value="all">Semua Status</option>
+                <option value="baru">Baru</option>
+                <option value="diproses">Diproses</option>
+                <option value="diterima">Diterima</option>
+                <option value="selesai">Selesai</option>
             </select>
-            <select class="h-10 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-red-400 focus:ring-red-400">
-                <option>Jenis Laporan</option>
-                <option>Bug</option>
-                <option>Keluhan</option>
-                <option>Saran</option>
-                <option>Ulasan</option>
+
+            {{-- Jenis laporan --}}
+            <select
+                wire:model.live="type"
+                class="h-10 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-red-400 focus:ring-red-400">
+                <option value="all">Jenis Laporan</option>
+                <option value="bug">Bug</option>
+                <option value="keluhan">Keluhan</option>
+                <option value="saran">Saran</option>
+                <option value="ulasan">Ulasan</option>
             </select>
+
+            {{-- Tanggal --}}
             <div>
-                <input type="date" class="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-red-400 focus:ring-red-400">
+                <input
+                    type="date"
+                    wire:model.live="date"
+                    class="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-red-400 focus:ring-red-400">
             </div>
+
             <div class="flex justify-end">
-                <button class="inline-flex h-10 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 text-sm hover:bg-neutral-50">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M4 4v6h6M20 20v-6h-6M20 4h-6v6M4 20h6v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <button
+                    type="button"
+                    wire:click="$set('q',''); $set('status','all'); $set('type','all'); $set('date', null)"
+                    class="inline-flex h-10 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 text-sm hover:bg-neutral-50">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 4v6h6M20 20v-6h-6M20 4h-6v6M4 20h6v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                     <span>Refresh</span>
                 </button>
             </div>
@@ -127,9 +202,13 @@
     {{-- Table --}}
     <div class="rounded-2xl border border-neutral-200 bg-white">
         <div class="flex items-center justify-between p-4 md:p-5">
-            <div class="font-semibold">Daftar booking &amp; transaksi</div>
-            <div class="text-sm text-neutral-500">Total: <span class="font-medium text-neutral-700">150 Laporan</span></div>
+            <div class="font-semibold">Laporan</div>
+            <div class="text-sm text-neutral-500">
+                Total:
+                <span class="font-medium text-neutral-700">{{ number_format($rows->total()) }} Laporan</span>
+            </div>
         </div>
+
         <div class="overflow-x-auto">
             <table class="min-w-full border-t border-neutral-100 text-sm">
                 <thead class="bg-neutral-50 text-neutral-600">
@@ -144,58 +223,64 @@
                 </thead>
                 <tbody class="divide-y divide-neutral-100 text-neutral-800">
                     @php
-                        $rows = [
-                            ['pengirim'=>'Diana Puja','jenis'=>'Bug','desk'=>'Tidak bisa booking','tgl'=>'25 Okt 2025','status'=>['Diterima','blue'],'aksi'=>'Detail'],
-                            ['pengirim'=>'Kadian Ahmad','jenis'=>'Keluhan','desk'=>'Pembayaran tertunda','tgl'=>'27 Okt 2025','status'=>['Selesai','green'],'aksi'=>'Detail'],
-                            ['pengirim'=>'Kadian Ahmad','jenis'=>'Saran','desk'=>'Tambahkan metode Qris','tgl'=>'31 Okt 2025','status'=>['Baru','yellow'],'aksi'=>'Detail'],
-                            ['pengirim'=>'Kadian Ahmad','jenis'=>'Ulasan','desk'=>'Menangannya cepat','tgl'=>'28 Okt 2025','status'=>['Proses','purple'],'aksi'=>'Detail'],
-                            ['pengirim'=>'Kadian Ahmad','jenis'=>'Bug','desk'=>'Status tidak berubah','tgl'=>'1 Nov 2025','status'=>['Diterima','blue'],'aksi'=>'Detail'],
-                        ];
                         $statusColors = [
-                            'blue'=>'bg-blue-100 text-blue-700',
-                            'green'=>'bg-green-100 text-green-700',
-                            'yellow'=>'bg-amber-100 text-amber-700',
-                            'purple'=>'bg-purple-100 text-purple-700',
+                            'baru'     => 'bg-amber-100 text-amber-700',
+                            'diproses' => 'bg-purple-100 text-purple-700',
+                            'diterima' => 'bg-blue-100 text-blue-700',
+                            'selesai'  => 'bg-green-100 text-green-700',
                         ];
                     @endphp
 
-                    @foreach($rows as $r)
-                    <tr class="hover:bg-neutral-50/60">
-                        <td class="p-4">{{ $r['pengirim'] }}</td>
-                        <td class="p-4 text-neutral-600">{{ $r['jenis'] }}</td>
-                        <td class="p-4 text-neutral-600">{{ $r['desk'] }}</td>
-                        <td class="p-4">{{ $r['tgl'] }}</td>
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium {{ $statusColors[$r['status'][1]] }}">
-                                <span class="h-1.5 w-1.5 rounded-full bg-current"></span>{{ $r['status'][0] }}
-                            </span>
-                        </td>
-                        <td class="p-4">
-                            <button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">Detail</button>
-                        </td>
-                    </tr>
-                    @endforeach
+                    @forelse($rows as $r)
+                        <tr class="hover:bg-neutral-50/60">
+                            <td class="p-4">
+                                {{ $r->user?->name ?? '—' }}
+                            </td>
+                            <td class="p-4 text-neutral-600">
+                                {{ ucfirst($r->report_type ?? '-') }}
+                            </td>
+                            <td class="p-4 text-neutral-600">
+                                {{ \Illuminate\Support\Str::limit($r->report_data, 60) }}
+                            </td>
+                            <td class="p-4">
+                                {{ $r->created_at?->format('d M Y') ?? '-' }}
+                            </td>
+                            <td class="p-4">
+                                @php
+                                    $status = $r->status ?? 'baru';
+                                @endphp
+                                <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium {{ $statusColors[$status] ?? 'bg-neutral-100 text-neutral-600' }}">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                                    {{ ucfirst($status) }}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
+                                    Detail
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-neutral-500">
+                                Belum ada laporan.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
 
         {{-- Pagination --}}
-        <div class="flex items-center justify-end gap-2 p-4 md:p-5">
-            <button class="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm hover:bg-neutral-50">Sebelum</button>
-            <button class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white">1</button>
-            <button class="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm hover:bg-neutral-50">2</button>
-            <button class="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm hover:bg-neutral-50">3</button>
-            <button class="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm hover:bg-neutral-50">Selanjutnya</button>
-        </div>
-    </div>
-
-    {{-- Footer logo block --}}
-    <div class="rounded-2xl border border-neutral-200 bg-white p-6">
-        <div class="flex items-center gap-3">
-            <div class="h-10 w-10 rounded-full bg-red-100"></div>
+        <div class="flex items-center justify-between gap-2 p-4 md:p-5">
+            <div class="text-xs text-neutral-500">
+                Menampilkan
+                <span class="font-medium">{{ $rows->firstItem() ?? 0 }}–{{ $rows->lastItem() ?? 0 }}</span>
+                dari
+                <span class="font-medium">{{ $rows->total() }}</span> laporan
+            </div>
             <div>
-                <div class="text-lg font-semibold">BBI HUB</div>
-                <div class="text-sm text-neutral-500">Plus</div>
+                {{ $rows->onEachSide(1)->links() }}
             </div>
         </div>
     </div>

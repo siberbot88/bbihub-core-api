@@ -21,6 +21,9 @@ class Index extends Component
 
     protected string $paginationTheme = 'tailwind';
 
+    public bool $showDetailModal = false;
+    public ?User $selectedUser   = null;
+
     // Query params tersimpan di URL
     #[Url(as: 'q')]       public string $q = '';
     #[Url(as: 'status')]  public string $status = 'all';
@@ -40,7 +43,25 @@ class Index extends Component
         'inactive' => 'Nonaktif',
         'pending'  => 'Menunggu verifikasi',
     ];
+    
 
+
+    public function detail(string $userId): void
+    {
+        if ($this->category !== 'users') {
+            return;
+        }
+
+        $this->selectedUser    = User::findOrFail($userId);
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetail(): void
+    {
+        $this->showDetailModal = false;
+        $this->selectedUser    = null;
+    }
+    
     // Reset halaman saat filter berubah
     public function updatingCategory() { $this->resetPage(); $this->q=''; $this->status='all'; }
     public function updatingQ()        { $this->resetPage(); }

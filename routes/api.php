@@ -9,10 +9,13 @@ use App\Http\Controllers\Api\Owner\EmployementApiController;
 use App\Http\Controllers\Api\Owner\WorkshopApiController;
 use App\Http\Controllers\Api\Owner\WorkshopDocumentApiController;
 use App\Http\Controllers\Api\ServiceApiController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\TransactionItemController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VoucherApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AdminController;
 
 
 // Midtrans Webhook (no auth required)
@@ -88,24 +91,48 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     });
 
-
+    // ADMIN ROUTES (Consolidated)
     Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
         Route::apiResource('vouchers', VoucherApiController::class);
 
-        // Service
+        // ===== SERVICES (CRUD & Flow) =====
         Route::get   ('services',           [ServiceApiController::class, 'index']);
-        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
         Route::post  ('services',           [ServiceApiController::class, 'store']);
+        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
         Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
         Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
         Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
+        
+        // Flow
+        Route::post('services/{service}/accept',          [AdminController::class, 'accept']);
+        Route::post('services/{service}/decline',         [AdminController::class, 'decline']);
+        Route::post('services/{service}/assign-mechanic', [AdminController::class, 'assignMechanic']);
 
-        // Kendaraan
+        // ===== VEHICLES =====
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+        // ===== TRANSACTIONS =====
+        Route::post('transactions', [TransactionController::class, 'store']);
+        Route::get ('transactions/{transaction}', [TransactionController::class, 'show']);
+        Route::patch ('transactions/{transaction}/items', [TransactionController::class, 'store']);
+        Route::put ('transactions/{transaction}', [TransactionController::class, 'update']);
+        Route::put ('transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
+        Route::post('transactions/{transaction}/finalize', [TransactionController::class, 'finalize']);
+
+        // ===== TRANSACTION ITEMS =====
+        Route::post  ('transaction-items', [TransactionItemController::class, 'store']);
+        Route::patch  ('transaction-items/{item}', [TransactionItemController::class, 'store']);
+        Route::get  ('transaction-items/{item}', [TransactionItemController::class, 'show']);
+        Route::put ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
+        Route::delete('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'destroy']);
+    });
+
+    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
+        //
     });
 
     // Owner SaaS Subscription
@@ -132,7 +159,4 @@ Route::prefix('admin')->group(function () {
     Route::get ('services',               [ServiceApiController::class, 'index']);
     Route::post('services',               [ServiceApiController::class, 'store']);
     Route::get ('services/{service}',     [ServiceApiController::class, 'show']);
-
-
-
 });

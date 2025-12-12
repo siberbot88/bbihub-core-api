@@ -56,17 +56,13 @@
             <td class="px-4 py-3">
               {{-- Aksi --}}
             <td class="px-4 py-3">
-              <div class="flex items-center gap-3 text-neutral-500">
-                {{-- Edit --}}
-                <button wire:click="edit({{ $u->id }})" class="hover:opacity-80" title="Edit">
-                  <img src="{{ asset('icons/aksi_edit.svg') }}" alt="Edit" class="h-5 w-5">
-                </button>
-                
-                {{-- Hapus --}}
-                <button wire:click="delete({{ $u->id }})" class="hover:opacity-80" title="Hapus">
-                  <img src="{{ asset('icons/aksi_hapus.svg') }}" alt="Hapus" class="h-5 w-5">
-                </button>
-              </div>
+              <button
+                type="button"
+                wire:click='detail("{{ $u->id }}")'
+                class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+              >
+                Detail
+              </button>
             </td>
           </tr>
         @empty
