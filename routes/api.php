@@ -44,7 +44,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
 
-    Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
+    Route::prefix('owners')->middleware(['role:owner,sanctum'])->name('api.owner.')->group(function () {
         // Workshops
         Route::post('workshops',[WorkshopApiController::class, 'store'])->name('workshops.store');
         Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
@@ -61,12 +61,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::delete('employee/{employee}',[EmployementApiController::class, 'destroy'])->name('employee.destroy');
         Route::patch ('employee/{employee}/status',[EmployementApiController::class, 'updateStatus'])->name('employee.updateStatus');
 
-        // Staff Performance
-        Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])->name('staff.performance.index');
-        Route::get('staff/{user_id}/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'show'])->name('staff.performance.show');
+        // Staff Performance (PREMIUM ONLY)
+        Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])
+            ->middleware('premium')
+            ->name('staff.performance.index');
+        Route::get('staff/{user_id}/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'show'])
+            ->middleware('premium')
+            ->name('staff.performance.show');
 
-        // Analytics Report
-        Route::get('analytics/report', [\App\Http\Controllers\Api\Owner\ReportAnalyticsController::class, 'getReport'])->name('analytics.report');
+        // Analytics Report (PREMIUM ONLY)
+        Route::get('analytics/report', [\App\Http\Controllers\Api\Owner\ReportAnalyticsController::class, 'getReport'])
+            ->middleware('premium')
+            ->name('analytics.report');
 
         // Customers (optional)
         Route::apiResource('customers', CustomerApiController::class);
@@ -140,8 +146,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Owner SaaS Subscription
     Route::prefix('owner/subscription')->group(function () {
         Route::post('checkout', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkout'])->name('owner.subscription.checkout');
+        Route::post('start-trial', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'startTrial'])->name('owner.subscription.start-trial');
         Route::post('cancel', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'cancel'])->name('owner.subscription.cancel');
-Route::post('check-status', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkStatus'])->name('owner.subscription.check-status');
+        Route::post('check-status', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkStatus'])->name('owner.subscription.check-status');
     });
 
     // Membership Routes (for customers)
