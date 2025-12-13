@@ -23,7 +23,7 @@ class Workshop extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'operational_days' => 'array', // Assuming it's stored as JSON, or we can leave it as string if it's just a string like "Senin-Jumat"
+        // 'operational_days' => 'array', // Removed to treat as simple string
     ];
 
     /**

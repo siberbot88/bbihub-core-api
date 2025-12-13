@@ -44,6 +44,22 @@ class MidtransWebhookController extends Controller
             return response()->json(['message' => 'Subscription not found'], 404);
         }
 
+        // 🎁 TRIAL ACTIVATION LOGIC
+        // Detect trial orders (starts with 'TRIAL-' or has gross_amount = 0)
+        $isTrial = str_starts_with($orderId, 'TRIAL-') || (int)$grossAmount === 0;
+        
+        if ($isTrial && ($transactionStatus === 'settlement' || $transactionStatus === 'capture')) {
+            // Activate trial for user
+            $user = $subscription->user;
+            if ($user) {
+                $user->update([
+                    'trial_used' => true,
+                    'trial_ends_at' => now()->addDays(7),
+                ]);
+                Log::info("Trial activated for user {$user->id}, order: $orderId");
+            }
+        }
+
         // Current status logic
         $newStatus = null;
 
