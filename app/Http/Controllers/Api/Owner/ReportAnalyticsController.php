@@ -37,10 +37,13 @@ class ReportAnalyticsController extends Controller
         }
 
         try {
-            // Get workshop UUID from authenticated user
+            // Get authenticated user
             $user = $request->user();
             
-            if (!$user->workshop_uuid) {
+            // Find workshop owned by this user
+            $workshop = \App\Models\Workshop::where('user_uuid', $user->id)->first();
+            
+            if (!$workshop) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User is not associated with any workshop',
@@ -50,7 +53,7 @@ class ReportAnalyticsController extends Controller
             $range = $request->input('range', 'monthly');
             
             $analytics = $this->analyticsService->calculateWorkshopAnalytics(
-                $user->workshop_uuid,
+                $workshop->id, // Use workshop ID
                 $range
             );
 

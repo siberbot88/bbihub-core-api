@@ -150,7 +150,8 @@ class AnalyticsService
             $breakdown[$categoryName] = round($percentage, 1);
         }
 
-        return $breakdown;
+        // Ensure we return an object, not array (for JSON consistency)
+        return empty($breakdown) ? (object)[] : $breakdown;
     }
 
     /**
@@ -158,28 +159,40 @@ class AnalyticsService
      */
     private function getPeakHours(string $workshopUuid, Carbon $startDate, Carbon $endDate)
     {
-        // Get services by hour
+        // Get all services grouped by hour
         $servicesByHour = Service::where('workshop_uuid', $workshopUuid)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('HOUR(created_at) as hour, COUNT(*) as count')
             ->groupBy('hour')
-            ->orderBy('count', 'desc')
-            ->first();
+            ->get();
 
-        if (!$servicesByHour) {
+        if ($servicesByHour->isEmpty()) {
             return [
                 'peak_range' => '14:00 - 16:00', // Default
                 'peak_hour' => 14,
+                'hourly_distribution' => (object)[], // Cast to object for JSON
             ];
         }
 
-        $peakHour = $servicesByHour->hour;
+        // Find peak hour
+        $peakService = $servicesByHour->sortByDesc('count')->first();
+        $peakHour = $peakService->hour;
         $startHour = str_pad($peakHour, 2, '0', STR_PAD_LEFT) . ':00';
         $endHour = str_pad(($peakHour + 2) % 24, 2, '0', STR_PAD_LEFT) . ':00';
+
+        // Build hourly distribution for visualization (8am - 10pm)
+        $hourlyDistribution = [];
+        $visualizationHours = [8, 10, 12, 14, 16, 18, 20, 22];
+        
+        foreach ($visualizationHours as $hour) {
+            $service = $servicesByHour->firstWhere('hour', $hour);
+            $hourlyDistribution["{$hour}:00"] = $service ? (int)$service->count : 0;
+        }
 
         return [
             'peak_range' => "$startHour - $endHour",
             'peak_hour' => $peakHour,
+            'hourly_distribution' => $hourlyDistribution,
         ];
     }
 
