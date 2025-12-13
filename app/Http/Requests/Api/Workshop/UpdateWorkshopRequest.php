@@ -26,9 +26,17 @@ class UpdateWorkshopRequest extends FormRequest
             'photo' => 'sometimes|image|max:2048', // Max 2MB
             'opening_time' => 'sometimes|date_format:H:i:s', // Format H:i:s as per DB
             'closing_time' => 'sometimes|date_format:H:i:s',
-            'operational_days' => 'sometimes|string',
+            'operational_days' => 'sometimes|nullable|string',
             'is_active' => 'sometimes|boolean',
-            'description' => 'sometimes|string', // Mapped from 'information'
+            'description' => 'sometimes|string', 
+            'address' => 'sometimes|string',
+            'phone' => 'sometimes|string',
+            'email' => 'sometimes|email',
+            'maps_url' => 'sometimes|url', // Validate as URL
+            'city' => 'sometimes|string',
+            'province' => 'sometimes|string',
+            'country' => 'sometimes|string',
+            'postal_code' => 'sometimes|string',
         ];
     }
 

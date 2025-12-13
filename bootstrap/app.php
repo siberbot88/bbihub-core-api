@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'superadmin' => \App\Http\Middleware\EnsureSuperadmin::class,
+            'premium' => \App\Http\Middleware\EnsurePremiumAccess::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
