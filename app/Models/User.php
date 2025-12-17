@@ -22,7 +22,7 @@ class User extends Authenticatable
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
-    protected string $guard_name = 'web';
+    protected string $guard_name = 'sanctum';
 
 
     /**
