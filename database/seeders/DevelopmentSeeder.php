@@ -36,13 +36,8 @@ class DevelopmentSeeder extends Seeder
             // 6. Seed Customers (10 sample customers)
             $this->seedCustomers();
 
-            // 7. Seed Subscription Plans (Owner SaaS Plans) - DISABLED
-            // Table doesn't exist yet - run migration first
-            // if (\Schema::hasTable('subscription_plans')) {
-            //     $this->seedSubscriptionPlans();
-            // } else {
-            //     $this->command->warn('⚠️  Skipping Subscription Plans - table not found. Run migrations first.');
-            // }
+            // 7. Seed Subscription Plans (Owner SaaS Plans)
+            $this->seedSubscriptionPlans();
 
             // 8. Seed Memberships (Customer Loyalty)
             $this->seedMemberships();
