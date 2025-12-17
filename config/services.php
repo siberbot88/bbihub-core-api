@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+        'temperature' => env('GEMINI_TEMPERATURE', 0.7),
+        'max_tokens' => env('GEMINI_MAX_TOKENS', 500),
+    ],
+
+    'chat_ai' => [
+        'base_url' => env('AI_BASE_URL', 'https://api.deepseek.com'),
+        'api_key' => env('AI_API_KEY'),
+        'model' => env('AI_MODEL', 'deepseek-chat'),
+        'temperature' => env('AI_TEMPERATURE', 0.7),
+        'max_tokens' => env('AI_MAX_TOKENS', 500),
+    ],
+
 ];

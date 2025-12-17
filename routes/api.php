@@ -24,7 +24,20 @@ Route::post('v1/webhooks/midtrans', [MidtransWebhookController::class, 'handle']
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');
     Route::post('login',    [AuthController::class, 'login'])->name('api.login');
+    Route::post('forgot-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'sendOtp']);
+    Route::post('verify-otp', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'verifyOtp']);
+    Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword']);
 });
+
+// Test endpoint for chat (no auth)
+Route::get('v1/chat/test', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'Chat API is working!',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+});
+
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('api.logout');
@@ -42,6 +55,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
             'tokenable_id'  => $pat->tokenable_id,
         ];
     });
+
+    // Chat API Routes
+    Route::prefix('chat')->group(function () {
+        Route::post('/send', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage'])->name('chat.send');
+        Route::get('/messages', [\App\Http\Controllers\Api\ChatController::class, 'getMessages'])->name('chat.messages');
+        Route::get('/history', [\App\Http\Controllers\Api\ChatController::class, 'getHistory'])->name('chat.history');
+        Route::delete('/history', [\App\Http\Controllers\Api\ChatController::class, 'clearHistory'])->name('chat.clear');
+        Route::post('/mark-read', [\App\Http\Controllers\Api\ChatController::class, 'markAsRead'])->name('chat.mark-read');
+        Route::get('/rooms', [\App\Http\Controllers\Api\ChatController::class, 'getRooms'])->name('chat.rooms'); // Admin only
+    });
+
 
 
     Route::prefix('owners')->middleware(['role:owner,sanctum'])->name('api.owner.')->group(function () {
