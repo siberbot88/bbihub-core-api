@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Service extends Model
 {
+    /** @use HasFactory<ServiceFactory> */
+    use HasFactory, HasUuids;
+
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
-    /** @use HasFactory<ServiceFactory> */
-    use HasFactory, HasUuids;
     protected $fillable = [
         'id',
         'code',
@@ -37,55 +37,77 @@ class Service extends Model
         'reason_description',
         'feedback_mechanic',
         'accepted_at',
+        'accepted_at',
         'completed_at',
+        'assigned_to_user_id',
+        'technician_name',
     ];
 
     protected $casts = [
         'price'          => 'decimal:2',
         'scheduled_date' => 'date',
         'estimated_time' => 'date',
+        'accepted_at'    => 'datetime',
+        'completed_at'   => 'datetime',
     ];
 
+    /* =========================================================
+       🔹 RELATIONSHIPS
+    ========================================================== */
 
-    public function workshop(): BelongsTo{
+    public function workshop(): BelongsTo
+    {
         return $this->belongsTo(Workshop::class, 'workshop_uuid');
     }
 
-    public function items(): HasMany{
-        return $this->hasMany(TransactionItem::class, 'service_uuid');
-    }
-    public function log(): HasOne{
-        return $this->hasOne(ServiceLog::class, 'service_uuid', 'id');
-    }
-    public function task(): HasOne{
-        return $this->hasOne(Task::class, 'transaction_uuid', 'id');
-    }
-
-    public function customer(): BelongsTo{
+    public function customer(): BelongsTo
+    {
         return $this->belongsTo(Customer::class, 'customer_uuid');
     }
 
-    public function vehicle(): BelongsTo{
+    public function vehicle(): BelongsTo
+    {
         return $this->belongsTo(Vehicle::class, 'vehicle_uuid');
     }
 
-    public function mechanic(): BelongsTo{
-        return $this->belongsTo(Employment::class, 'mechanic_uuid')->with('user');
+    public function mechanic(): BelongsTo
+    {
+        return $this->belongsTo(Employment::class, 'mechanic_uuid')
+            ->with('user'); // biar langsung dapat user mekaniknya
     }
 
-    public function transaction(): HasOne{
+    /**
+     * Service hanya punya 1 transaksi
+     * Transaction punya banyak items
+     */
+    public function transaction(): HasOne
+    {
         return $this->hasOne(Transaction::class, 'service_uuid', 'id');
     }
+
     /**
-     * Dummy relationship for mobile app backward compatibility
-     * Returns proper relationship that's always empty
+     * Service hanya punya 1 log
      */
-    public function extras(): HasMany
+    public function log(): HasOne
     {
-        // Use existing ServiceLog model but force empty result with WHERE 1=0
-        // This creates a valid relationship for eager loading without errors
-        return $this->hasMany(\App\Models\ServiceLog::class, 'service_uuid', 'id')
-            ->whereRaw('1 = 0');
+        return $this->hasOne(ServiceLog::class, 'service_uuid', 'id');
     }
 
+    /**
+     * Service hanya punya 1 task untuk notifikasi
+     */
+    public function task(): HasOne
+    {
+        return $this->hasOne(Task::class, 'transaction_uuid', 'id');
+    }
+
+    /**
+     * (Opsional) dummy relasi backward compatibility (selalu kosong)
+     * Hapus kalau tidak dipakai di mobile
+     */
+    public function extras()
+    {
+        return $this->hasMany(ServiceLog::class, 'service_uuid', 'id')
+            ->whereRaw('1 = 0');
+    }
 }

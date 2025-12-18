@@ -27,11 +27,7 @@ class Edit extends Component
         $this->status = $user->status ?? null;
     }
 
-    /**
-     * Simpan perubahan user.
-     *
-     * Livewire mengizinkan action mengembalikan RedirectResponse.
-     */
+
     public function save(): RedirectResponse
     {
         $data = $this->validate([

@@ -152,6 +152,7 @@ class ServiceApiController extends Controller
                 'workshop',
                 'customer',
                 'vehicle',
+
                 'mechanic.user',
             ]);
 

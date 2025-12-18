@@ -88,10 +88,11 @@ class Index extends Component
             return;
         }
 
-        $id = $this->selected[0];
+        $id = (string) $this->selected[0];
 
         if ($this->category === 'users') {
-            $this->redirectRoute('admin.users.edit', ['user' => $id], navigate: true);
+            // BUKA MODAL EDIT USER (pakai UserModals component)
+            $this->dispatch('user:edit', id: $id);
             return;
         }
 

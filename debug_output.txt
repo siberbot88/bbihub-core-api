@@ -1,25 +1,26 @@
-{
-    "message": "Registrasi berhasil. Akun Owner telah dibuat.",
-    "data": {
-        "access_token": "1|x0hlA6wPVEi6DOcwILd4mH9hcAJK1c5DMviD6u1N7fb6d0e9",
-        "token_type": "Bearer",
-        "user": {
-            "id": "db12624f-59f0-4c40-b0d8-e7a04ef97425",
-            "name": "Test Owner",
-            "email": "owner@example.com",
-            "username": "testowner",
-            "roles": [
-                {
-                    "name": "owner",
-                    "pivot": {
-                        "model_type": "App\\Models\\User",
-                        "model_id": "db12624f-59f0-4c40-b0d8-e7a04ef97425",
-                        "role_id": 1
-                    }
-                }
-            ],
-            "must_change_password": false,
-            "workshops": []
-        }
-    }
-}
+﻿
+   INFO  Running migrations.  
+
+  2025_12_04_110713_add_performance_fields_to_services_table  52.38ms FAIL
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'assigned_to_user_id' (Connection: mysql, SQL: alter table `services` add `assigned_to_user_id` char(36) null)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:824
+    820Ôûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    821Ôûò                 );
+    822Ôûò             }
+    823Ôûò 
+  Ô×£ 824Ôûò             throw new QueryException(
+    825Ôûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Ôûò             );
+    827Ôûò         }
+    828Ôûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:570
+      PDOException::("SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'assigned_to_user_id'")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:570
+      PDOStatement::execute()
+

@@ -32,7 +32,6 @@ class ServiceFactory extends Factory
             'price' => $this->faker->numberBetween(100000, 1000000),
             'reason' => $this->faker->sentence(),
             'feedback_mechanic' => $this->faker->sentence(),
-            'note' => $this->faker->sentence(),
         ];
     }
 }

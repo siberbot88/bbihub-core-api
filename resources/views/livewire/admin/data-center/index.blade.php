@@ -124,4 +124,5 @@
     @endif
 
   </div>
+  <livewire:admin.users.user-modals />
 </div>
