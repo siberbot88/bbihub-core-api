@@ -9,7 +9,6 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  * allow your team to quickly build robust real-time web applications.
  */
 
-// Commented out - laravel-echo package not installed
-// Uncomment and run 'npm install laravel-echo pusher-js' if needed
-// import './echo';
+import './echo';
+
 
