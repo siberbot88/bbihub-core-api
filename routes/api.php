@@ -66,6 +66,13 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/rooms', [\App\Http\Controllers\Api\ChatController::class, 'getRooms'])->name('chat.rooms'); // Admin only
     });
 
+    // Notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+        Route::get('/unread-count', [\App\Http\Controllers\Api\NotificationController::class, 'unreadCount']);
+        Route::post('/mark-read', [\App\Http\Controllers\Api\NotificationController::class, 'markRead']);
+    });
+
 
 
     Route::prefix('owners')->middleware(['role:owner,sanctum'])->name('api.owner.')->group(function () {

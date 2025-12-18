@@ -72,24 +72,51 @@ class ChatController extends Controller
                         array_pop($history);
                     }
 
-                    // Generate AI Response
-                    $chatbotService = new \App\Services\ChatbotService();
-                    $aiResponse = $chatbotService->generateResponse($request->message, $history);
+                    // INTERCEPT: 'Hubungi Admin' or just 'Admin' intent
+                    // Log for debugging
+                    \Log::info('Chat Intercept Check', ['msg' => $request->message]);
+
+                    if (stripos(strtolower($request->message), 'admin') !== false) {
+                        $aiResponse = "Anda dapat menghubungi Admin kami melalui:\n\n"
+                            . "WhatsApp: 0877-2189-3340\n"
+                            . "Email: admin@bbihub.com\n\n"
+                            . "Jam Operasional: 09:00 - 17:00 WIB";
+                    } else {
+                        // Generate AI Response for other messages
+                        try {
+                            $chatbotService = new \App\Services\ChatbotService();
+                            $aiResponse = $chatbotService->generateResponse($request->message, $history);
+                        } catch (\Exception $e) {
+                            \Log::error('Chatbot Service Failed: ' . $e->getMessage());
+                            $aiResponse = null;
+                        }
+                    }
                     
                     if ($aiResponse) {
-                        // Create AI User ID (placeholder UUID for AI - use all zeros)
-                        $aiUserId = '00000000-0000-0000-0000-000000000000'; 
-                        
-                        // Save AI Message as 'admin'
-                        $aiMessage = ChatMessage::create([
-                            'room_id' => $request->room_id,
-                            'user_id' => $aiUserId, 
-                            'user_type' => 'admin', // AI acts as admin
-                            'message' => $aiResponse,
-                            'is_read' => false,
-                        ]);
-                        \Log::info('AI Auto-reply sent', ['id' => $aiMessage->id]);
+                        try {
+                            // Try to find a real admin to attribute the message to
+                            // This prevents FK errors if user_id is constrained
+                            $adminUser = \App\Models\User::whereHas('roles', function($q) {
+                                $q->where('name', 'admin');
+                            })->first();
+
+                            // Fallback to a zero UUID if no admin found (or if using simple ID)
+                            $aiUserId = $adminUser ? $adminUser->id : '00000000-0000-0000-0000-000000000000'; 
+                            
+                            // Save AI Message as 'admin'
+                            $aiMessage = ChatMessage::create([
+                                'room_id' => $request->room_id,
+                                'user_id' => $aiUserId, 
+                                'user_type' => 'admin', // AI acts as admin
+                                'message' => $aiResponse,
+                                'is_read' => false,
+                            ]);
+                            \Log::info('AI Auto-reply sent', ['id' => $aiMessage->id]);
+                        } catch (\Exception $e) {
+                            \Log::error('Failed to save AI/Admin message: ' . $e->getMessage());
+                        }
                     }
+
                 } catch (\Exception $e) {
                     \Log::error('Chatbot trigger failed: ' . $e->getMessage());
                     // Don't block the original response if AI fails
