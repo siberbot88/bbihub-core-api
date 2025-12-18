@@ -56,20 +56,13 @@ class SecurityHeaders
             return null;
         }
 
-        // For development: more permissive CSP to allow Vite HMR, Livewire, and inline styles
+        // Skip CSP completely in development - too restrictive for Livewire/Vite/Tailwind
+        // Development should focus on functionality, production on security
         if (config('app.env') !== 'production') {
-            return implode('; ', [
-                "default-src 'self' 'unsafe-inline' 'unsafe-eval'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173 https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com",
-                "font-src 'self' https://fonts.gstatic.com data:",
-                "img-src 'self' data: https: http: blob:",
-                "connect-src 'self' ws://localhost:5173 http://localhost:5173 https:",
-                "frame-src 'self'",
-            ]);
+            return null; // No CSP in dev
         }
 
-        // Production: stricter CSP (adjust based on your actual assets)
+        // Production: strict CSP for security
         return implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
