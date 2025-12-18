@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
+use App\Models\AuditLog;
 use App\Models\Transaction;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
@@ -25,6 +26,20 @@ class TransactionController extends Controller
 
         try {
             $trx = $this->transactionService->createTransaction($data, $request->user());
+
+            // Audit log - transaction created
+            AuditLog::log(
+                event: 'transaction_created',
+                user: $request->user(),
+                auditable: $trx,
+                new_values: [
+                    'service_id' => $trx->service_id,
+                    'amount' => $trx->amount,
+                    'status' => $trx->status
+                ],
+                ip_address: $request->ip(),
+                user_agent: $request->userAgent()
+            );
 
             return (new TransactionResource($trx->load(['service', 'items'])))
                 ->response()
