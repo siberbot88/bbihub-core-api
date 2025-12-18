@@ -36,7 +36,7 @@ class DevelopmentSeeder extends Seeder
             // 6. Seed Customers (10 sample customers)
             $this->seedCustomers();
 
-            // 7. Seed Subscription Plans (Owner SaaS Plans) - NEW
+            // 7. Seed Subscription Plans (Owner SaaS Plans)
             $this->seedSubscriptionPlans();
 
             // 8. Seed Memberships (Customer Loyalty)

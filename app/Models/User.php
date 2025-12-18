@@ -22,9 +22,13 @@ class User extends Authenticatable
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
+<<<<<<< HEAD
 
     // Spatie Permission guard
     protected string $guard_name = 'web';
+=======
+    protected string $guard_name = 'sanctum';
+>>>>>>> origin/main
 
     /**
      * Jangan pakai $guarded dan $fillable sekaligus.
@@ -38,6 +42,8 @@ class User extends Authenticatable
         'password',
         'phone',
         'photo',
+        'trial_ends_at',
+        'trial_used',
     ];
 
     protected $hidden = [
@@ -51,6 +57,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             // Laravel 10+: password akan otomatis di-hash saat set
             'password' => 'hashed',
+            'trial_ends_at' => 'datetime',
+            'trial_used' => 'boolean',
         ];
     }
 
@@ -155,6 +163,45 @@ class User extends Authenticatable
      */
     public function ownerSubscription(): HasOne
     {
-        return $this->hasOne(OwnerSubscription::class, 'user_id', 'id')->latestOfMany();
+        return $this->hasOne(OwnerSubscription::class, 'user_id', 'id')->latestOfMany('created_at');
+    }
+
+    // Trial & Premium Access Helpers
+
+    public function isInTrial(): bool
+    {
+        return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+    }
+
+    public function hasPremiumAccess(): bool
+    {
+        $subscription = $this->ownerSubscription;
+        if ($subscription && $subscription->status === 'active') {
+            return true;
+        }
+        return $this->isInTrial();
+    }
+
+    public function getSubscriptionStatus(): ?string
+    {
+        $subscription = $this->ownerSubscription;
+        if ($subscription) {
+            return $subscription->status;
+        }
+        if ($this->isInTrial()) {
+            return 'trial';
+        }
+        if ($this->trial_used && !$this->isInTrial()) {
+            return 'expired';
+        }
+        return null;
+    }
+
+    public function trialDaysRemaining(): int
+    {
+        if (!$this->isInTrial()) {
+            return 0;
+        }
+        return (int) now()->diffInDays($this->trial_ends_at, false);
     }
 }

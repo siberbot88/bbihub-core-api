@@ -90,6 +90,70 @@ class OwnerSubscriptionService
     }
 
     /**
+     * Initiate trial subscription (Rp 0 with payment method capture)
+     */
+    public function initiateTrial(User $user)
+    {
+        return DB::transaction(function () use ($user) {
+            // Get Premium plan (code = 'bbi_hub_plus')
+            $plan = SubscriptionPlan::where('code', 'bbi_hub_plus')->first();
+            
+            if (!$plan) {
+                throw new \Exception('Premium plan not found');
+            }
+
+            $orderId = 'TRIAL-' . time() . '-' . Str::random(5);
+            $startsAt = Carbon::now();
+            $expiresAt = $startsAt->copy()->addDays(7); // 7-day trial
+
+            // Create trial subscription
+            $subscription = OwnerSubscription::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'status' => 'pending', // Will be 'active' after payment
+                'billing_cycle' => 'monthly',
+                'starts_at' => $startsAt,
+                'expires_at' => $expiresAt,
+                'order_id' => $orderId,
+            ]);
+
+            // Midtrans params for Rp 0 transaction
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $orderId,
+                    'gross_amount' => 1000, // Midtrans requires > 0. Using 1000 for verification.
+                ],
+                'customer_details' => [
+                    'first_name' => $user->name,
+                    'email' => $user->email,
+                ],
+                'item_details' => [
+                    [
+                        'id' => 'trial',
+                        'price' => 1000,
+                        'quantity' => 1,
+                        'name' => 'Verifikasi Kartu (Trial 7 Hari)',
+                    ]
+                ],
+                // Only enable credit card for trial (to capture payment method)
+                'enabled_payments' => ['credit_card'],
+                'custom_field1' => 'trial', // Mark as trial transaction
+            ];
+
+            // Get Snap Token
+            $midtransObj = $this->midtransService->createSnapTransaction($params);
+
+            return [
+                'subscription' => $subscription,
+                'snap_token' => $midtransObj->token,
+                'payment_url' => $midtransObj->redirect_url,
+                'order_id' => $orderId,
+                'trial_duration' => 7,
+            ];
+        });
+    }
+
+    /**
      * Activate subscription (called by Webhook)
      */
     public function activateSubscription(string $orderId)

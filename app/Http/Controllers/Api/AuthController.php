@@ -44,7 +44,15 @@ class AuthController extends Controller
         $user = $request->user();
         $this->loadUserRelations($user);
 
-        return $this->successResponse('User data retrieved', $user);
+        // Add trial information to response
+        $userData = $user->toArray();
+        $userData['subscription_status'] = $user->getSubscriptionStatus();
+        $userData['is_in_trial'] = $user->isInTrial();
+        $userData['trial_ends_at'] = $user->trial_ends_at?->toIso8601String();
+        $userData['trial_days_remaining'] = $user->trialDaysRemaining();
+        $userData['has_premium_access'] = $user->hasPremiumAccess();
+
+        return $this->successResponse('User data retrieved', $userData);
     }
 
     /**

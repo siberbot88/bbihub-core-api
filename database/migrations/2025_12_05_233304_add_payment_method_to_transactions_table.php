@@ -8,10 +8,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
+            // Only add if column doesn't exist
             if (!Schema::hasColumn('transactions', 'payment_method')) {
+                // ENUM untuk metode pembayaran
                 $table->enum('payment_method', ['QRIS', 'Cash', 'Bank'])
-                      ->nullable()
-                      ->after('amount');
+                    ->nullable()
+                    ->after('amount');
             }
         });
     }

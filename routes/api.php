@@ -24,7 +24,20 @@ Route::post('v1/webhooks/midtrans', [MidtransWebhookController::class, 'handle']
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');
     Route::post('login',    [AuthController::class, 'login'])->name('api.login');
+    Route::post('forgot-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'sendOtp']);
+    Route::post('verify-otp', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'verifyOtp']);
+    Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword']);
 });
+
+// Test endpoint for chat (no auth)
+Route::get('v1/chat/test', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'Chat API is working!',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+});
+
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('api.logout');
@@ -43,8 +56,19 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         ];
     });
 
+    // Chat API Routes
+    Route::prefix('chat')->group(function () {
+        Route::post('/send', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage'])->name('chat.send');
+        Route::get('/messages', [\App\Http\Controllers\Api\ChatController::class, 'getMessages'])->name('chat.messages');
+        Route::get('/history', [\App\Http\Controllers\Api\ChatController::class, 'getHistory'])->name('chat.history');
+        Route::delete('/history', [\App\Http\Controllers\Api\ChatController::class, 'clearHistory'])->name('chat.clear');
+        Route::post('/mark-read', [\App\Http\Controllers\Api\ChatController::class, 'markAsRead'])->name('chat.mark-read');
+        Route::get('/rooms', [\App\Http\Controllers\Api\ChatController::class, 'getRooms'])->name('chat.rooms'); // Admin only
+    });
 
-    Route::prefix('owners')->middleware('role:owner,sanctum')->name('api.owner.')->group(function () {
+
+
+    Route::prefix('owners')->middleware(['role:owner,sanctum'])->name('api.owner.')->group(function () {
         // Workshops
         Route::post('workshops',[WorkshopApiController::class, 'store'])->name('workshops.store');
         Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
@@ -61,10 +85,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::delete('employee/{employee}',[EmployementApiController::class, 'destroy'])->name('employee.destroy');
         Route::patch ('employee/{employee}/status',[EmployementApiController::class, 'updateStatus'])->name('employee.updateStatus');
 
-        // Staff Performance
-        Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])->name('staff.performance.index');
-        Route::get('staff/{user_id}/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'show'])->name('staff.performance.show');
+        // Staff Performance (PREMIUM ONLY)
+        Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])
+            ->middleware('premium')
+            ->name('staff.performance.index');
+        Route::get('staff/{user_id}/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'show'])
+            ->middleware('premium')
+            ->name('staff.performance.show');
 
+        // Analytics Report (PREMIUM ONLY)
+        Route::get('analytics/report', [\App\Http\Controllers\Api\Owner\ReportAnalyticsController::class, 'getReport'])
+            ->middleware('premium')
+            ->name('analytics.report');
 
         // Customers (optional)
         Route::apiResource('customers', CustomerApiController::class);
@@ -138,8 +170,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Owner SaaS Subscription
     Route::prefix('owner/subscription')->group(function () {
         Route::post('checkout', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkout'])->name('owner.subscription.checkout');
+        Route::post('start-trial', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'startTrial'])->name('owner.subscription.start-trial');
         Route::post('cancel', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'cancel'])->name('owner.subscription.cancel');
-Route::post('check-status', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkStatus'])->name('owner.subscription.check-status');
+        Route::post('check-status', [\App\Http\Controllers\Api\OwnerSubscriptionController::class, 'checkStatus'])->name('owner.subscription.check-status');
     });
 
     // Membership Routes (for customers)

@@ -3,7 +3,7 @@
 return [
 
     'defaults' => [
-        'guard' => env('PERMISSION_GUARD', 'web'),
+        'guard' => env('PERMISSION_GUARD', 'sanctum'),
     ],
 
     'models' => [
