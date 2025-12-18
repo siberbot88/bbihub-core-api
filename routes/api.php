@@ -24,9 +24,16 @@ Route::post('v1/webhooks/midtrans', [MidtransWebhookController::class, 'handle']
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');
     Route::post('login',    [AuthController::class, 'login'])->name('api.login');
-    Route::post('forgot-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'sendOtp']);
-    Route::post('verify-otp', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'verifyOtp']);
-    Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword']);
+    
+    // ✅ SECURITY FIX: Rate limiting for password reset endpoints
+    Route::post('forgot-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'sendOtp'])
+        ->middleware('throttle:3,10'); // Max 3 requests per 10 minutes
+    
+    Route::post('verify-otp', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'verifyOtp'])
+        ->middleware('throttle:5,1'); // Max 5 attempts per minute
+    
+    Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword'])
+        ->middleware('throttle:5,10'); // Max 5 attempts per 10 minutes
 });
 
 // Test endpoint for chat (no auth)

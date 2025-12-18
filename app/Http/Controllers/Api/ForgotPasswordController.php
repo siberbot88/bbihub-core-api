@@ -105,7 +105,16 @@ class ForgotPasswordController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
             'otp'   => 'required|numeric',
-            'password' => 'required|min:6|confirmed', // expects password_confirmation
+            // ✅ SECURITY FIX: Strong password policy
+            'password' => [
+                'required',
+                'confirmed',
+                \Illuminate\Validation\Rules\Password::min(8)
+                    ->mixedCase()      // Require uppercase + lowercase
+                    ->numbers()        // Require at least one number
+                    ->symbols()        // Require at least one special character
+                    ->uncompromised()  // Check against pwned passwords database
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -122,7 +131,19 @@ class ForgotPasswordController extends Controller
         if (!$record || $record->token != $request->otp) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kode OTP salah atau kadaluarsa.'
+                'message' => 'Kode OTP salah.'
+            ], 400);
+        }
+
+        // ✅ SECURITY FIX: Check OTP expiration (15 minutes)
+        $createdAt = Carbon::parse($record->created_at);
+        if ($createdAt->addMinutes(15)->isPast()) {
+            // Delete expired OTP
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode OTP telah kadaluarsa. Silakan minta kode baru.'
             ], 400);
         }
 
@@ -131,7 +152,7 @@ class ForgotPasswordController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        // Delete OTP
+        // Delete OTP after successful reset
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return response()->json([
