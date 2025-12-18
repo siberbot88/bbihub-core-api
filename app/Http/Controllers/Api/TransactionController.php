@@ -85,7 +85,17 @@ class TransactionController extends Controller
         ]);
 
         try {
+            $oldStatus = $transaction->status;
             $updated = $this->transactionService->updateStatus($transaction, $data['status']);
+
+            // Audit log - status changed
+            AuditLog::log(
+                event: 'transaction_status_changed',
+                user: $request->user(),
+                auditable: $updated,
+                oldValues: ['status' => $oldStatus],
+                newValues: ['status' => $updated->status]
+            );
 
             return new TransactionResource(
                 $updated->fresh()->load(['items','service'])
@@ -104,6 +114,14 @@ class TransactionController extends Controller
     {
         try {
             $updated = $this->transactionService->finalize($transaction);
+
+            // Audit log - finalized
+            AuditLog::log(
+                event: 'transaction_finalized',
+                user: auth()->user(),
+                auditable: $updated,
+                newValues: ['status' => $updated->status]
+            );
 
             return new TransactionResource(
                 $updated->fresh()->load(['items','service'])
