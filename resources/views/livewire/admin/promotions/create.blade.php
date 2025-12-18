@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-5xl px-4 py-6 lg:py-8">
+<div class="w-full px-2 lg:px-4 space-y-5">
 
   {{-- Back + Title --}}
   <div class="mb-4 flex items-center justify-between">
@@ -23,7 +23,7 @@
 
     @if (session('success'))
       <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-        {{ session('success') }}
+        {{ session('success') }} 
       </div>
     @endif
 

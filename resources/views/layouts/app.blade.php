@@ -47,11 +47,9 @@
       @include('layouts.header')
 
       {{-- Konten utama --}}
-      <main class="flex-1 bg-[#F9F9F9]">
-        <div class="mx-auto w-full max-w-[1200px] px-6 py-8 space-y-6">
+      <main class="flex-1 bg-[#F9F9F9] p-4">
           @yield('content')
           {{ $slot ?? '' }}
-        </div>
       </main>
 
       {{-- Footer --}}
