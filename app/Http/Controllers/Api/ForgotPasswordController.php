@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OtpMail;
+use App\Models\AuditLog;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
-use App\Models\User;
+use Illuminate\Validation\Rules\Password;
 
 class ForgotPasswordController extends Controller
 {
@@ -43,17 +47,24 @@ class ForgotPasswordController extends Controller
             ]
         );
 
+        $user = User::where('email', $email)->first();
+
         // Send Email (Using Raw Mail for simplicity, or queue a Mailable)
         try {
-            Mail::raw("Kode OTP Reset Password BBI HUB Anda adalah: $otp\n\nKode ini berlaku selama 15 menit.", function ($message) use ($email) {
-                $message->to($email)
-                        ->subject('Kode OTP Reset Password - BBI HUB');
-            });
+            // Kirim email OTP
+            Mail::to($user->email)->send(new OtpMail($otp));
+
+            // Audit log: OTP requested
+            AuditLog::log(
+                event: 'otp_requested',
+                user: $user,
+                auditable: $user
+            );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Kode OTP telah dikirim ke email Anda.',
-            ]);
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -109,7 +120,7 @@ class ForgotPasswordController extends Controller
             'password' => [
                 'required',
                 'confirmed',
-                \Illuminate\Validation\Rules\Password::min(8)
+                Password::min(8)
                     ->mixedCase()      // Require uppercase + lowercase
                     ->numbers()        // Require at least one number
                     ->symbols()        // Require at least one special character
@@ -150,14 +161,22 @@ class ForgotPasswordController extends Controller
         // Reset Password
         $user = User::where('email', $request->email)->first();
         $user->password = Hash::make($request->password);
+        $user->password_changed_at = now();
         $user->save();
 
-        // Delete OTP after successful reset
+        // Hapus OTP setelah berhasil
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        // Audit log: Password reset via OTP
+        AuditLog::log(
+            event: 'password_reset_via_otp',
+            user: $user,
+            auditable: $user
+        );
 
         return response()->json([
             'success' => true,
             'message' => 'Password berhasil diubah! Silakan login dengan password baru.',
-        ]);
+        ], 200);
     }
 }

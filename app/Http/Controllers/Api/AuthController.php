@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Auth\ChangePasswordRequest;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Http\Traits\ApiResponseTrait;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -136,6 +137,16 @@ class AuthController extends Controller
 
         $this->loadUserRelations($user);
 
+        // Audit log: User logged in
+        AuditLog::log(
+            event: 'user_logged_in',
+            user: $user,
+            newValues: [
+                'remember' => $remember,
+                'token_expires' => $remember ? '30 days' : 'session',
+            ]
+        );
+
         return $this->successResponse('Login berhasil', [
             'access_token' => $token,
             'token_type'   => 'Bearer',
@@ -173,6 +184,13 @@ class AuthController extends Controller
             'password_changed_at' => now(),
         ])->save();
 
+        // Audit log: Password changed
+        AuditLog::log(
+            event: 'password_changed',
+            user: $user,
+            auditable: $user
+        );
+
         return $this->successResponse('Password berhasil diperbarui');
     }
 
@@ -191,6 +209,13 @@ class AuthController extends Controller
             } else {
                 $user->currentAccessToken()->delete();
             }
+
+            // Audit log: User logged out
+            AuditLog::log(
+                event: 'user_logged_out',
+                user: $user,
+                newValues: ['all_tokens' => $request->boolean('all', false)]
+            );
 
             return $this->successResponse('Logout berhasil');
         } catch (\Throwable $e) {
