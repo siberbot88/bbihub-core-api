@@ -17,6 +17,7 @@
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.10",
         "midtrans/midtrans-php": "^2.6",
+        "spatie/laravel-activitylog": "*",
         "spatie/laravel-permission": "^6.21",
         "spatie/laravel-query-builder": "^6.3"
     },

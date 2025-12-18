@@ -56,28 +56,28 @@ class SecurityHeaders
             return null;
         }
 
-        // For development: more permissive CSP to allow Vite HMR and inline styles
+        // For development: more permissive CSP to allow Vite HMR, Livewire, and inline styles
         if (config('app.env') !== 'production') {
             return implode('; ', [
-                "default-src 'self'",
+                "default-src 'self' 'unsafe-inline' 'unsafe-eval'",
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173 https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com",
                 "font-src 'self' https://fonts.gstatic.com data:",
-                "img-src 'self' data: https: http://localhost:5173",
+                "img-src 'self' data: https: http: blob:",
                 "connect-src 'self' ws://localhost:5173 http://localhost:5173 https:",
-                "frame-ancestors 'none'",
+                "frame-src 'self'",
             ]);
         }
 
         // Production: stricter CSP (adjust based on your actual assets)
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com",
             "font-src 'self' https://fonts.gstatic.com data:",
-            "img-src 'self' data: https:",
+            "img-src 'self' data: https: blob:",
             "connect-src 'self'",
-            "frame-ancestors 'none'",
+            "frame-src 'self'",
         ]);
     }
 }
