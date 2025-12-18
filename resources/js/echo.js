@@ -1,6 +1,15 @@
-import Echo from 'laravel-echo';
+// Laravel Echo configuration
+// Currently disabled - laravel-echo and pusher-js packages not installed
+// 
+// To enable real-time features:
+// 1. Run: npm install laravel-echo pusher-js
+// 2. Uncomment the code below
+// 3. Configure your .env REVERB_* variables
 
+/*
+import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
@@ -12,3 +21,4 @@ window.Echo = new Echo({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
 });
+*/
