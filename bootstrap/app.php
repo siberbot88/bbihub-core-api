@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'premium' => \App\Http\Middleware\EnsurePremiumAccess::class,
         ]);
 
+        // Add security headers to all responses
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
             'api/v1/webhooks/midtrans', // Exclude Midtrans Webhook
