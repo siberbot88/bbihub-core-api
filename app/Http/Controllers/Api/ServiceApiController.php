@@ -42,7 +42,8 @@ class ServiceApiController extends Controller
             ])
             ->allowedFilters([
                 AllowedFilter::exact('status'),
-                AllowedFilter::partial('code'),
+            AllowedFilter::exact('type'),
+            AllowedFilter::partial('code'),
                 AllowedFilter::exact('workshop_uuid'),
                 // Keep these for standard compliant clients
                 AllowedFilter::callback('date_from', function ($query, $value) {

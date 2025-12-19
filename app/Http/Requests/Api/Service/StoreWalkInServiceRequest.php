@@ -30,7 +30,7 @@ class StoreWalkInServiceRequest extends FormRequest
             
             // Service Data
             'name'             => 'required|string|max:255',
-            'category_name'    => 'required|string|max:100', // Using string for flexibility/mobile input
+            'category'         => 'required|string|max:100', // Using string for flexibility/mobile input
             'description'      => 'nullable|string',
             'scheduled_date'   => 'required|date', // Usually 'now'
         ];

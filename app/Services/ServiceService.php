@@ -5,10 +5,8 @@ namespace App\Services;
 use App\Models\Employment;
 use App\Models\Service;
 use App\Models\Transaction;
-use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -47,9 +45,6 @@ class ServiceService
              );
 
              // Update Odometer if provided
-             if (!empty($data['vehicle_odometer'])) {
-                 $vehicle->update(['odometer' => $data['vehicle_odometer']]);
-             }
              
              // Ensure vehicle belongs to customer (if vehicle found but customer different, what to do?)
              // Simple logic: If we found vehicle but user is diff, maybe owner changed. Update it.
@@ -64,7 +59,7 @@ class ServiceService
                  'vehicle_uuid'  => $vehicle->id,
                  'name'          => $data['name'],
                  'description'   => $data['description'] ?? null,
-                 'category_service' => $data['category_name'], // Mapping here
+                 'category_service' => $data['category'], // Mapping here
                  'type'             => 'on-site',
                  'scheduled_date'   => $data['scheduled_date'],
                  'status'           => 'pending', // Default pending, waiting mechanic
@@ -79,32 +74,17 @@ class ServiceService
     /**
      * Create a new service with generated SRV code.
      */
+    // This method is not a by createWalkInService.
     public function createService(array $data, User $user): Service
     {
-        // Pastikan admin hanya create di workshop tempat dia bekerja
         // Pastikan admin hanya create di workshop tempat dia bekerja
         $employment = $user->employment;
         if (! $employment || $employment->workshop_uuid !== $data['workshop_uuid']) {
             throw ValidationException::withMessages([
                 'workshop_uuid' => 'Workshop bukan tempat kerja Anda'
             ]);
-            throw ValidationException::withMessages([
-                'workshop_uuid' => 'Workshop bukan tempat kerja Anda'
-            ]);
         }
 
-        // Rule: 1 kendaraan hanya boleh punya 1 service aktif
-        $existing = Service::where('vehicle_uuid', $data['vehicle_uuid'])
-            ->whereIn('status', ['pending', 'in progress'])
-            ->first();
-
-        if ($existing) {
-            throw ValidationException::withMessages([
-                'vehicle_uuid' => 'Kendaraan ini sudah memiliki service aktif yang belum selesai.'
-            ]);
-        }
-
-        // Validasi mechanic jika diisi
         // Rule: 1 kendaraan hanya boleh punya 1 service aktif
         $existing = Service::where('vehicle_uuid', $data['vehicle_uuid'])
             ->whereIn('status', ['pending', 'in progress'])
@@ -124,9 +104,6 @@ class ServiceService
         // Default value + SRV Code
         $data['id'] = (string) Str::uuid();
         $data['code'] = $this->generateSrvCode();
-        // Default value + SRV Code
-        $data['id'] = (string) Str::uuid();
-        $data['code'] = $this->generateSrvCode();
         $data['status'] = $data['status'] ?? 'pending';
         $data['acceptance_status'] = $data['acceptance_status'] ?? 'pending';
         
@@ -140,16 +117,12 @@ class ServiceService
 
     /**
      * Update service data and handle status & acceptance transitions.
-     * Update service data and handle status & acceptance transitions.
      */
     public function updateService(Service $service, array $data, User $user): Service
     {
         // Admin hanya boleh update service di workshop tempat dia bekerja
         $this->assertAdminWorkshopAccess($service, $user);
-        // Admin hanya boleh update service di workshop tempat dia bekerja
-        $this->assertAdminWorkshopAccess($service, $user);
 
-        // Validasi jika workshop_uuid mau diubah
         // Validasi jika workshop_uuid mau diubah
         if (isset($data['workshop_uuid'])) {
             $employment = $user->employment;
@@ -157,18 +130,9 @@ class ServiceService
                 throw ValidationException::withMessages([
                     'workshop_uuid' => 'Workshop bukan tempat kerja Anda'
                 ]);
-                throw ValidationException::withMessages([
-                    'workshop_uuid' => 'Workshop bukan tempat kerja Anda'
-                ]);
             }
         }
 
-        // Handle acceptance_status transition kalau dikirim
-        if (isset($data['acceptance_status'])) {
-            $this->handleAcceptanceTransition($service, $data['acceptance_status'], $data);
-        }
-
-        // Validasi mechanic kalau diubah
         // Handle acceptance_status transition kalau dikirim
         if (isset($data['acceptance_status'])) {
             $this->handleAcceptanceTransition($service, $data['acceptance_status'], $data);
@@ -180,11 +144,6 @@ class ServiceService
             if (! empty($data['mechanic_uuid'])) {
                 $this->ensureMechanicExistsInWorkshop($data['mechanic_uuid'], $targetWorkshop);
             }
-        }
-
-        // Handle status transition kalau dikirim
-        if (isset($data['status'])) {
-            $this->handleStatusTransition($service, $data['status']);
         }
 
         // Handle status transition kalau dikirim
@@ -261,8 +220,7 @@ class ServiceService
 
 
         // ✅ begitu mekanik di-assign, status auto jadi in progress
-        $this->handleStatusTransition($service, 'in progress'
-        );
+        $this->handleStatusTransition($service, 'in progress');
 
         $service->update([
             'mechanic_uuid' => $mechanicUuid,
@@ -357,35 +315,6 @@ class ServiceService
         }
     }
 
-
-
-
-
-
-    private function ensureTransactionCreated(Service $service, User $user): void
-    {
-        if (empty($service->mechanic_uuid)) {
-            throw ValidationException::withMessages([
-                'mechanic_uuid' => 'Tidak bisa completed tanpa mekanik.'
-            ]);
-        }
-
-        if (! $service->transaction) {
-            Transaction::create([
-                'id'            => (string) Str::uuid(),
-                'service_uuid'  => $service->id,
-                'customer_uuid' => $service->customer_uuid,
-                'workshop_uuid' => $service->workshop_uuid,
-                'mechanic_uuid' => $service->mechanic_uuid,
-                'admin_uuid'    => $user->id,
-                'status'        => 'pending',
-                'amount'        => 0,
-                'payment_method'=> null,
-            ]);
-            $service->completed_at = now();
-        }
-    }
-
     private function ensureTransactionCreated(Service $service, User $user): void
     {
         if (empty($service->mechanic_uuid)) {
@@ -411,21 +340,13 @@ class ServiceService
 
     private function ensureMechanicExistsInWorkshop(string $mechanicUuid, string $workshopUuid): void
     {
-        $ok = Employment::active()
-            ->mechanic()
-            ->where('id', $mechanicUuid)
-        $ok = Employment::active()
-            ->mechanic()
-            ->where('id', $mechanicUuid)
+        $mechanic = Mechanic::where('id', $mechanicUuid)
             ->where('workshop_uuid', $workshopUuid)
-            ->exists();
+            ->first();
 
-        if (! $ok) {
+        if (! $mechanic) {
             throw ValidationException::withMessages([
-                'mechanic_uuid' => 'Mekanik tidak ditemukan / tidak aktif di workshop ini.'
-            ]);
-            throw ValidationException::withMessages([
-                'mechanic_uuid' => 'Mekanik tidak ditemukan / tidak aktif di workshop ini.'
+                'mechanic_uuid' => 'Mekanik tidak ditemukan di workshop ini.'
             ]);
         }
     }
@@ -434,9 +355,5 @@ class ServiceService
     {
         return 'SRV-' . strtoupper(Str::random(6));
     }
-
-    private function generateSrvCode(): string
-    {
-        return 'SRV-' . strtoupper(Str::random(6));
-    }
 }
+

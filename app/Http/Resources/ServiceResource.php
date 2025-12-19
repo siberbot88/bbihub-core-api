@@ -24,6 +24,7 @@ class ServiceResource extends JsonResource
             'estimated_time'   => optional($this->estimated_time)->toIso8601String(),
             'status'           => $this->status,
             'acceptance_status'=> $this->acceptance_status,
+            'type'             => $this->type,
 
             // kolom di DB: category_service → kirim ke frontend sebagai category_name
             'category_service' => $this->category_service,
