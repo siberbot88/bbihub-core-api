@@ -48,6 +48,8 @@ class WorkshopApiController extends Controller
      */
     public function update(\App\Http\Requests\Api\Workshop\UpdateWorkshopRequest $request, Workshop $workshop)
     {
+        $this->authorize('update', $workshop);
+
         try {
             $data = $request->validated();
 

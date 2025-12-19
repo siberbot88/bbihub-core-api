@@ -42,6 +42,16 @@ return [
         'max_tokens' => env('GEMINI_MAX_TOKENS', 500),
     ],
 
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
+        'is_sanitized' => env('MIDTRANS_IS_SANITIZED', true),
+        'is_3ds' => env('MIDTRANS_IS_3DS', true),
+        // Daftar IP resmi Midtrans untuk webhook (Sandbox & Production mixed for safety)
+        'allowed_ips' => explode(',', env('MIDTRANS_ALLOWED_IPS', '34.101.66.130,34.101.92.69,34.101.68.213,34.101.200.15')),
+    ],
+
     'chat_ai' => [
         'base_url' => env('AI_BASE_URL', 'https://api.deepseek.com'),
         'api_key' => env('AI_API_KEY'),

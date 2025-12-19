@@ -22,7 +22,7 @@ class ChatbotService
         $this->model = config('services.chat_ai.model', 'deepseek-chat');
         $this->temperature = (float) config('services.chat_ai.temperature', 0.7);
         $this->maxTokens = (int) config('services.chat_ai.max_tokens', 500);
-        
+
         // Load system prompt from config
         $this->systemPrompt = config('chatbot_prompt.system_prompt', '');
     }
@@ -41,21 +41,21 @@ class ChatbotService
         try {
             // Build conversation messages
             $messages = $this->buildConversation($userMessage, $conversationHistory);
-            
+
             // Call AI API
             $response = $this->callAiApi($messages);
-            
+
             if (!$response) {
                 return $this->getFallbackMessage();
             }
-            
+
             return $response;
-            
+
         } catch (\Exception $e) {
             Log::error('Chatbot error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return $this->getFallbackMessage();
         }
     }
@@ -66,7 +66,7 @@ class ChatbotService
     private function buildConversation(string $userMessage, array $history): array
     {
         $messages = [];
-        
+
         // Add system prompt
         if (!empty($this->systemPrompt)) {
             $messages[] = [
@@ -74,7 +74,7 @@ class ChatbotService
                 'content' => $this->systemPrompt
             ];
         }
-        
+
         // Add conversation history
         foreach ($history as $msg) {
             $messages[] = [
@@ -82,13 +82,13 @@ class ChatbotService
                 'content' => $msg['message']
             ];
         }
-        
+
         // Add current user message
         $messages[] = [
             'role' => 'user',
             'content' => $userMessage
         ];
-        
+
         return $messages;
     }
 
@@ -100,7 +100,7 @@ class ChatbotService
         // Ensure base URL doesn't have trailing slash
         $baseUrl = rtrim($this->baseUrl, '/');
         $url = "{$baseUrl}/v1/chat/completions";
-        
+
         try {
             $payload = [
                 'model' => $this->model,
@@ -112,6 +112,7 @@ class ChatbotService
             // DeepSeek specific: ensure stream is false (optional but explicitly safe)
             $payload['stream'] = false;
 
+            /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
@@ -121,30 +122,30 @@ class ChatbotService
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 // Extract text from OpenAI standard response format
                 if (isset($data['choices'][0]['message']['content'])) {
                     $text = $data['choices'][0]['message']['content'];
-                    
+
                     Log::info('AI response generated', [
                         'model' => $this->model,
                         'length' => strlen($text)
                     ]);
-                    
+
                     return trim($text);
                 }
-                
+
                 Log::warning('Unexpected AI response format', ['data' => $data]);
                 return null;
             }
-            
+
             Log::error('AI API error', [
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            
+
             return null;
-            
+
         } catch (\Exception $e) {
             Log::error('AI API call failed: ' . $e->getMessage());
             return null;

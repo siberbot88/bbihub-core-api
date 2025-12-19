@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Audit - BBI HUB Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626',
+                        'primary-hover': '#B91C1C',
+                        text: { main: '#EDEDEF', muted: '#8A8F98' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .badge-critical {
+            background: rgba(220, 38, 38, 0.2);
+            color: #DC2626;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-high {
+            background: rgba(249, 115, 22, 0.2);
+            color: #F97316;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-medium {
+            background: rgba(234, 179, 8, 0.2);
+            color: #EAB308;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: #1A1B1E;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #A5D6A7;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm">
+                        B</div>
+                    <span class="font-semibold text-sm">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="security-audit.html" class="nav-link active">Security</a>
+                    <a href="roadmap.html" class="nav-link">Roadmap</a>
+                </div>
+            </div>
+            <span
+                class="hidden md:inline-block text-xs text-text-muted font-mono border border-white/10 px-2 py-1 rounded">Dev
+                Audit</span>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <div class="mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4">🔒 Security Audit Report</h1>
+            <p class="text-text-muted text-lg">Comprehensive security assessment untuk BBI HUB Development Environment
+            </p>
+            <div class="mt-4 flex gap-3">
+                <span class="text-xs bg-white/5 border border-white/10 px-3 py-1 rounded">📅 18 Desember 2025</span>
+                <span class="text-xs bg-white/5 border border-white/10 px-3 py-1 rounded">🎯 Development Phase</span>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">📊 Executive Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 rounded-lg border border-red-500/30 bg-red-500/10">
+                    <div class="text-red-400 text-3xl font-bold">3</div>
+                    <div class="text-text-muted text-sm">Critical Findings</div>
+                </div>
+                <div class="p-4 rounded-lg border border-orange-500/30 bg-orange-500/10">
+                    <div class="text-orange-400 text-3xl font-bold">4</div>
+                    <div class="text-text-muted text-sm">High Findings</div>
+                </div>
+                <div class="p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10">
+                    <div class="text-yellow-400 text-3xl font-bold">3</div>
+                    <div class="text-text-muted text-sm">Medium Findings</div>
+                </div>
+            </div>
+            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                <h3 class="font-semibold text-red-400 mb-2">⚠️ Status Development: PERLU PERBAIKAN</h3>
+                <p class="text-text-muted text-sm">Beberapa security issue kritikal ditemukan yang harus diperbaiki
+                    bahkan untuk development environment.</p>
+            </div>
+        </section>
+
+        <!-- Top 3 Risks -->
+        <section class="card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6">🔴 3 Risiko Terbesar</h2>
+            <div class="space-y-4">
+                <div class="border border-red-500/30 rounded-lg p-4 bg-red-500/5">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-semibold text-white">1. OTP Reset Password Tidak Ada Expiration</h3>
+                        <span class="badge-critical">CRITICAL</span>
+                    </div>
+                    <p class="text-text-muted text-sm mb-2">OTP dapat digunakan selamanya tanpa batas waktu, membuka
+                        celah brute-force attack.</p>
+                    <div class="text-xs text-orange-400">📍 ForgotPasswordController.php - Tidak ada validasi expiration
+                    </div>
+                </div>
+
+                <div class="border border-red-500/30 rounded-lg p-4 bg-red-500/5">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-semibold text-white">2. Database SQLite Tidak Terenkripsi</h3>
+                        <span class="badge-critical">CRITICAL</span>
+                    </div>
+                    <p class="text-text-muted text-sm mb-2">Semua data (password hash, PII, financial data) tersimpan
+                        plaintext di file database.sqlite</p>
+                    <div class="text-xs text-orange-400">📍 database.sqlite - Perlu migration ke PostgreSQL untuk
+                        production</div>
+                </div>
+
+                <div class="border border-orange-500/30 rounded-lg p-4 bg-orange-500/5">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-semibold text-white">3. Midtrans Webhook Tanpa IP Whitelist</h3>
+                        <span class="badge-high">HIGH</span>
+                    </div>
+                    <p class="text-text-muted text-sm mb-2">Webhook endpoint dapat di-access dari IP manapun, risiko
+                        forged payment notification.</p>
+                    <div class="text-xs text-orange-400">📍 routes/api.php - Perlu IP whitelist middleware</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Priority Fixes -->
+        <section class="card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6">🛠️ Yang HARUS Diperbaiki untuk Development</h2>
+            <p class="text-text-muted mb-4">Bahkan untuk development environment, beberapa issue ini perlu diperbaiki
+                sekarang:</p>
+
+            <div class="space-y-6">
+                <div class="border-l-4 border-red-500 pl-4">
+                    <h3 class="font-semibold text-white mb-2">✅ PRIORITY 1 - Kerjakan Minggu Ini</h3>
+                    <ul class="space-y-2 text-sm text-text-muted">
+                        <li>• <strong class="text-white">OTP Expiration</strong> - Tambahkan validasi 15 menit expiry
+                            (1-2 hari)</li>
+                        <li>• <strong class="text-white">Rate Limiting</strong> - Protect forgot/reset password
+                            endpoints (1 hari)</li>
+                        <li>• <strong class="text-white">Password Policy</strong> - Min 8 karakter + complexity (1 hari)
+                        </li>
+                        <li>• <strong class="text-white">IDOR Check</strong> - Validate resource ownership di ServiceAPI
+                            (2 hari)</li>
+                    </ul>
+                    <div class="mt-3 text-xs text-green-400">📦 Total Effort: ~1 minggu</div>
+                </div>
+
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h3 class="font-semibold text-white mb-2">⚠️ PRIORITY 2 - Kerjakan Bulan Ini</h3>
+                    <ul class="space-y-2 text-sm text-text-muted">
+                        <li>• <strong class="text-white">Input Validation</strong> - Standardize FormRequest untuk semua
+                            endpoints (1 minggu)</li>
+                        <li>• <strong class="text-white">Audit Logging</strong> - Log sensitive actions (password
+                            change, role change) (3 hari)</li>
+                        <li>• <strong class="text-white">Security Headers</strong> - Add CSP, HSTS headers (1 hari)</li>
+                    </ul>
+                    <div class="mt-3 text-xs text-yellow-400">📦 Total Effort: ~2 minggu</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Examples -->
+        <section class="card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">💻 Contoh Perbaikan Kode</h2>
+
+            <h3 class="font-semibold text-white mb-2 mt-6">Fix #1: OTP Expiration (ForgotPasswordController.php)</h3>
+            <div class="code-block mb-4">
+                // SEBELUM (❌ VULNERABLE)
+                $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+                if (!$record || $record->token != $request->otp) {
+                return response()->json(['success' => false], 400);
+                }
+
+                // SESUDAH (✅ SECURE)
+                $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+
+                // Validate OTP existence
+                if (!$record || $record->token != $request->otp) {
+                return response()->json(['success' => false, 'message' => 'Invalid OTP'], 400);
+                }
+
+                // ✅ ADD EXPIRATION CHECK (15 minutes)
+                $createdAt = Carbon::parse($record->created_at);
+                if ($createdAt->addMinutes(15)->isPast()) {
+                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+                return response()->json(['success' => false, 'message' => 'OTP expired'], 400);
+                }
+            </div>
+
+            <h3 class="font-semibold text-white mb-2 mt-6">Fix #2: Rate Limiting (routes/api.php)</h3>
+            <div class="code-block">
+                // SEBELUM (❌ NO RATE LIMIT)
+                Route::post('forgot-password', [ForgotPasswordController::class, 'sendOtp']);
+                Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword']);
+
+                // SESUDAH (✅ WITH RATE LIMIT)
+                Route::post('forgot-password', [ForgotPasswordController::class, 'sendOtp'])
+                ->middleware('throttle:3,10'); // Max 3 requests per 10 minutes
+
+                Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])
+                ->middleware('throttle:5,10'); // Max 5 requests per 10 minutes
+            </div>
+        </section>
+
+        <!-- Production Note -->
+        <section class="card bg-yellow-500/10 border-yellow-500/30">
+            <h2 class="text-xl font-bold text-yellow-400 mb-3">📌 Catatan untuk Production</h2>
+            <p class="text-text-muted text-sm mb-3">Item berikut dapat ditunda untuk development, tapi <strong
+                    class="text-white">WAJIB</strong> untuk production:</p>
+            <ul class="space-y-2 text-sm text-text-muted">
+                <li>• <strong class="text-white">Database Migration</strong> - SQLite → PostgreSQL/MySQL dengan
+                    encryption (4 minggu)</li>
+                <li>• <strong class="text-white">MFA Implementation</strong> - TOTP untuk Owner/Admin (3 minggu)</li>
+                <li>• <strong class="text-white">Midtrans IP Whitelist</strong> - Production webhook security (1 hari)
+                </li>
+                <li>• <strong class="text-white">Security Monitoring</strong> - Sentry + alerting (1 minggu)</li>
+                <li>• <strong class="text-white">HTTPS Enforcement</strong> - Force SSL/TLS (1 hari)</li>
+            </ul>
+            <div class="mt-4 text-xs text-yellow-400">👉 Lihat <a href="roadmap.html" class="underline">Development
+                    Roadmap</a> untuk timeline lengkap</div>
+        </section>
+
+        <!-- Next Steps -->
+        <section class="mt-8 p-6 border border-primary/30 rounded-lg bg-primary/5">
+            <h2 class="text-xl font-bold text-white mb-3">🚀 Next Steps</h2>
+            <ol class="space-y-2 text-sm text-text-muted list-decimal list-inside">
+                <li><strong class="text-white">Review full audit report:</strong> <code
+                        class="text-green-400">security_audit_report.md</code></li>
+                <li><strong class="text-white">Assign tasks:</strong> Prioritize berdasarkan effort vs impact</li>
+                <li><strong class="text-white">Start with quick wins:</strong> OTP expiration + rate limiting (3 hari
+                    kerja)</li>
+                <li><strong class="text-white">Follow roadmap:</strong> Lihat <a href="roadmap.html"
+                        class="text-primary underline">development roadmap</a> untuk timeline</li>
+            </ol>
+        </section>
+    </main>
+
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-text-muted">
+            © 2025 BBI HUB Security Audit | Development Environment
+        </div>
+    </footer>
+
+    <script>
+        ScrollReveal().reveal('section', { distance: '20px', origin: 'bottom', duration: 600, interval: 100 });
+    </script>
+</body>
+
+</html>

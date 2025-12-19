@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Roadmap - BBI HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        background: '#0B0C0E', surface: '#141518', border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626', 'primary-hover': '#B91C1C',
+                        text: { main: '#EDEDEF', muted: '#8A8F98' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            padding-bottom: 32px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 8px;
+            bottom: -8px;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 9px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #DC2626;
+            background: #141518;
+        }
+
+        .timeline-dot.done {
+            background: #DC2626;
+        }
+
+        .task-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .task-checkbox.checked {
+            background: #DC2626;
+            border-color: #DC2626;
+            position: relative;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: -2px;
+            left: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm">
+                        B</div>
+                    <span class="font-semibold text-sm">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="security-audit.html" class="nav-link">Security</a>
+                    <a href="roadmap.html" class="nav-link active">Roadmap</a>
+                </div>
+            </div>
+            <span
+                class="hidden md:inline-block text-xs text-text-muted font-mono border border-white/10 px-2 py-1 rounded">Dev
+                Phase</span>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <div class="mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4">🗺️ Development Roadmap</h1>
+            <p class="text-text-muted text-lg">Security fixes implementation timeline untuk Development Environment</p>
+            <div class="mt-4 flex gap-3">
+                <span class="text-xs bg-primary/10 border border-primary/30 text-primary px-3 py-1 rounded font-mono">⏱️
+                    Total: 3-4 Minggu</span>
+                <span class="text-xs bg-green-500/10 border border-green-500/30 text-green-400 px-3 py-1 rounded">🎯
+                    Focus: Quick Wins</span>
+            </div>
+        </div>
+
+        <!-- Overview Stats -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="card">
+                <div class="text-3xl font-bold text-primary mb-2">Week 1</div>
+                <div class="text-text-muted text-sm">Critical Security Fixes</div>
+                <div class="mt-3 text-xs text-green-400">4 tasks • ~5 hari kerja</div>
+            </div>
+            <div class="card">
+                <div class="text-3xl font-bold text-orange-400 mb-2">Week 2-3</div>
+                <div class="text-text-muted text-sm">Input Validation & Logging</div>
+                <div class="mt-3 text-xs text-yellow-400">3 tasks • ~10 hari kerja</div>
+            </div>
+            <div class="card">
+                <div class="text-3xl font-bold text-yellow-400 mb-2">Week 4</div>
+                <div class="text-text-muted text-sm">Testing & Documentation</div>
+                <div class="mt-3 text-xs text-blue-400">Verification + cleanup</div>
+            </div>
+        </section>
+
+        <!-- Timeline -->
+        <section class="card mb-12">
+            <h2 class="text-2xl font-bold text-white mb-8">📅 Implementation Timeline</h2>
+
+            <!-- Week 1 -->
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="border border-red-500/30 rounded-lg p-5 bg-red-500/5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">Week 1: Critical Fixes</h3>
+                        <span class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded font-mono">🔥 PRIORITY
+                            1</span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">OTP Expiration Validation</div>
+                                <div class="text-sm text-text-muted">Tambahkan 15-menit expiry check di
+                                    ForgotPasswordController</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📁
+                                        ForgotPasswordController.php</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 hari</span>
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">EASY</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Rate Limiting Endpoints</div>
+                                <div class="text-sm text-text-muted">Protect forgot-password, reset-password, verify-otp
+                                    endpoints</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📁 routes/api.php</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 hari</span>
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">EASY</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Password Policy Enforcement</div>
+                                <div class="text-sm text-text-muted">Min 8 char, mixed case, numbers, symbols,
+                                    uncompromised check</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📁 RegisterRequest +
+                                        ForgotPasswordController</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 hari</span>
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">EASY</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">IDOR Prevention - Service API</div>
+                                <div class="text-sm text-text-muted">Validate resource ownership di
+                                    ServiceApiController::show()</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📁
+                                        ServiceApiController.php</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 2 hari</span>
+                                    <span
+                                        class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">MEDIUM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-green-400 font-mono">✅ Deliverable: Critical vulnerabilities patched, basic
+                        rate limiting active</div>
+                </div>
+            </div>
+
+            <!-- Week 2-3 -->
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="border border-orange-500/30 rounded-lg p-5 bg-orange-500/5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">Week 2-3: Validation & Logging</h3>
+                        <span class="text-xs bg-orange-500/20 text-orange-400 px-3 py-1 rounded font-mono">⚡ PRIORITY
+                            2</span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Input Validation Standardization</div>
+                                <div class="text-sm text-text-muted">Create FormRequest untuk semua major endpoints
+                                    (Services, Vehicles, Transactions)</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📁 app/Http/Requests/</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 minggu</span>
+                                    <span
+                                        class="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded">MEDIUM-LARGE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Audit Logging Implementation</div>
+                                <div class="text-sm text-text-muted">Install spatie/laravel-activitylog, log password
+                                    changes + role changes</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📦 composer require
+                                        spatie/laravel-activitylog</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 3 hari</span>
+                                    <span
+                                        class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">MEDIUM</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Security Headers Middleware</div>
+                                <div class="text-sm text-text-muted">Add HSTS, X-Content-Type-Options, X-Frame-Options,
+                                    CSP headers</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">📁
+                                        app/Http/Middleware/SecurityHeaders.php</span>
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 hari</span>
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">EASY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-orange-400 font-mono">✅ Deliverable: Input validation standardized, audit
+                        trail functional, security headers active</div>
+                </div>
+            </div>
+
+            <!-- Week 4 -->
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="border border-green-500/30 rounded-lg p-5 bg-green-500/5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">Week 4: Testing & Cleanup</h3>
+                        <span class="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded font-mono">🧪
+                            VERIFICATION</span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Run Test Cases dari Audit Report</div>
+                                <div class="text-sm text-text-muted">Execute TC-001 sampai TC-003 (OTP expiration, rate
+                                    limiting, IDOR)</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 2 hari</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Update Documentation</div>
+                                <div class="text-sm text-text-muted">Document semua security changes di API docs +
+                                    README</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 hari</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="task-checkbox"></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white">Code Review & Cleanup</div>
+                                <div class="text-sm text-text-muted">Review semua changes, remove debug code, optimize
+                                    queries</div>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-white/5 px-2 py-1 rounded">⏱️ 1 hari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-green-400 font-mono">✅ Deliverable: All security fixes verified,
+                        documentation updated, ready for next phase</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Production Prep (Deferred) -->
+        <section class="card bg-yellow-500/10 border-yellow-500/30 mb-8">
+            <h2 class="text-xl font-bold text-yellow-400 mb-4">📌 Deferred untuk Production (Tidak untuk Dev)</h2>
+            <p class="text-text-muted text-sm mb-4">Item berikut dapat ditunda sampai fase production deployment:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-3 bg-black/20 rounded border border-white/10">
+                    <div class="font-semibold text-white text-sm mb-1">Database Migration</div>
+                    <div class="text-xs text-text-muted">SQLite → PostgreSQL + TDE encryption</div>
+                    <div class="text-xs text-yellow-400 mt-2">⏱️ 4 minggu | 🎯 Production Only</div>
+                </div>
+
+                <div class="p-3 bg-black/20 rounded border border-white/10">
+                    <div class="font-semibold text-white text-sm mb-1">MFA Implementation</div>
+                    <div class="text-xs text-text-muted">TOTP 2FA untuk Owner/Admin roles</div>
+                    <div class="text-xs text-yellow-400 mt-2">⏱️ 3 minggu | 🎯 Production Only</div>
+                </div>
+
+                <div class="p-3 bg-black/20 rounded border border-white/10">
+                    <div class="font-semibold text-white text-sm mb-1">Midtrans IP Whitelist</div>
+                    <div class="text-xs text-text-muted">Production webhook IP filtering</div>
+                    <div class="text-xs text-yellow-400 mt-2">⏱️ 1 hari | 🎯 Production Only</div>
+                </div>
+
+                <div class="p-3 bg-black/20 rounded border border-white/10">
+                    <div class="font-semibold text-white text-sm mb-1">Security Monitoring</div>
+                    <div class="text-xs text-text-muted">Sentry integration + alerting</div>
+                    <div class="text-xs text-yellow-400 mt-2">⏱️ 1 minggu | 🎯 Production Only</div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-xs text-yellow-400">
+                💡 <strong>Note:</strong> Kalau waktu tersedia, boleh dikerjakan sekarang. Tapi prioritas tetap pada
+                Week 1-4 tasks.
+            </div>
+        </section>
+
+        <!-- Task Assignment Template -->
+        <section class="card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">👥 Task Assignment Template</h2>
+            <p class="text-text-muted text-sm mb-4">Checklist untuk assign ke team:</p>
+
+            <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-green-400 border border-white/10">
+                <pre class="whitespace-pre text-xs">
+## Week 1 Sprint
+- [ ] @backend-lead: OTP Expiration (FIND-001) - Due: Day 1
+- [ ] @backend-lead: Rate Limiting (FIND-002) - Due: Day 2  
+- [ ] @backend-dev: Password Policy (FIND-003) - Due: Day 2
+- [ ] @backend-dev: IDOR Prevention (FIND-005) - Due: Day 3-4
+- [ ] @qa: Test all Week 1 fixes - Due: Day 5
+
+## Week 2-3 Sprint  
+- [ ] @backend-team: Input Validation (FIND-015) - Due: Week 2
+- [ ] @backend-lead: Audit Logging (FIND-009) - Due: Week 3 Day 1-3
+- [ ] @backend-dev: Security Headers (FIND-016) - Due: Week 3 Day 4
+
+## Week 4 Verification
+- [ ] @qa: Run all test cases from audit report
+- [ ] @tech-writer: Update security documentation
+- [ ] @team: Code review session
+</pre>
+            </div>
+        </section>
+
+        <!-- Success Criteria -->
+        <section class="card border-primary/30 bg-primary/5">
+            <h2 class="text-2xl font-bold text-white mb-4">✅ Definition of Done</h2>
+            <p class="text-text-muted text-sm mb-4">Development phase dianggap selesai jika:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">Semua PRIORITY 1 tasks completed & tested</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">Rate limiting active di auth endpoints</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">OTP expiration validated (15 min)</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">Password policy enforced (8+ complex)</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">IDOR checks implemented di major endpoints</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">Audit logging functional untuk sensitive actions</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">Security headers middleware active</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">✓</span>
+                    <span class="text-sm text-text-muted">All test cases passed (TC-001 to TC-003)</span>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-black/40 rounded border border-white/10">
+                <div class="text-sm font-semibold text-white mb-2">🎯 Expected Security Improvement:</div>
+                <div class="text-xs text-text-muted">
+                    <strong class="text-primary">Before:</strong> 3 Critical + 4 High + 3 Medium findings<br>
+                    <strong class="text-green-400">After Week 4:</strong> 1 Critical (deferred) + 2 High (deferred) + 0
+                    Medium<br>
+                    <strong class="text-yellow-400">Risk Reduction:</strong> ~70% critical/high risks mitigated for dev
+                    environment
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-text-muted">
+            © 2025 BBI HUB Development Roadmap | Updated: 18 Des 2025
+        </div>
+    </footer>
+
+    <script>
+        ScrollReveal().reveal('.timeline-item', { distance: '20px', origin: 'left', duration: 600, interval: 150 });
+    </script>
+</body>
+
+</html>

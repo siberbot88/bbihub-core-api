@@ -26,7 +26,7 @@ class MidtransService
         try {
             $snapToken = \Midtrans\Snap::getSnapToken($params);
             return $snapToken;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new Exception('Failed to create snap token: ' . $e->getMessage());
         }
     }
@@ -39,7 +39,7 @@ class MidtransService
         try {
             // Returns object { token: "...", redirect_url: "..." }
             return \Midtrans\Snap::createTransaction($params);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new Exception('Failed to create snap transaction: ' . $e->getMessage());
         }
     }
@@ -47,11 +47,11 @@ class MidtransService
     /**
      * Get transaction status from Midtrans
      */
-    public function getTransactionStatus(string $orderId): object
+    public function getTransactionStatus(string $orderId): object|array
     {
         try {
             return \Midtrans\Transaction::status($orderId);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new Exception('Failed to get transaction status: ' . $e->getMessage());
         }
     }
@@ -64,7 +64,7 @@ class MidtransService
         try {
             $notification = new \Midtrans\Notification();
             return $notification;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new Exception('Invalid notification: ' . $e->getMessage());
         }
     }
