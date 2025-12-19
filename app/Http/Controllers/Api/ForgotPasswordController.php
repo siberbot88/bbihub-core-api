@@ -82,7 +82,7 @@ class ForgotPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
-            'otp'   => 'required|numeric'
+            'otp' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {
@@ -99,8 +99,17 @@ class ForgotPasswordController extends Controller
         }
 
         // Check expiration (optional, e.g. 15 mins)
-        // $createdAt = Carbon::parse($record->created_at);
-        // if ($createdAt->addMinutes(15)->isPast()) { ... }
+        $createdAt = Carbon::parse($record->created_at);
+
+        if ($createdAt->copy()->addMinutes(15)->isPast()) {
+            // Delete expired OTP
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode OTP telah kadaluarsa'
+            ], 400);
+        }
 
         return response()->json([
             'success' => true,
@@ -115,7 +124,7 @@ class ForgotPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
-            'otp'   => 'required|numeric',
+            'otp' => 'required|numeric',
             // ✅ SECURITY FIX: Strong password policy
             'password' => [
                 'required',
@@ -151,7 +160,7 @@ class ForgotPasswordController extends Controller
         if ($createdAt->addMinutes(15)->isPast()) {
             // Delete expired OTP
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Kode OTP telah kadaluarsa. Silakan minta kode baru.'

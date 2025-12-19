@@ -47,14 +47,26 @@ class AuditLogTest extends TestCase
      */
     public function test_login_creates_audit_log(): void
     {
+        // Reset cached roles
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Ensure role exists for login perms
+        if (!\Spatie\Permission\Models\Role::where('name', 'owner')->exists()) {
+            \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'web']);
+            \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
+        }
+
         $user = User::factory()->create([
             'password' => bcrypt('TestPass123!')
         ]);
+        $user->assignRole('owner');
 
-        $this->postJson('/api/v1/auth/login', [
+        $response = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
             'password' => 'TestPass123!'
         ]);
+
+        $response->assertOk();
 
         // Check if audit log was created (flexible check)
         $logExists = AuditLog::where('user_id', $user->id)
@@ -65,15 +77,55 @@ class AuditLogTest extends TestCase
     }
 
     /**
+     * Test verified manual creation (Debug test)
+     */
+    public function test_manual_log_creation_works(): void
+    {
+        $user = User::factory()->create();
+
+        $log = AuditLog::log('manual_test_event', $user);
+
+        $this->assertNotNull($log, 'AuditLog::log returned null');
+
+        $this->assertDatabaseHas('audit_logs', [
+            'event' => 'manual_test_event',
+            'user_id' => $user->id
+        ]);
+    }
+
+    /**
      * Test logout creates audit log
      */
     public function test_logout_creates_audit_log(): void
     {
-        $user = User::factory()->create();
+        // Reset cached roles
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $this->actingAs($user, 'sanctum')
+        if (!\Spatie\Permission\Models\Role::where('name', 'owner')->exists()) {
+            \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'web']);
+            \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
+        }
+
+        $user = User::factory()->create([
+            'password' => bcrypt('TestPass123!')
+        ]);
+        $user->assignRole('owner');
+
+        // 1. Login to get Real Token
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'TestPass123!'
+        ]);
+        $token = $loginResponse->json('data.access_token');
+        $this->assertNotNull($token, 'Login failed to return token in logout test');
+
+        // 2. Logout using the token
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/v1/auth/logout');
 
+        $response->assertOk();
+
+        // 3. Verify audit log
         $logExists = AuditLog::where('user_id', $user->id)
             ->where('event', 'logout')
             ->exists();
@@ -86,9 +138,18 @@ class AuditLogTest extends TestCase
      */
     public function test_audit_log_contains_metadata(): void
     {
+        // Reset cached roles
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        if (!\Spatie\Permission\Models\Role::where('name', 'owner')->exists()) {
+            \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'web']);
+            \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
+        }
+
         $user = User::factory()->create([
             'password' => bcrypt('TestPass123!')
         ]);
+        $user->assignRole('owner');
 
         $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
@@ -101,9 +162,9 @@ class AuditLogTest extends TestCase
             ->where('event', 'login')
             ->first();
 
-        $this->assertNotNull($log, 'Login audit log should exist');
-        $this->assertNotNull($log->ip_address);
-        $this->assertNotNull($log->user_agent);
+        $this->assertNotNull($log, 'Login audit log should exist for metadata check');
+        $this->assertNotNull($log->ip_address, 'IP address should not be null');
+        $this->assertNotNull($log->user_agent, 'User agent should not be null');
         $this->assertEquals($user->email, $log->user_email);
     }
 
@@ -114,22 +175,9 @@ class AuditLogTest extends TestCase
     {
         $user = User::factory()->create();
 
-        // Create different event types
-        AuditLog::create([
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'event' => 'login',
-            'ip_address' => '127.0.0.1',
-            'user_agent' => 'Test'
-        ]);
-
-        AuditLog::create([
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'event' => 'password_changed',
-            'ip_address' => '127.0.0.1',
-            'user_agent' => 'Test'
-        ]);
+        // Create different event types via Model directly (bypass controller)
+        AuditLog::log('login', $user);
+        AuditLog::log('password_changed', $user);
 
         // Filter by event
         $loginLogs = AuditLog::where('event', 'login')->get();

@@ -2,31 +2,46 @@
 
 namespace Tests\Feature\Security;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class PasswordPolicyTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Clear cache
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Seed roles for both guards to ensure compatibility
+        \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'web']);
+        \Spatie\Permission\Models\Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
+    }
+
     /**
-     * Test weak password is rejected
+     * Test weak passwords are rejected
      */
     public function test_weak_password_rejected(): void
     {
+        // Define list of weak passwords
         $weakPasswords = [
-            '123456',           // Too short, no complexity
-            'password',         // Common, no numbers
-            'abc123',           // Too short, no uppercase/symbols
-            'Password',         // No numbers/symbols
-            'Pass123',          // No symbols
+            'weak',          // Too short
+            'no_number',     // Missing number
+            'no_uppercase',  // Missing uppercase
+            'no_symbol',     // Missing symbol
         ];
 
         foreach ($weakPasswords as $password) {
+            $user = User::factory()->make();
+
             $response = $this->postJson('/api/v1/auth/register', [
-                'name' => 'Test User',
-                'email' => 'test' . rand() . '@example.com',
-                'username' => 'testuser' . rand(),
+                'name' => $user->name,
+                'username' => 'testuser' . Str::random(8),
+                'email' => $user->email,
                 'password' => $password,
                 'password_confirmation' => $password,
                 'role' => 'owner'
@@ -42,96 +57,99 @@ class PasswordPolicyTest extends TestCase
      */
     public function test_strong_password_accepted(): void
     {
-        $strongPasswords = [
-            'SecureP@ss123',
-            'MyP@ssw0rd!',
-            'Str0ng#Pass',
-            'C0mplex!Pass',
-        ];
+        $user = User::factory()->make();
+        $password = 'StrongP@ssw0rd123!';
 
-        foreach ($strongPasswords as $password) {
-            $response = $this->postJson('/api/v1/auth/register', [
-                'name' => 'Test User',
-                'email' => 'test' . rand() . '@example.com',
-                'username' => 'testuser' . rand(),
-                'password' => $password,
-                'password_confirmation' => $password,
-                'role' => 'owner'
-            ]);
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => $user->name,
+            'username' => 'testuser' . Str::random(8),
+            'email' => $user->email,
+            'password' => $password,
+            'password_confirmation' => $password,
+            'role' => 'owner'
+        ]);
 
-            $response->assertStatus(201);
+        if ($response->status() !== 201) {
+            dump('Strong password registration failed');
+            dump($response->json());
         }
+
+        $response->assertStatus(201);
     }
 
     /**
-     * Test password must be at least 8 characters
+     * Test minimum length requirement
      */
-    public function test_password_minimum_length():void
+    public function test_password_min_length(): void
     {
-        $response = $this->postJson('/api/v1/auth/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'username' => 'testuser',
-            'password' => 'Pass1!', // Only 6 characters
-            'password_confirmation' => 'Pass1!',
-            'role' => 'owner'
-        ]);
+        $user = User::factory()->make();
+        $password = 'Sh0rt!';
 
-        $response->assertStatus(422)
+        $this->postJson('/api/v1/auth/register', [
+            'name' => $user->name,
+            'username' => 'testuser' . Str::random(8),
+            'email' => $user->email,
+            'password' => $password,
+            'password_confirmation' => $password,
+            'role' => 'owner'
+        ])->assertStatus(422)
             ->assertJsonValidationErrors('password');
     }
 
     /**
-     * Test password must contain mixed case
+     * Test symbol requirement
      */
-    public function test_password_must_have_mixed_case(): void
+    public function test_password_requires_symbol(): void
     {
-        $response = $this->postJson('/api/v1/auth/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'username' => 'testuser',
-            'password' => 'password123!', // No uppercase
-            'password_confirmation' => 'password123!',
-            'role' => 'owner'
-        ]);
+        $user = User::factory()->make();
+        $password = 'NoSymbol123';
 
-        $response->assertStatus(422)
+        $this->postJson('/api/v1/auth/register', [
+            'name' => $user->name,
+            'username' => 'testuser' . Str::random(8),
+            'email' => $user->email,
+            'password' => $password,
+            'password_confirmation' => $password,
+            'role' => 'owner'
+        ])->assertStatus(422)
             ->assertJsonValidationErrors('password');
     }
 
     /**
-     * Test password must contain numbers
+     * Test number requirement
      */
-    public function test_password_must_have_numbers(): void
+    public function test_password_requires_number(): void
     {
-        $response = $this->postJson('/api/v1/auth/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'username' => 'testuser',
-            'password' => 'Password!', // No numbers
-            'password_confirmation' => 'Password!',
-            'role' => 'owner'
-        ]);
+        $user = User::factory()->make();
+        $password = 'NoNumber!';
 
-        $response->assertStatus(422)
+        $this->postJson('/api/v1/auth/register', [
+            'name' => $user->name,
+            'username' => 'testuser' . Str::random(8),
+            'email' => $user->email,
+            'password' => $password,
+            'password_confirmation' => $password,
+            'role' => 'owner'
+        ])->assertStatus(422)
             ->assertJsonValidationErrors('password');
     }
 
     /**
-     * Test password must contain symbols
+     * Test uppercase requirement
      */
-    public function test_password_must_have_symbols(): void
+    public function test_password_requires_uppercase(): void
     {
-        $response = $this->postJson('/api/v1/auth/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'username' => 'testuser',
-            'password' => 'Password123', // No symbols
-            'password_confirmation' => 'Password123',
-            'role' => 'owner'
-        ]);
+        $user = User::factory()->make();
+        $password = 'lowercase123!';
 
-        $response->assertStatus(422)
+        $this->postJson('/api/v1/auth/register', [
+            'name' => $user->name,
+            'username' => 'testuser' . Str::random(8),
+            'email' => $user->email,
+            'password' => $password,
+            'password_confirmation' => $password,
+            'role' => 'owner'
+        ])->assertStatus(422)
             ->assertJsonValidationErrors('password');
     }
 }

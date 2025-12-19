@@ -29,13 +29,18 @@ class RateLimitingTest extends TestCase
 
         // Check response contains rate limit message
         $json = $response->json();
+
+        if ($response->status() === 500) {
+            dump($response->content());
+        }
+
         $errorText = json_encode($json);
 
         $this->assertTrue(
             str_contains($errorText, 'Terlalu banyak') ||
             str_contains($errorText, 'Too many') ||
             $response->status() === 429,
-            'Should be rate limited after 3 attempts'
+            'Should be rate limited after 3 attempts. Status: ' . $response->status()
         );
     }
 
