@@ -20,11 +20,14 @@ class StoreWalkInServiceRequest extends FormRequest
             'customer_name'    => 'required|string|max:255',
             'customer_phone'   => 'required|string|max:20',
             'customer_email'   => 'nullable|email|max:255',
+            'customer_address' => 'nullable|string|max:500',
             
             // Vehicle Data
             'vehicle_plate'    => 'required|string|max:20',
             'vehicle_brand'    => 'nullable|string|max:50',
             'vehicle_model'    => 'nullable|string|max:50',
+            'vehicle_type'     => 'nullable|string|max:50',
+            'vehicle_color'    => 'nullable|string|max:50',
             'vehicle_year'     => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'vehicle_odometer' => 'nullable|integer|min:0',
             

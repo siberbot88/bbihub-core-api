@@ -26,21 +26,28 @@ class ServiceService
              $customer = \App\Models\Customer::firstOrCreate(
                  ['phone' => $data['customer_phone']],
                  [
-                     'id'    => (string) Str::uuid(),
-                     'name'  => $data['customer_name'],
-                     'email' => $data['customer_email'] ?? null,
+                     'id'      => (string) Str::uuid(),
+                     'code'    => 'CUST-' . strtoupper(Str::random(8)),
+                     'name'    => $data['customer_name'],
+                     'email'   => $data['customer_email'] ?? null,
+                     'address' => $data['customer_address'] ?? '',
                  ]
              );
 
              // 2. Find or Create Vehicle
              $vehicle = \App\Models\Vehicle::firstOrCreate(
-                 ['license_plate' => $data['vehicle_plate']],
+                 ['plate_number' => $data['vehicle_plate']],
                  [
                      'id'            => (string) Str::uuid(),
                      'customer_uuid' => $customer->id,
+                     'code'          => 'VHC-' . strtoupper(Str::random(8)),
+                     'name'          => ($data['vehicle_brand'] ?? 'Unknown') . ' ' . ($data['vehicle_model'] ?? 'Unknown'),
+                     'type'          => $data['vehicle_type'] ?? 'motor',
                      'brand'         => $data['vehicle_brand'] ?? 'Unknown',
                      'model'         => $data['vehicle_model'] ?? 'Unknown',
                      'year'          => $data['vehicle_year'] ?? date('Y'),
+                     'color'         => $data['vehicle_color'] ?? 'Unknown',
+                     'odometer'      => $data['vehicle_odometer'] ?? '0',
                  ]
              );
 
@@ -54,17 +61,18 @@ class ServiceService
 
              // 3. Create Service
              $serviceData = [
-                 'workshop_uuid' => $data['workshop_uuid'],
-                 'customer_uuid' => $customer->id,
-                 'vehicle_uuid'  => $vehicle->id,
-                 'name'          => $data['name'],
-                 'description'   => $data['description'] ?? null,
-                 'category_service' => $data['category'], // Mapping here
+                 'workshop_uuid'    => $data['workshop_uuid'],
+                 'customer_uuid'    => $customer->id,
+                 'vehicle_uuid'     => $vehicle->id,
+                 'name'             => $data['name'],
+                 'description'      => $data['description'] ?? '',
+                 'category_service' => $data['category'],
                  'type'             => 'on-site',
                  'scheduled_date'   => $data['scheduled_date'],
-                 'status'           => 'pending', // Default pending, waiting mechanic
-                 'acceptance_status'=> 'accepted', // Walk-in is automatically accepted
-                 // accepted_at ?
+                 'estimated_time'   => $data['estimated_time'] ?? now()->toDateString(),
+                 'status'           => 'pending',
+                 'acceptance_status'=> 'accepted',
+                 'accepted_at'      => now(),
              ];
 
              return $this->createService($serviceData, $user);
