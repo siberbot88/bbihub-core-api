@@ -14,13 +14,14 @@ class TransactionController extends Controller
 {
     public function __construct(
         protected TransactionService $transactionService
-    ) {}
+    ) {
+    }
 
     // POST /api/v1/transactions
     public function store(Request $request)
     {
         $data = $request->validate([
-            'service_uuid'   => 'required|string|exists:services,id',
+            'service_uuid' => 'required|string|exists:services,id',
             'payment_method' => 'nullable|string',
         ]);
 
@@ -32,13 +33,11 @@ class TransactionController extends Controller
                 event: 'transaction_created',
                 user: $request->user(),
                 auditable: $trx,
-                new_values: [
+                newValues: [
                     'service_id' => $trx->service_id,
                     'amount' => $trx->amount,
                     'status' => $trx->status
-                ],
-                ip_address: $request->ip(),
-                user_agent: $request->userAgent()
+                ]
             );
 
             return (new TransactionResource($trx->load(['service', 'items'])))
@@ -48,7 +47,7 @@ class TransactionController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
         }
     }
@@ -56,6 +55,8 @@ class TransactionController extends Controller
     // GET /api/v1/transactions/{transaction}
     public function show(Transaction $transaction)
     {
+        $this->authorize('view', $transaction);
+
         return new TransactionResource(
             $transaction->load(['service', 'items'])
         );
@@ -63,6 +64,8 @@ class TransactionController extends Controller
 
     public function update(Request $request, Transaction $transaction)
     {
+        $this->authorize('update', $transaction);
+
         $data = $request->validate([
             'payment_method' => 'nullable|in:QRIS,Cash,Bank',
             'amount' => 'nullable|numeric|min:0',
@@ -72,7 +75,7 @@ class TransactionController extends Controller
         $updated = $this->transactionService->updateTransaction($transaction, $data);
 
         return new TransactionResource(
-            $updated->fresh()->load(['items','service'])
+            $updated->fresh()->load(['items', 'service'])
         );
     }
 
@@ -80,6 +83,8 @@ class TransactionController extends Controller
     // PATCH /api/v1/transactions/{transaction}/status
     public function updateStatus(Request $request, Transaction $transaction)
     {
+        $this->authorize('update', $transaction);
+
         $data = $request->validate([
             'status' => 'required|in:pending,process,success',
         ]);
@@ -98,22 +103,25 @@ class TransactionController extends Controller
             );
 
             return new TransactionResource(
-                $updated->fresh()->load(['items','service'])
+                $updated->fresh()->load(['items', 'service'])
             );
 
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
         }
     }
 
     // POST /api/v1/transactions/{transaction}/finalize
+    // POST /api/v1/transactions/{transaction}/finalize
     public function finalize(Transaction $transaction)
     {
+        $this->authorize('update', $transaction);
+
         try {
-            $updated = $this->transactionService->finalize($transaction);
+            $updated = $this->transactionService->finalizeTransaction($transaction);
 
             // Audit log - finalized
             AuditLog::log(
@@ -124,13 +132,13 @@ class TransactionController extends Controller
             );
 
             return new TransactionResource(
-                $updated->fresh()->load(['items','service'])
+                $updated->fresh()->load(['items', 'service'])
             );
 
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
         }
     }

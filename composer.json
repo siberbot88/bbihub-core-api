@@ -19,6 +19,7 @@
         "livewire/volt": "^1.10",
         "midtrans/midtrans-php": "^2.6",
         "pusher/pusher-php-server": "^7.2",
+        "sentry/sentry-laravel": "^4.20",
         "spatie/laravel-activitylog": "*",
         "spatie/laravel-permission": "^6.21",
         "spatie/laravel-query-builder": "^6.3"

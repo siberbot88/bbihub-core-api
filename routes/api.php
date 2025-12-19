@@ -19,19 +19,21 @@ use App\Http\Controllers\Api\AdminController;
 
 
 // Midtrans Webhook (no auth required)
-Route::post('v1/webhooks/midtrans', [MidtransWebhookController::class, 'handle'])->name('webhook.midtrans');
+Route::post('v1/webhooks/midtrans', [MidtransWebhookController::class, 'handle'])
+    ->name('webhook.midtrans')
+    ->middleware('midtrans.whitelist');
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->name('api.register');
-    Route::post('login',    [AuthController::class, 'login'])->name('api.login');
-    
+    Route::post('login', [AuthController::class, 'login'])->name('api.login');
+
     // ✅ SECURITY FIX: Rate limiting for password reset endpoints
     Route::post('forgot-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'sendOtp'])
         ->middleware('throttle:3,10'); // Max 3 requests per 10 minutes
-    
+
     Route::post('verify-otp', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'verifyOtp'])
         ->middleware('throttle:5,1'); // Max 5 attempts per minute
-    
+
     Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword'])
         ->middleware('throttle:5,10'); // Max 5 attempts per 10 minutes
 });
@@ -53,13 +55,13 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('/debug/token', function (Request $request) {
         $raw = $request->bearerToken();
         $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($raw);
-        if (! $pat) {
+        if (!$pat) {
             return response()->json(['ok' => false, 'why' => 'token not found'], 401);
         }
         return [
-            'ok'            => true,
-            'tokenable_type'=> $pat->tokenable_type,
-            'tokenable_id'  => $pat->tokenable_id,
+            'ok' => true,
+            'tokenable_type' => $pat->tokenable_type,
+            'tokenable_id' => $pat->tokenable_id,
         ];
     });
 
@@ -84,20 +86,20 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     Route::prefix('owners')->middleware(['role:owner,sanctum'])->name('api.owner.')->group(function () {
         // Workshops
-        Route::post('workshops',[WorkshopApiController::class, 'store'])->name('workshops.store');
-        Route::put ('workshops/{workshop}',[WorkshopApiController::class, 'update'])->name('workshops.update');
+        Route::post('workshops', [WorkshopApiController::class, 'store'])->name('workshops.store');
+        Route::put('workshops/{workshop}', [WorkshopApiController::class, 'update'])->name('workshops.update');
 
         // Documents
-        Route::post('documents',[WorkshopDocumentApiController::class, 'store'])->name('documents.store');
-//        Route::get ('documents',[WorkshopDocumentApiController::class, 'index'])->name('documents.index');
+        Route::post('documents', [WorkshopDocumentApiController::class, 'store'])->name('documents.store');
+        //        Route::get ('documents',[WorkshopDocumentApiController::class, 'index'])->name('documents.index');
 
         // Employees
-        Route::get   ('employee',[EmployementApiController::class, 'index'])->name('employee.index');
-        Route::post  ('employee',[EmployementApiController::class, 'store'])->name('employee.store');
-        Route::get   ('employee/{employee}',[EmployementApiController::class, 'show'])->name('employee.show');
-        Route::put   ('employee/{employee}',[EmployementApiController::class, 'update'])->name('employee.update');
-        Route::delete('employee/{employee}',[EmployementApiController::class, 'destroy'])->name('employee.destroy');
-        Route::patch ('employee/{employee}/status',[EmployementApiController::class, 'updateStatus'])->name('employee.updateStatus');
+        Route::get('employee', [EmployementApiController::class, 'index'])->name('employee.index');
+        Route::post('employee', [EmployementApiController::class, 'store'])->name('employee.store');
+        Route::get('employee/{employee}', [EmployementApiController::class, 'show'])->name('employee.show');
+        Route::put('employee/{employee}', [EmployementApiController::class, 'update'])->name('employee.update');
+        Route::delete('employee/{employee}', [EmployementApiController::class, 'destroy'])->name('employee.destroy');
+        Route::patch('employee/{employee}/status', [EmployementApiController::class, 'updateStatus'])->name('employee.updateStatus');
 
         // Staff Performance (PREMIUM ONLY)
         Route::get('staff/performance', [\App\Http\Controllers\Api\Owner\StaffPerformanceController::class, 'index'])
@@ -125,7 +127,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
 
         // List Service
-        Route::get('services',           [ServiceApiController::class, 'index']);
+        Route::get('services', [ServiceApiController::class, 'index']);
         Route::get('services/{service}', [ServiceApiController::class, 'show']);
 
 
@@ -142,16 +144,16 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::apiResource('vouchers', VoucherApiController::class);
 
         // ===== SERVICES (CRUD & Flow) =====
-        Route::get   ('services',           [ServiceApiController::class, 'index']);
-        Route::post  ('services',           [ServiceApiController::class, 'store']);
-        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
-        Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
-        Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
+        Route::get('services', [ServiceApiController::class, 'index']);
+        Route::post('services', [ServiceApiController::class, 'store']);
+        Route::get('services/{service}', [ServiceApiController::class, 'show']);
+        Route::put('services/{service}', [ServiceApiController::class, 'update']);
+        Route::patch('services/{service}', [ServiceApiController::class, 'update']);
         Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
-        
+
         // Flow
-        Route::post('services/{service}/accept',          [AdminController::class, 'accept']);
-        Route::post('services/{service}/decline',         [AdminController::class, 'decline']);
+        Route::post('services/{service}/accept', [AdminController::class, 'accept']);
+        Route::post('services/{service}/decline', [AdminController::class, 'decline']);
         Route::post('services/{service}/assign-mechanic', [AdminController::class, 'assignMechanic']);
 
         // ===== VEHICLES =====
@@ -163,17 +165,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         // ===== TRANSACTIONS =====
         Route::post('transactions', [TransactionController::class, 'store']);
-        Route::get ('transactions/{transaction}', [TransactionController::class, 'show']);
-        Route::patch ('transactions/{transaction}/items', [TransactionController::class, 'store']);
-        Route::put ('transactions/{transaction}', [TransactionController::class, 'update']);
-        Route::put ('transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
+        Route::get('transactions/{transaction}', [TransactionController::class, 'show']);
+        Route::patch('transactions/{transaction}/items', [TransactionController::class, 'store']);
+        Route::put('transactions/{transaction}', [TransactionController::class, 'update']);
+        Route::put('transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
         Route::post('transactions/{transaction}/finalize', [TransactionController::class, 'finalize']);
 
         // ===== TRANSACTION ITEMS =====
-        Route::post  ('transaction-items', [TransactionItemController::class, 'store']);
-        Route::patch  ('transaction-items/{item}', [TransactionItemController::class, 'store']);
-        Route::get  ('transaction-items/{item}', [TransactionItemController::class, 'show']);
-        Route::put ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
+        Route::post('transaction-items', [TransactionItemController::class, 'store']);
+        Route::patch('transaction-items/{item}', [TransactionItemController::class, 'store']);
+        Route::get('transaction-items/{item}', [TransactionItemController::class, 'show']);
+        Route::put('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
         Route::delete('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'destroy']);
     });
 
@@ -194,7 +196,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         // Get available memberships for a workshop
         Route::get('workshops/{workshop}', [MembershipController::class, 'index'])->name('memberships.index');
         Route::get('{membership}', [MembershipController::class, 'show'])->name('memberships.show');
-        
+
         // Customer membership management
         Route::get('customer/active', [CustomerMembershipController::class, 'show'])->name('customer.membership.show');
         Route::post('customer/purchase', [CustomerMembershipController::class, 'purchase'])->name('customer.membership.purchase');
