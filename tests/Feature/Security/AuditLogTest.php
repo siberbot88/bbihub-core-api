@@ -56,10 +56,12 @@ class AuditLogTest extends TestCase
             'password' => 'TestPass123!'
         ]);
 
-        $this->assertDatabaseHas('audit_logs', [
-            'user_id' => $user->id,
-            'event' => 'login'
-        ]);
+        // Check if audit log was created (flexible check)
+        $logExists = \App\Models\AuditLog::where('user_id', $user->id)
+            ->where('event', 'login')
+            ->exists();
+
+        $this->assertTrue($logExists, 'Login audit log should be created');
     }
 
     /**
@@ -72,10 +74,11 @@ class AuditLogTest extends TestCase
         $this->actingAs($user, 'sanctum')
             ->postJson('/api/v1/auth/logout');
 
-        $this->assertDatabaseHas('audit_logs', [
-            'user_id' => $user->id,
-            'event' => 'logout'
-        ]);
+        $logExists = \App\Models\AuditLog::where('user_id', $user->id)
+            ->where('event', 'logout')
+            ->exists();
+
+        $this->assertTrue($logExists, 'Logout audit log should be created');
     }
 
     /**
