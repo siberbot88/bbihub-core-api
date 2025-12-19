@@ -354,6 +354,17 @@ class UserModals extends Component
         return 'Terjadi kesalahan saat menyimpan data.';
     }
 
+    public function getUserStatus(User $user): string
+    {
+        // Cek employment jika ada
+        if ($user->employment) {
+            return $user->employment->status === 'active' ? 'Aktif' : 'Tidak Aktif';
+        }
+
+        // Default aktif (misal superadmin atau user tanpa employment)
+        return 'Aktif';
+    }
+
     public function render()
     {
         return view('livewire.admin.users.user-modals', [
