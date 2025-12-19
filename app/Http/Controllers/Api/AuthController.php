@@ -66,12 +66,12 @@ class AuthController extends Controller
         try {
             /** @var User $user */
             $user = User::create([
-                'id'       => Str::uuid(),
-                'name'     => $request->input('name'),
+                'id' => Str::uuid(),
+                'name' => $request->input('name'),
                 'username' => $request->input('username'),
-                'email'    => $request->input('email'),
+                'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
-                'photo'    => 'https://placehold.co/400x400/000000/FFFFFF?text=' . strtoupper(substr($request->input('name'), 0, 2)),
+                'photo' => 'https://placehold.co/400x400/000000/FFFFFF?text=' . strtoupper(substr($request->input('name'), 0, 2)),
                 'must_change_password' => false,
             ]);
 
@@ -87,10 +87,10 @@ class AuthController extends Controller
 
             return $this->successResponse('Registrasi berhasil. Akun Owner telah dibuat.', [
                 'access_token' => $token,
-                'token_type'   => 'Bearer',
-                'user'         => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
+                'token_type' => 'Bearer',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
                     'email' => $user->email,
                     'username' => $user->username,
                     'roles' => $user->roles,
@@ -126,7 +126,7 @@ class AuthController extends Controller
         // Support remember-me with extended token expiration
         $tokenName = 'auth_token_for_' . ($user->username ?? $user->email);
         $remember = $request->boolean('remember', false);
-        
+
         if ($remember) {
             // Extended expiration: 30 days
             $token = $user->createToken($tokenName, ['*'], now()->addDays(30))->plainTextToken;
@@ -139,7 +139,7 @@ class AuthController extends Controller
 
         // Audit log: User logged in
         AuditLog::log(
-            event: 'user_logged_in',
+            event: 'login',
             user: $user,
             newValues: [
                 'remember' => $remember,
@@ -149,12 +149,12 @@ class AuthController extends Controller
 
         return $this->successResponse('Login berhasil', [
             'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'remember'     => $remember,
-            'expires_in'   => $remember ? '30 days' : 'session',
-            'user'         => [
-                'id'    => $user->id,
-                'name'  => $user->name,
+            'token_type' => 'Bearer',
+            'remember' => $remember,
+            'expires_in' => $remember ? '30 days' : 'session',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
                 'email' => $user->email,
                 'username' => $user->username,
                 'roles' => $user->roles,
