@@ -42,8 +42,13 @@ class AuditLog extends Model
     /**
      * Create audit log entry
      */
-    public static function log(string $event, $user = null, $auditable = null, array $oldValues = [], array $newValues = [], ?string $ipAddress = null, ?string $userAgent = null)
-    {
+    public static function log(
+        string $event,
+        ?User $user = null,
+        $auditable = null,
+        array $oldValues = [],
+        array $newValues = []
+    ) {
         return static::create([
             'user_id' => $user?->id,
             'user_email' => $user?->email,
@@ -52,8 +57,8 @@ class AuditLog extends Model
             'auditable_id' => $auditable?->id ?? $auditable?->getKey(),
             'old_values' => $oldValues,
             'new_values' => $newValues,
-            'ip_address' => $ipAddress ?? request()->ip(),
-            'user_agent' => $userAgent ?? request()->userAgent(),
+            'ip_address' => request()?->ip() ?? '127.0.0.1',
+            'user_agent' => request()?->userAgent() ?? 'Unknown',
         ]);
     }
 }
