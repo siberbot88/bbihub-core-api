@@ -10,6 +10,11 @@ use Illuminate\Validation\ValidationException;
 
 class TransactionService
 {
+
+    public function __construct(
+        protected \App\Services\Payment\MidtransService $midtransService
+    ) {}
+
     /**
      * Buat transaksi baru dari service_uuid.
      * Alur sama persis seperti TransactionController lama kamu.
@@ -116,6 +121,19 @@ class TransactionService
 
         $transaction->status = $newStatus;
         $transaction->save();
+
+        // === MIDTRANS INTEGRATION ===
+        // Jika status naik ke process (Menunggu Pembayaran) dan belum ada token
+        if ($newStatus === 'process' && $transaction->amount > 0) {
+            // Generate token jika belum ada
+            if (empty($transaction->snap_token)) {
+                $snap = $this->midtransService->getSnapToken($transaction);
+                $transaction->update([
+                   'snap_token' => $snap->token,
+                   'snap_redirect_url' => $snap->redirect_url
+                ]);
+            }
+        }
 
         // === SINKRON KE SERVICE ===
         $service = $transaction->service;

@@ -20,6 +20,9 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('login',    [AuthController::class, 'login'])->name('api.login');
 });
 
+// Webhooks (Public)
+Route::post('webhooks/midtrans', [\App\Http\Controllers\Api\PaymentCallbackController::class, 'handle']);
+
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::get('auth/user', [AuthController::class, 'me'])->name('api.user');
@@ -70,6 +73,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         // List Service
         Route::get('services',           [ServiceApiController::class, 'index']);
         Route::get('services/{service}', [ServiceApiController::class, 'show']);
+        Route::put('services/{service}', [ServiceApiController::class, 'update']);
+        Route::patch('services/{service}', [ServiceApiController::class, 'update']);
 
 
         // Kendaraan
@@ -83,32 +88,20 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     Route::prefix('admins')->middleware('role:admin,sanctum')->name('api.admin.')->group(function () {
         Route::apiResource('vouchers', VoucherApiController::class);
+        //employee
+        Route::get('users', [AdminController::class, 'employees']);
+        Route::get('users/{user}', [AdminController::class, 'employee']);
+        Route::get('users/{user}', [AdminController::class, 'employee']);
+        Route::put('users/{user}', [AdminController::class, 'updateEmployee']);
+
+        // Dashboard
+        Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'getStats']);
 
         // Service
         Route::get   ('services',           [ServiceApiController::class, 'index']);
         Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
         Route::post  ('services',           [ServiceApiController::class, 'store']);
-        Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
-        Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
-        Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
-
-        // Kendaraan
-        Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
-        Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
-        Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
-        Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
-        Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
-    });
-
-    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
-        //
-    });
-
-    Route::prefix('admins')->middleware('role:admin')->name('api.admin.')->group(function () {
-        // ===== SERVICES (CRUD) =====
-        Route::get   ('services',           [ServiceApiController::class, 'index']);
-        Route::post  ('services',           [ServiceApiController::class, 'store']);
-        Route::get   ('services/{service}', [ServiceApiController::class, 'show']);
+        Route::post  ('services/walk-in',   [ServiceApiController::class, 'storeWalkIn']);
         Route::put   ('services/{service}', [ServiceApiController::class, 'update']);
         Route::patch ('services/{service}', [ServiceApiController::class, 'update']);
         Route::delete('services/{service}', [ServiceApiController::class, 'destroy']);
@@ -133,6 +126,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get  ('transaction-items/{item}', [TransactionItemController::class, 'show']);
         Route::put ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
         Route::delete('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'destroy']);
+
+        // Kendaraan
+        Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+        Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+        Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+        Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+        Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+    });
+
+    Route::prefix('mechanics')->middleware('role:mechanic,sanctum')->name('api.mechanic.')->group(function () {
+        //
     });
 });
 
@@ -140,7 +144,5 @@ Route::prefix('admin')->group(function () {
     Route::get ('services',               [ServiceApiController::class, 'index']);
     Route::post('services',               [ServiceApiController::class, 'store']);
     Route::get ('services/{service}',     [ServiceApiController::class, 'show']);
-
-
 
 });

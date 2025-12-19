@@ -140,6 +140,33 @@ class ServiceApiController extends Controller
     }
 
     /**
+     * POST /admins/services/walk-in
+     * Create Customer + Vehicle + Service in one flow
+     */
+    public function storeWalkIn(\App\Http\Requests\Api\Service\StoreWalkInServiceRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $user = $request->user();
+
+        // Force workshop uuid from admin session
+        $data['workshop_uuid'] = $user->employment->workshop_uuid;
+
+        $service = $this->serviceService->createWalkInService($data, $user);
+        
+        $service->load([
+             'workshop',
+             'customer',
+             'vehicle',
+             'mechanic.user',
+        ]);
+
+        return response()->json([
+            'message' => 'Walk-In Service created successfully',
+            'data'    => new ServiceResource($service),
+        ], 201);
+    }
+
+    /**
      * PUT/PATCH /services/{service}
      * HANYA admin (di UpdateServiceRequest@authorize + policy).
      */

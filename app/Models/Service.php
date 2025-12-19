@@ -25,6 +25,7 @@ class Service extends Model
         'name',
         'description',
         'category_service',
+        'type', // booking, walk_in
         'price',
         'scheduled_date',
         'estimated_time',
