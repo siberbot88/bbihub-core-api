@@ -22,18 +22,8 @@ class User extends Authenticatable
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
-<<<<<<< HEAD
 
-    // Spatie Permission guard
     protected string $guard_name = 'web';
-=======
-    protected string $guard_name = 'sanctum';
->>>>>>> origin/main
-
-    /**
-     * Jangan pakai $guarded dan $fillable sekaligus.
-     * Pilih salah satu. Kita pakai $fillable biar aman.
-     */
     protected $fillable = [
         'id',
         'name',
