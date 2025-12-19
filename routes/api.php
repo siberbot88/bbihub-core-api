@@ -202,5 +202,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::put('customer/auto-renew', [CustomerMembershipController::class, 'updateAutoRenew'])->name('customer.membership.auto-renew');
         Route::get('customer/payment-status/{orderId}', [CustomerMembershipController::class, 'checkPaymentStatus'])->name('customer.membership.payment-status');
     });
+
+    /** Admin Routes - Audit Logs */
+    Route::prefix('admin')->middleware('role:owner|admin,sanctum')->group(function () {
+        Route::get('audit-logs', [\App\Http\Controllers\Api\Admin\AuditLogController::class, 'index']);
+        Route::get('audit-logs/events', [\App\Http\Controllers\Api\Admin\AuditLogController::class, 'events']);
+        Route::get('audit-logs/{auditLog}', [\App\Http\Controllers\Api\Admin\AuditLogController::class, 'show']);
+    });
 });
 
