@@ -57,7 +57,7 @@ class AuditLogTest extends TestCase
         ]);
 
         // Check if audit log was created (flexible check)
-        $logExists = \App\Models\AuditLog::where('user_id', $user->id)
+        $logExists = AuditLog::where('user_id', $user->id)
             ->where('event', 'login')
             ->exists();
 
@@ -74,7 +74,7 @@ class AuditLogTest extends TestCase
         $this->actingAs($user, 'sanctum')
             ->postJson('/api/v1/auth/logout');
 
-        $logExists = \App\Models\AuditLog::where('user_id', $user->id)
+        $logExists = AuditLog::where('user_id', $user->id)
             ->where('event', 'logout')
             ->exists();
 

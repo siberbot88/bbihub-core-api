@@ -212,7 +212,7 @@ class AuthController extends Controller
 
             // Audit log: User logged out
             AuditLog::log(
-                event: 'user_logged_out',
+                event: 'logout',
                 user: $user,
                 newValues: ['all_tokens' => $request->boolean('all', false)]
             );
