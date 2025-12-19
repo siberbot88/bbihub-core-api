@@ -44,6 +44,7 @@ class ServiceApiController extends Controller
                 AllowedFilter::exact('status'),
                 AllowedFilter::partial('code'),
                 AllowedFilter::exact('workshop_uuid'),
+                // Keep these for standard compliant clients
                 AllowedFilter::callback('date_from', function ($query, $value) {
                     $query->whereDate('scheduled_date', '>=', $value);
                 }),
@@ -52,6 +53,14 @@ class ServiceApiController extends Controller
                 }),
             ])
             ->defaultSort('-created_at');
+
+        // [Manual Filter Support] for Mobile App (flat params)
+        if ($request->has('date_from')) {
+            $query->whereDate('scheduled_date', '>=', $request->input('date_from'));
+        }
+        if ($request->has('date_to')) {
+            $query->whereDate('scheduled_date', '<=', $request->input('date_to'));
+        }
 
         // Scope query based on role
         if ($user->hasRole('owner')) {
