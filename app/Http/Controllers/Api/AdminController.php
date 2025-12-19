@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceResource;
+<<<<<<< HEAD
 use App\Models\Employment;
+=======
+>>>>>>> b84dd13a3bf307131c996e87af72f8b5dd8805ac
 use App\Models\Service;
 use App\Services\ServiceService;
 use Illuminate\Http\Request;
@@ -17,6 +20,7 @@ class AdminController extends Controller
     {}
 
     /**
+<<<<<<< HEAD
      * GET /api/v1/admins/employees
      */
     public function employees(Request $request)
@@ -44,6 +48,8 @@ class AdminController extends Controller
         return response()->json(['data' => $employees]);
     }
     /**
+=======
+>>>>>>> b84dd13a3bf307131c996e87af72f8b5dd8805ac
      * POST /api/v1/admins/services/{service}/accept
      */
     public function accept(Request $request, Service $service)
@@ -126,10 +132,13 @@ class AdminController extends Controller
         }
     }
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> b84dd13a3bf307131c996e87af72f8b5dd8805ac
     /**
      * POST /api/v1/admins/services/{service}/assign-mechanic
      */

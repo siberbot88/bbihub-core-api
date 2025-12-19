@@ -7,8 +7,8 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
+use App\Models\Report;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
 
 #[Title('Laporan')]
 #[Layout('layouts.app')]
@@ -18,143 +18,108 @@ class Index extends Component
 
     protected string $paginationTheme = 'tailwind';
 
-    // Tabs: overview|users|workshops|vehicles|finance
-    #[Url(as: 'tab')]    public string  $tab   = 'overview';
+    // filter & pencarian
+    #[Url(as: 'q')]
+    public string $q = '';
 
-    // Rentang tanggal
-    #[Url(as: 'from')]   public ?string $from  = null;   // Y-m-d
-    #[Url(as: 'to')]     public ?string $to    = null;   // Y-m-d
-    #[Url(as: 'range')]  public string  $range = '30d';  // 7d|30d|90d|ytd|custom
+    #[Url(as: 'status')]
+    public string $status = 'all';      // all|baru|diproses|diterima|selesai
 
-    // Pencarian & paging
-    #[Url(as: 'q')]      public string  $q     = '';
-    #[Url(as: 'pp')]     public int     $perPage = 10;
+    #[Url(as: 'type')]
+    public string $type = 'all';        // all|bug|keluhan|saran|ulasan (sesuaikan sendiri)
 
-    public function mount(): void
-    {
-        // Inisialisasi rentang jika kosong
-        if (!$this->from || !$this->to) {
-            $this->applyQuickRange($this->range ?: '30d');
-        } else {
-            $this->normalizeDates();
-        }
-    }
+    #[Url(as: 'date')]
+    public ?string $date = null;        // Y-m-d
 
-    /** Quick range helper */
-    public function applyQuickRange(string $r): void
-    {
-        $this->range = $r;
-        $today = Carbon::today();
+    #[Url(as: 'pp')]
+    public int $perPage = 10;
 
-        [$from, $to] = match ($r) {
-            '7d'   => [$today->copy()->subDays(6),  $today],
-            '30d'  => [$today->copy()->subDays(29), $today],
-            '90d'  => [$today->copy()->subDays(89), $today],
-            'ytd'  => [Carbon::create($today->year, 1, 1), $today],
-            default=> [
-                $this->from ? Carbon::parse($this->from) : $today->copy()->subDays(29),
-                $this->to   ? Carbon::parse($this->to)   : $today
-            ],
-        };
-
-        $this->from = $from->toDateString();
-        $this->to   = $to->toDateString();
-
-        $this->resetPage();
-    }
-
-    /** Normalisasi input tanggal dari URL/manual */
-    protected function normalizeDates(): void
-    {
-        try {
-            $from = Carbon::parse($this->from)->startOfDay();
-            $to   = Carbon::parse($this->to)->endOfDay();
-        } catch (\Throwable $e) {
-            // Jika parsing gagal, fallback ke 30d
-            $this->applyQuickRange('30d');
-            return;
-        }
-
-        if ($from->greaterThan($to)) {
-            // Tukar jika from > to
-            [$from, $to] = [$to->copy()->startOfDay(), $from->copy()->endOfDay()];
-        }
-
-        $this->from = $from->toDateString();
-        $this->to   = $to->toDateString();
-    }
-
-    /* Reset halaman saat filter berubah */
-    public function updatingTab()     { $this->resetPage(); }
+    // reset halaman kalau filter berubah
     public function updatingQ()       { $this->resetPage(); }
-    public function updatingRange()   { $this->resetPage(); }
-    public function updatingFrom()    { $this->resetPage(); }
-    public function updatingTo()      { $this->resetPage(); }
+    public function updatingStatus()  { $this->resetPage(); }
+    public function updatingType()    { $this->resetPage(); }
+    public function updatingDate()    { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
 
-    // ===============================
-    // ====== DATA SEMENTARA =========
-    // (ganti dengan query real)
-    // ===============================
-
-    /** KPI ringkasan */
-    public function getKpisProperty(): array
+    /** Statistik untuk 4 kartu atas */
+    public function getStatsProperty(): array
     {
-        // Contoh stat dummy; bisa disesuaikan dengan $this->tab, $this->from/$this->to
+        $base = Report::query();
+
+        $total      = (clone $base)->count();
+        $today      = (clone $base)->whereDate('created_at', Carbon::today())->count();
+        $processing = (clone $base)->where('status', 'diproses')->count();
+        $done       = (clone $base)->where('status', 'selesai')->count();
+
         return [
-            ['label' => 'Total Pengguna',  'value' => 152,      'delta' => '+3%'],
-            ['label' => 'Bengkel Aktif',   'value' => 48,       'delta' => '+5%'],
-            ['label' => 'Transaksi',       'value' => 930,      'delta' => '+12%'],
-            ['label' => 'Pendapatan',      'value' => 'Rp 125jt','delta' => '+8%'],
+            [
+                'title' => 'Total laporan masuk',
+                'value' => $total,
+                'trend' => '+0%',       // nanti kalau mau bisa dihitung beneran
+                'icon'  => 'inbox',
+            ],
+            [
+                'title' => 'Laporan masuk hari ini',
+                'value' => $today,
+                'trend' => '+0%',
+                'icon'  => 'calendar',
+            ],
+            [
+                'title' => 'Diproses',
+                'value' => $processing,
+                'trend' => '+0%',
+                'icon'  => 'progress',
+            ],
+            [
+                'title' => 'Selesai',
+                'value' => $done,
+                'trend' => '+0%',
+                'icon'  => 'check',
+            ],
         ];
     }
 
-    /** Data seri untuk chart (line) sesuai rentang */
-    public function getSeriesProperty(): array
+    /** Query untuk tabel laporan */
+    public function getRowsProperty()
     {
-        $from = Carbon::parse($this->from ?? Carbon::today()->subDays(29));
-        $to   = Carbon::parse($this->to   ?? Carbon::today());
+        $q = Report::with('user')->latest('created_at');
 
-        // Generate value dummy per hari
-        $series = [];
-        $cursor = $from->copy();
-        $seed   = crc32($this->tab . ($this->q ?? '') . $from->toDateString() . $to->toDateString());
-
-        while ($cursor->lte($to)) {
-            // contoh generator nilai pseudo-random yang stabil
-            $hash = crc32($cursor->toDateString() . $seed);
-            $val  = ($hash % 50) + 10; // 10..59
-            $series[] = [
-                'date'  => $cursor->toDateString(),
-                'value' => $val,
-            ];
-            $cursor->addDay();
+        // search (pengirim, email, jenis, isi laporan)
+        if ($this->q !== '') {
+            $term = $this->q;
+            $q->where(function ($w) use ($term) {
+                $w->where('report_type', 'like', "%{$term}%")
+                  ->orWhere('report_data', 'like', "%{$term}%")
+                  ->orWhereHas('user', function ($u) use ($term) {
+                      $u->where('name', 'like', "%{$term}%")
+                        ->orWhere('email', 'like', "%{$term}%");
+                  });
+            });
         }
 
-        return $series;
-    }
+        // filter status
+        if ($this->status !== 'all') {
+            $q->where('status', $this->status);
+        }
 
-    // ======= Export placeholders (isi sesuai kebutuhan proyek) =======
-    public function exportCsv(): void
-    {
-        // TODO: generate CSV berdasarkan $this->tab, $this->from, $this->to, $this->q
-        $this->dispatch('toast', body: 'Export CSV diproses (contoh).');
-    }
+        // filter jenis laporan
+        if ($this->type !== 'all') {
+            $q->where('report_type', $this->type);
+        }
 
-    public function exportPdf(): void
-    {
-        // TODO: generate PDF berdasarkan $this->tab, $this->from, $this->to, $this->q
-        $this->dispatch('toast', body: 'Export PDF diproses (contoh).');
+        // filter tanggal (satu hari)
+        if ($this->date) {
+            $q->whereDate('created_at', $this->date);
+        }
+
+        return $q->paginate($this->perPage);
     }
 
     public function render()
     {
-        // Catatan: ganti dataset/pagination sesuai tab & filter jika sudah ada modelnya
         return view('livewire.admin.reports.index', [
-            'kpis'   => $this->kpis,    // accessor getKpisProperty()
-            'series' => $this->series,  // accessor getSeriesProperty()
-            // bila butuh tabel per tab:
-            // 'rows' => Model::query()->...->paginate($this->perPage),
+            'stats' => $this->stats,  // dari accessor getStatsProperty
+            'rows'  => $this->rows,   // dari accessor getRowsProperty
         ]);
     }
 }

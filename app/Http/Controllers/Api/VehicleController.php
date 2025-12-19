@@ -65,7 +65,8 @@ class VehicleController extends Controller
                 $request->input('include')
             );
 
-            $request->input(('include')
+            $request->input(
+                ('include')
             );
 
             return $this->successResponse('kendaraan berhasil dibuat', $vehicle, 201);
@@ -81,6 +82,8 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle, Request $request): JsonResponse
     {
+        $this->authorize('view', $vehicle);
+
         $result = QueryBuilder::for(Vehicle::where('id', $vehicle->id))
             ->allowedIncludes(['customer:id,name'])
             ->first();
@@ -94,6 +97,8 @@ class VehicleController extends Controller
      */
     public function update(UpdateVehicleRequest $request, Vehicle $vehicle): JsonResponse
     {
+        $this->authorize('update', $vehicle);
+
         try {
             $updatedVehicle = $this->vehicleService->updateVehicle(
                 $vehicle,
@@ -112,6 +117,8 @@ class VehicleController extends Controller
      */
     public function destroy(Vehicle $vehicle): JsonResponse
     {
+        $this->authorize('delete', $vehicle);
+
         try {
             $vehicle->delete();
             return $this->successResponse('Kendaraan berhasil dihapus');

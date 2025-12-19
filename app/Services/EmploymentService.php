@@ -18,6 +18,34 @@ class EmploymentService
     private const ROLES_NEED_EMAIL = ['admin'];
 
     /**
+     * Mengambil daftar karyawan dengan pagination dan pencarian.
+     *
+     * @param \Illuminate\Support\Collection|array $workshopIds
+     * @param string|null $search
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getEmployees($workshopIds, ?string $search = null, int $perPage = 15)
+    {
+        $query = Employment::whereIn('workshop_uuid', $workshopIds)
+            ->with([
+                'user',
+                'user.roles:name',
+                'workshop:id,name,user_uuid',
+            ]);
+
+        if ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->latest()->paginate($perPage);
+    }
+
+    /**
      * Membuat Karyawan baru, User, dan mengirim email.
      *
      * @param array $data Data yang sudah divalidasi dari StoreEmploymentRequest

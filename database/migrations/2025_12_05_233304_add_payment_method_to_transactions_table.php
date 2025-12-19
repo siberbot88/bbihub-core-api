@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-
-            // ENUM untuk metode pembayaran
-            $table->enum('payment_method', ['QRIS', 'Cash', 'Bank'])
-                ->nullable()
-                ->after('amount');
-
+            // Only add if column doesn't exist
+            if (!Schema::hasColumn('transactions', 'payment_method')) {
+                // ENUM untuk metode pembayaran
+                $table->enum('payment_method', ['QRIS', 'Cash', 'Bank'])
+                    ->nullable()
+                    ->after('amount');
+            }
         });
     }
 
@@ -27,8 +28,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn('payment_method');
-            //
+            if (Schema::hasColumn('transactions', 'payment_method')) {
+                $table->dropColumn('payment_method');
+            }
         });
     }
 };

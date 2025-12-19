@@ -11,6 +11,7 @@ use App\Models\Workshop;
 use App\Models\Employment;
 use App\Livewire\Forms\UserForm;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
 
 class Index extends Component
 {
@@ -63,6 +64,12 @@ class Index extends Component
     public function mount(): void
     {
         $this->resetModal();
+    }
+
+    #[On('user:edit')]
+    public function openEditFromDataCenter(string $id): void
+    {
+        $this->edit($id); // pakai method edit yang sudah kamu punya
     }
 
     protected function resetModal(): void
@@ -158,7 +165,7 @@ class Index extends Component
     // ==========================
     // MODAL OPENERS
     // ==========================
-
+    
     public function create()
     {
         $this->form->reset();

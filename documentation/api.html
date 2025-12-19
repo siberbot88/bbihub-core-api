@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - BBI HUB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626', // Red-600
+                        'primary-hover': '#B91C1C', // Red-700
+                        text: { main: '#EDEDEF', muted: '#8A8F98' }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .code-block {
+            position: relative;
+            background: #000000 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+            margin: 0;
+            color: #EDEDEF;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #8A8F98;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                        B</div>
+                    <span class="font-semibold text-sm tracking-tight">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="api.html" class="nav-link active">API</a>
+                    <a href="design.html" class="nav-link">Design</a>
+                    <a href="git-setup.html" class="nav-link">Git Setup</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <section class="mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4 reveal-bottom">API Documentation</h1>
+            <p class="text-text-muted text-lg mb-8 reveal-bottom delay-100">All endpoints are versioned under <code
+                    class="bg-[#141518] px-1 rounded">/api/v1</code>. Authentication uses Laravel Sanctum tokens.</p>
+        </section>
+
+        <!-- Auth Endpoints -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Authentication</h2>
+            <div class="space-y-6">
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Register</h3>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/auth/register</code></p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "secret",
+    "password_confirmation": "secret"
+}</code></pre>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Login</h3>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/auth/login</code></p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>{
+    "email": "john@example.com",
+    "password": "secret"
+}</code></pre>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Logout</h3>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/auth/logout</code> (requires Bearer token)</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Current User</h3>
+                    <p class="text-text-muted mb-2">GET <code class="bg-[#141518] px-1 rounded">/api/v1/auth/user</code>
+                        (requires Bearer token)</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Change Password</h3>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/auth/change-password</code></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Owner Endpoints -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Owner (role:owner)</h2>
+            <div class="space-y-6">
+                <!-- Workshops -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Workshops</h3>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/workshops</code></p>
+                    <p class="text-text-muted mb-2">PUT <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/workshops/{workshop}</code></p>
+                </div>
+                <!-- Documents -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Workshop Documents</h3>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/documents</code></p>
+                </div>
+                <!-- Employees -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Employees</h3>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/employee</code></p>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/employee</code></p>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/employee/{employee}</code></p>
+                    <p class="text-text-muted mb-2">PUT <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/employee/{employee}</code></p>
+                    <p class="text-text-muted mb-2">DELETE <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/employee/{employee}</code></p>
+                    <p class="text-text-muted mb-2">PATCH <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/employee/{employee}/status</code></p>
+                </div>
+                <!-- Customers (optional) -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Customers (optional)</h3>
+                    <p class="text-text-muted mb-2">Resource routes under <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/owners/customers</code></p>
+                </div>
+                <!-- Vouchers -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Vouchers</h3>
+                    <p class="text-text-muted mb-2">GET <code class="bg-[#141518] px-1 rounded">/api/v1/vouchers</code>
+                    </p>
+                    <p class="text-text-muted mb-2">POST <code class="bg-[#141518] px-1 rounded">/api/v1/vouchers</code>
+                    </p>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vouchers/{voucher}</code></p>
+                    <p class="text-text-muted mb-2">PUT <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vouchers/{voucher}</code></p>
+                    <p class="text-text-muted mb-2">PATCH <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vouchers/{voucher}</code></p>
+                    <p class="text-text-muted mb-2">DELETE <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vouchers/{voucher}</code></p>
+                </div>
+                <!-- Services (list) -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Services</h3>
+                    <p class="text-text-muted mb-2">GET <code class="bg-[#141518] px-1 rounded">/api/v1/services</code>
+                    </p>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/services/{service}</code></p>
+                </div>
+                <!-- Vehicles -->
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Vehicles</h3>
+                    <p class="text-text-muted mb-2">GET <code class="bg-[#141518] px-1 rounded">/api/v1/vehicles</code>
+                    </p>
+                    <p class="text-text-muted mb-2">POST <code class="bg-[#141518] px-1 rounded">/api/v1/vehicles</code>
+                    </p>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vehicles/{vehicle}</code></p>
+                    <p class="text-text-muted mb-2">PUT <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vehicles/{vehicle}</code></p>
+                    <p class="text-text-muted mb-2">DELETE <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/vehicles/{vehicle}</code></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Endpoints -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Admin (role:admin)</h2>
+            <div class="space-y-6">
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Vouchers (full resource)</h3>
+                    <p class="text-text-muted mb-2">Resource routes under <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/vouchers</code></p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Services</h3>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/services</code></p>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/services/{service}</code></p>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/services</code></p>
+                    <p class="text-text-muted mb-2">PUT <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/services/{service}</code></p>
+                    <p class="text-text-muted mb-2">PATCH <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/services/{service}</code></p>
+                    <p class="text-text-muted mb-2">DELETE <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/services/{service}</code></p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-medium text-white mb-2">Vehicles</h3>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/vehicles</code></p>
+                    <p class="text-text-muted mb-2">POST <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/vehicles</code></p>
+                    <p class="text-text-muted mb-2">GET <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/vehicles/{vehicle}</code></p>
+                    <p class="text-text-muted mb-2">PUT <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/vehicles/{vehicle}</code></p>
+                    <p class="text-text-muted mb-2">DELETE <code
+                            class="bg-[#141518] px-1 rounded">/api/v1/admins/vehicles/{vehicle}</code></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ScrollReveal animations
+        ScrollReveal().reveal('.reveal-bottom', { distance: '20px', origin: 'bottom', duration: 800, interval: 100 });
+        // Copy button helper
+        function copyCode(btn) {
+            const code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const original = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => { btn.innerText = original; }, 2000);
+            });
+        }
+    </script>
+
+    <!-- Footer (same as other docs) -->
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-5 h-5 bg-primary rounded flex items-center justify-center text-white font-bold text-[10px]">
+                    B</div>
+                <span class="text-sm text-text-muted">© 2025 BBI HUB</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Terms</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Twitter</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

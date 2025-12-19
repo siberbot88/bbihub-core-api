@@ -31,12 +31,10 @@ class EmployementApiController extends Controller
         $owner = $request->user();
         $workshopIds = $owner->workshops()->pluck('id');
 
-        $employees = Employment::whereIn('workshop_uuid', $workshopIds)
-            ->with([
-                'user',
-                'user.roles:name',
-                'workshop:id,name,user_uuid',
-            ])->get();
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 15);
+
+        $employees = $this->employmentService->getEmployees($workshopIds, $search, $perPage);
 
         return $this->successResponse('Data karyawan berhasil diambil', $employees);
     }
@@ -47,6 +45,35 @@ class EmployementApiController extends Controller
      */
     public function store(StoreEmploymentRequest $request): JsonResponse
     {
+        // 🔒 LIMIT CHECK for Free Tier
+        $user = $request->user();
+        if ($user->hasRole('owner', 'sanctum')) {
+             $subscription = $user->ownerSubscription; 
+             $isPremium = false;
+             
+             // Check if active premium plan (not starter)
+             if ($subscription && $subscription->status === 'active') {
+                 $plan = $subscription->plan; // using the alias we fixed earlier
+                 if ($plan && $plan->code !== 'starter') {
+                     $isPremium = true;
+                 }
+             }
+             
+             $limit = $isPremium ? 9999 : 5;
+             
+             // Count current employees
+             $workshopIds = $user->workshops()->pluck('id');
+             $currentCount = Employment::whereIn('workshop_uuid', $workshopIds)->count();
+             
+             if ($currentCount >= $limit) {
+                 return $this->errorResponse(
+                     'Batas staff tercapai (Maksimal 5). Upgrade ke Premium untuk menambah staff.',
+                     403,
+                     ['code' => 'LIMIT_REACHED']
+                 );
+             }
+        }
+
         try {
             [$employment, $emailSent] = $this->employmentService->createEmployee(
                 $request->validated()

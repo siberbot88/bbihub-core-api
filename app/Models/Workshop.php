@@ -21,6 +21,11 @@ class Workshop extends Model
         'is_active' => true,
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        // 'operational_days' => 'array', // Removed to treat as simple string
+    ];
+
     /**
      * The "booted" method of the model.
      *

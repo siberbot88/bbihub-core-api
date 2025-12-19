@@ -48,12 +48,12 @@
                 ],
                 [
                     'label' => 'Manajemen Bengkel',
-                    'route' => 'admin.workshops',
+                    'route' => 'admin.workshops.index',
                     'icon' => 'wrench'
                 ],
                 [
                     'label' => 'Manajemen Promosi',
-                    'route' => 'admin.promotions',
+                    'route' => 'admin.promotions.index',
                     'icon' => 'megaphone'
                 ],
                 [

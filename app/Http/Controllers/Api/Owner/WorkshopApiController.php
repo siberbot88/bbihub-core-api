@@ -39,4 +39,37 @@ class WorkshopApiController extends Controller
         }
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param \App\Http\Requests\Api\Workshop\UpdateWorkshopRequest $request
+     * @param \App\Models\Workshop $workshop
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(\App\Http\Requests\Api\Workshop\UpdateWorkshopRequest $request, Workshop $workshop)
+    {
+        $this->authorize('update', $workshop);
+
+        try {
+            $data = $request->validated();
+
+            if ($request->hasFile('photo')) {
+                // Delete old photo if exists (optional)
+                $path = $request->file('photo')->store('workshops', 'public');
+                $data['photo'] = url('storage/' . $path);
+            }
+
+            $workshop->update($data);
+
+            return $this->successResponse('Workshop updated successfully', $workshop);
+
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Gagal mengupdate workshop.',
+                500,
+                $e->getMessage()
+            );
+        }
+    }
+
 }

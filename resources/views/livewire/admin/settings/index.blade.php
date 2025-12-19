@@ -1,18 +1,18 @@
 
-<div class="min-h-screen">
-  <div class="mx-auto max-w-7xl px-4 py-6">
+<div class="space-y-6">
+  <div class="w-full px-2 lg:px-4 space-y-5">
 
     {{-- TOP TOOLBAR (mirip) --}}
     <div class="flex items-center gap-3">
       <div class="relative flex-1">
         <input type="text" placeholder="Cari pengaturan…"
                class="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 py-2.5 focus:outline-none focus:ring" />
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M8 4a4 4 0 102.546 7.032l3.71 3.71a1 1 0 001.415-1.414l-3.71-3.71A4 4 0 008 4z" clip-rule="evenodd"/>
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none">
+          <path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
       <button class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 hover:bg-gray-50">Reset</button>
-      <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white hover:bg-blue-700"
+      <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white hover:bg-red-700"
               wire:click="$refresh">Simpan Semua</button>
     </div>
 
@@ -37,7 +37,7 @@
         @endphp
         @foreach($tabs as $key => $label)
           <button wire:click="$set('tab','{{ $key }}')"
-                  class="rounded-xl px-4 py-2.5 border {{ $tab===$key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50' }}">
+                  class="rounded-xl px-4 py-2.5 border {{ $tab===$key ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50' }}">
             {{ $label }}
           </button>
         @endforeach
@@ -65,7 +65,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveGeneral">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveGeneral">Simpan</button>
           </div>
         @break
 
@@ -97,7 +97,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveBranding">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveBranding">Simpan</button>
           </div>
         @break
 
@@ -132,7 +132,7 @@
             </table>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveRoles">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveRoles">Simpan</button>
           </div>
         @break
 
@@ -153,7 +153,7 @@
             </label>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveNotify">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveNotify">Simpan</button>
           </div>
         @break
 
@@ -180,7 +180,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveSecurity">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveSecurity">Simpan</button>
           </div>
         @break
 
@@ -208,7 +208,7 @@
             </div>
           </div>
           <div class="mt-5 flex justify-end">
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-white" wire:click="saveLocale">Simpan</button>
+            <button class="rounded-xl bg-red-600 px-4 py-2.5 text-white" wire:click="saveLocale">Simpan</button>
           </div>
         @break
 

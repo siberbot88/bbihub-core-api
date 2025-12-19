@@ -7,7 +7,16 @@
         <title>{{ $title ?? 'Page Title' }}</title>
     </head>
     <body>
-    <livewire:header/>
+    <header class="border-b bg-white">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-lg font-semibold">BbiHub</div>
+                <nav class="text-sm text-gray-600">
+                    <a href="/" class="mr-4">Dashboard</a>
+                </nav>
+            </div>
+        </div>
+    </header>
         <main>
             {{ $slot }}
         </main>

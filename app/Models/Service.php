@@ -38,7 +38,10 @@ class Service extends Model
         'reason_description',
         'feedback_mechanic',
         'accepted_at',
+        'accepted_at',
         'completed_at',
+        'assigned_to_user_id',
+        'technician_name',
     ];
 
     protected $casts = [

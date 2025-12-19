@@ -2,23 +2,22 @@
 
 namespace App\Livewire\Admin\Promotions;
 
-use App\Models\Promotion;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Models\Promotion;
 
 #[Title('Manajemen Promosi')]
-#[Layout('layouts.app')] // <-- path layout yang benar
+#[Layout('layouts.app')]
 class Index extends Component
 {
     use WithPagination;
 
+    public string $placement = 'all'; // ⬅️ WAJIB ADA
     protected string $paginationTheme = 'tailwind';
 
-    // Query params
     #[Url(as: 'q')]      public string $q = '';
     #[Url(as: 'status')] public string $status = 'all';
     #[Url(as: 'pp')]     public int    $perPage = 10;
@@ -30,10 +29,39 @@ class Index extends Component
         'expired' => 'Kadaluarsa',
     ];
 
-    // Reset page ketika filter berubah
     public function updatingQ()       { $this->resetPage(); }
     public function updatingStatus()  { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
+
+     public function updatingPlacement()
+    {
+        $this->resetPage();
+    }
+    
+    public function refresh()
+    {
+        $this->resetPage();
+    }
+
+    public function openCreate()
+    {
+        return redirect()->route('admin.promotions.create');
+    }
+
+    // 🔹 EDIT – arahkan ke halaman edit
+    public function edit(int $id)
+    {
+        return redirect()->route('admin.promotions.edit', $id);
+    }
+
+    // 🔹 HAPUS – hapus langsung dari sini
+    public function delete(int $id)
+    {
+        Promotion::findOrFail($id)->delete();
+
+        session()->flash('success', 'Banner berhasil dihapus.');
+        $this->resetPage(); // refresh data
+    }
 
     public function render()
     {
@@ -54,8 +82,8 @@ class Index extends Component
         $promos = $q->latest()->paginate($this->perPage);
 
         return view('livewire.admin.promotions.index', [
-        'promotions'    => $promos,
-        'statusOptions' => $this->statusOptions,
-    ]);
+            'promotions'    => $promos,
+            'statusOptions' => $this->statusOptions,
+        ]);
     }
 }

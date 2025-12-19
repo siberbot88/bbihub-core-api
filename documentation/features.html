@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - BBI HUB Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#0B0C0E',
+                        surface: '#141518',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#DC2626', // Red-600
+                        'primary-hover': '#B91C1C', // Red-700
+                        text: {
+                            main: '#EDEDEF',
+                            muted: '#8A8F98',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0C0E;
+            color: #EDEDEF;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(11, 12, 14, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link {
+            color: #8A8F98;
+            transition: color 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #EDEDEF;
+        }
+
+        .card {
+            background: #141518;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(220, 38, 38, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #EDEDEF;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div
+                        class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                        B</div>
+                    <span class="font-semibold text-sm tracking-tight">BBI HUB</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="index.html" class="nav-link">Overview</a>
+                    <a href="installation.html" class="nav-link">Installation</a>
+                    <a href="features.html" class="nav-link active">Features</a>
+                    <a href="api.html" class="nav-link">API</a>
+                    <a href="design.html" class="nav-link">Design</a>
+                    <a href="git-setup.html" class="nav-link">Git Setup</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
+
+        <div class="mb-16 text-center">
+            <h1 class="text-4xl font-bold text-white mb-4 reveal-bottom">Core Features</h1>
+            <p class="text-text-muted text-lg max-w-2xl mx-auto reveal-bottom delay-100">Powerful modules designed for
+                modern workshop operations.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- User Management -->
+            <div class="card group reveal-bottom delay-200">
+                <div class="feature-icon group-hover:bg-primary group-hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">User Management</h3>
+                <p class="text-text-muted text-sm mb-6 leading-relaxed">
+                    A comprehensive system to manage all users within the BBI HUB ecosystem. It allows Super Admins to
+                    create, update, and manage access for Owners, Mechanics, and Customers. This ensures that sensitive
+                    data is protected and users only have access to the tools they need.
+                </p>
+                <ul class="space-y-2">
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Role-Based Access Control (RBAC)
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Secure Authentication
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Workshop Management -->
+            <div class="card group reveal-bottom delay-300">
+                <div class="feature-icon group-hover:bg-primary group-hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Workshop Management</h3>
+                <p class="text-text-muted text-sm mb-6 leading-relaxed">
+                    Designed for scalability, this module enables owners to manage multiple workshop branches from a
+                    single interface. You can set operational hours, track branch performance, and maintain consistent
+                    standards across all locations.
+                </p>
+                <ul class="space-y-2">
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Multi-branch Support
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Operational Settings
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Employment -->
+            <div class="card group reveal-bottom delay-400">
+                <div class="feature-icon group-hover:bg-primary group-hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Employment</h3>
+                <p class="text-text-muted text-sm mb-6 leading-relaxed">
+                    Streamline your HR processes by managing employee profiles, roles, and assignments. Easily assign
+                    mechanics to specific workshops, track their job descriptions, and manage their employment status
+                    within the company.
+                </p>
+                <ul class="space-y-2">
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Staff Assignment
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Job Description Management
+                    </li>
+                </ul>
+            </div>
+
+            <!-- API Integration -->
+            <div class="card group reveal-bottom delay-500">
+                <div class="feature-icon group-hover:bg-primary group-hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">API Services</h3>
+                <p class="text-text-muted text-sm mb-6 leading-relaxed">
+                    A robust RESTful API layer that powers the mobile applications for mechanics and owners. It ensures
+                    secure data transmission, efficient caching with Redis, and real-time updates across all connected
+                    devices.
+                </p>
+                <ul class="space-y-2">
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Sanctum Authentication
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-text-muted">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Standardized JSON Responses
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        ScrollReveal().reveal('.reveal-bottom', { distance: '20px', origin: 'bottom', duration: 800, interval: 100 });
+    </script>
+
+    <footer class="border-t border-white/10 mt-20 py-12 bg-[#0B0C0E]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-5 h-5 bg-primary rounded flex items-center justify-center text-white font-bold text-[10px]">
+                    B</div>
+                <span class="text-sm text-text-muted">© 2025 BBI HUB</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Terms</a>
+                <a href="#" class="text-sm text-text-muted hover:text-white transition-colors">Twitter</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

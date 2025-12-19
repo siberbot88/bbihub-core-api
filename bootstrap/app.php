@@ -9,9 +9,10 @@ use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
+        commands: __DIR__ . '/../routes/console.php',
+        channels: __DIR__ . '/../routes/channels.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -20,6 +21,18 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'superadmin' => \App\Http\Middleware\EnsureSuperadmin::class,
+            'premium' => \App\Http\Middleware\EnsurePremiumAccess::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
+            'midtrans.whitelist' => \App\Http\Middleware\MidtransIpWhitelist::class,
+        ]);
+
+        // Add security headers to all responses
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
+            'api/v1/webhooks/midtrans', // Exclude Midtrans Webhook
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {
@@ -30,5 +43,5 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        \Sentry\Laravel\Integration::handles($exceptions);
     })->create();

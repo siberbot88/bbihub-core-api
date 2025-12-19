@@ -2,163 +2,168 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
-use App\Livewire\Admin\{
-    Dashboard,
-    Users\Index as UsersIndex,
-    Promotions\Index as PromotionsIndex,
-    Workshops\Index as WorkshopsIndex,
-    DataCenter\Index as DataCenterIndex,
-    Reports\Index as ReportsIndex,
-    Settings\Index as SettingsIndex
-};
+
+// Livewire Admin Components
+use App\Livewire\Admin\Dashboard;
+
+// Users
+use App\Livewire\Admin\Users\Index as UsersIndex;
+use App\Livewire\Admin\Users\Create as UsersCreate;
+use App\Livewire\Admin\Users\Edit as UsersEdit;
+
+// Workshops
+use App\Livewire\Admin\Workshops\Index as WorkshopsIndex;
+use App\Livewire\Admin\Workshops\Edit as WorkshopsEdit;
+
+// Data Center
+use App\Livewire\Admin\DataCenter\Index as DataCenterIndex;
+
+// Reports & Settings
+use App\Livewire\Admin\Reports\Index as ReportsIndex;
+use App\Livewire\Admin\Settings\Index as SettingsIndex;
+
+// Promotions
+use App\Livewire\Admin\Promotions\Index as PromotionsIndex;
+use App\Livewire\Admin\Promotions\Create as PromotionCreate;
+use App\Livewire\Admin\Promotions\Edit as PromotionEdit;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - Improved Version
+| Redirects utama
 |--------------------------------------------------------------------------
-| 
-| This is an improved version with:
-| - Superadmin role middleware enforcement
-| - Better route organization
-| - Rate limiting for sensitive routes
-| - Improved security and structure
-|
 */
 
-/*
-|--------------------------------------------------------------------------
-| Public API Endpoint (Optional - Consider removing or protecting)
-|--------------------------------------------------------------------------
-*/
-Route::get('/json', function () {
-    return response()->json([
-        'message' => 'BbiHub API',
-        'version' => '1.0.0',
-        'status' => 'running'
-    ]);
-})->middleware('throttle:60,1'); // Rate limit: 60 requests per minute
-
-/*
-|--------------------------------------------------------------------------
-| Root Redirects
-|--------------------------------------------------------------------------
-*/
-// Direct redirect dari root ke admin dashboard
 Route::redirect('/', '/admin/dashboard');
 Route::redirect('/dashboard', '/admin/dashboard')->name('dashboard.redirect');
 
 /*
 |--------------------------------------------------------------------------
+| JSON healthcheck (opsional)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/json', function () {
+    return response()->json([
+        'message' => 'BbiHub API',
+        'version' => '1.0.0',
+        'status'  => 'running',
+    ]);
+})->middleware('throttle:60,1');
+
+/*
+|--------------------------------------------------------------------------
 | Admin Routes (Superadmin Only)
 |--------------------------------------------------------------------------
-| 
-| These routes require:
-| - Authentication (user harus login)
-| - Email verification
-| - Superadmin role
-|
-| IMPORTANT: Make sure EnsureSuperadmin middleware is registered first!
-| See: app/Http/Middleware/EnsureSuperadmin.php
-|      bootstrap/app.php (middleware alias registration)
-|
 */
+
 Route::middleware(['auth', 'verified', 'superadmin'])
     ->prefix('admin')
     ->as('admin.')
     ->group(function () {
-        
-        /*
-        |--------------------------------------------------------------------------
-        | Dashboard
-        |--------------------------------------------------------------------------
-        */
+
+        // Dashboard
         Route::get('/dashboard', Dashboard::class)
             ->name('dashboard');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Profile
-        |--------------------------------------------------------------------------
-        */
+        // Profile (Volt)
         Volt::route('/profile', 'pages.profile.edit')
             ->name('profile');
 
-
-
-
         /*
-        |--------------------------------------------------------------------------
-        | User Management
-        |--------------------------------------------------------------------------
+        |--------------------------
+        | Users
+        |--------------------------
+        |
+        | Nama route:
+        | - admin.users.index
+        | - admin.users.create
+        | - admin.users.edit
         */
         Route::prefix('users')->as('users.')->group(function () {
-            Route::get('/', UsersIndex::class)->name('index');
-            Route::get('/create', \App\Livewire\Admin\Users\Create::class)->name('create');
-            // Future: Add edit, delete routes here
+            Route::get('/', UsersIndex::class)
+                ->name('index');
+
+            Route::get('/create', UsersCreate::class)
+                ->name('create');
+
+            Route::get('/{user}/edit', UsersEdit::class)
+                ->name('edit');
         });
 
         /*
-        |--------------------------------------------------------------------------
-        | Promotions Management
-        |--------------------------------------------------------------------------
+        |--------------------------
+        | Promotions
+        |--------------------------
+        |
+        | Nama route:
+        | - admin.promotions.index
+        | - admin.promotions.create
+        | - admin.promotions.edit
         */
-        Route::get('/promotions', PromotionsIndex::class)
-            ->name('promotions')
-            ->middleware('throttle:120,1'); // 120 requests per minute
+        Route::prefix('promotions')->as('promotions.')->group(function () {
+            Route::get('/', PromotionsIndex::class)
+                ->name('index');
+
+            Route::get('/create', PromotionCreate::class)
+                ->name('create');
+
+            Route::get('/{promotion}/edit', PromotionEdit::class)
+                ->name('edit');
+        });
 
         /*
-        |--------------------------------------------------------------------------
-        | Workshops Management
-        |--------------------------------------------------------------------------
+        |--------------------------
+        | Workshops
+        |--------------------------
+        |
+        | Nama route:
+        | - admin.workshops.index
+        | - admin.workshops.edit
         */
-        Route::get('/workshops', WorkshopsIndex::class)
-            ->name('workshops');
+        Route::prefix('workshops')->as('workshops.')->group(function () {
+            Route::get('/', WorkshopsIndex::class)
+                ->name('index');
+
+            Route::get('/{workshop}/edit', WorkshopsEdit::class)
+                ->name('edit');
+        });
 
         /*
-        |--------------------------------------------------------------------------
+        |--------------------------
         | Data Center
-        |--------------------------------------------------------------------------
+        |--------------------------
+        |
+        | Nama route:
+        | - admin.data-center
         */
         Route::get('/data-center', DataCenterIndex::class)
             ->name('data-center')
-            ->middleware('throttle:60,1'); // Sensitive data, limit requests
+            ->middleware('throttle:60,1');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Reports
-        |--------------------------------------------------------------------------
-        */
+        // Data Center - create
+        Route::get('/data-center/create', \App\Livewire\Admin\DataCenter\Create::class)
+            ->name('data-center.create');
+        // Data Center - edit
+        Route::get('/data-center/edit', \App\Livewire\Admin\DataCenter\Edit::class)
+            ->name('data-center.edit');
+
+        // Reports
         Route::get('/reports', ReportsIndex::class)
             ->name('reports')
-            ->middleware('throttle:30,1'); // Reports might be heavy, limit more
+            ->middleware('throttle:30,1');
 
         /*
-        |--------------------------------------------------------------------------
+        |--------------------------
         | Settings
-        |--------------------------------------------------------------------------
+        |--------------------------
         */
         Route::get('/settings', SettingsIndex::class)
             ->name('settings')
-            ->middleware('throttle:60,1'); // Sensitive settings, limit requests
+            ->middleware('throttle:60,1');
     });
 
-/*
-|--------------------------------------------------------------------------
-| Authentication Routes
-|--------------------------------------------------------------------------
-| 
-| Defined in routes/auth.php
-| - Login, Register, Password Reset, Email Verification
-| - Handled by Livewire Volt components
-|
-*/
 require __DIR__.'/auth.php';
 
-/*
-|--------------------------------------------------------------------------
-| Fallback Route (404)
-|--------------------------------------------------------------------------
-*/
 Route::fallback(function () {
     abort(404);
 });

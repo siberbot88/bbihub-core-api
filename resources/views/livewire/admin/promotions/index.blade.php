@@ -1,5 +1,5 @@
 <div wire:key="promotions-root"
-     class="w-full max-w-7xl mx-auto px-4 lg:px-6 space-y-5">
+     class="w-full px-2 lg:px-4 space-y-5">
 
 
   {{-- PAGE TITLE + ACTIONS --}}
@@ -15,7 +15,7 @@
         Refresh
       </button>
       <button wire:click="openCreate" type="button"
-              class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700">
+              class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-white hover:bg-red-700">
         <span class="text-lg leading-none">+</span> Tambah Banner
       </button>
     </div>
@@ -50,7 +50,6 @@
       <div class="mt-3 h-2 w-full overflow-hidden rounded bg-neutral-100">
         <div class="h-full bg-rose-500" style="width: {{ $pctTotal }}%"></div>
       </div>
-      <div class="mt-1 text-xs text-rose-600">Batas maksimal tercapai</div>
     </div>
 
     {{-- Homepage --}}
@@ -66,7 +65,6 @@
       <div class="mt-3 h-2 w-full overflow-hidden rounded bg-neutral-100">
         <div class="h-full bg-rose-500" style="width: {{ $pctHome }}%"></div>
       </div>
-      <div class="mt-1 text-xs text-rose-600">Batas maksimal tercapai</div>
     </div>
 
     {{-- Halaman Produk --}}
@@ -82,7 +80,6 @@
       <div class="mt-3 h-2 w-full overflow-hidden rounded bg-neutral-100">
         <div class="h-full bg-rose-500" style="width: {{ $pctProd }}%"></div>
       </div>
-      <div class="mt-1 text-xs text-rose-600">Batas maksimal tercapai</div>
     </div>
   </div>
 
@@ -92,14 +89,14 @@
       <div class="relative">
         <input type="text" wire:model.live.debounce.300ms="q"
                placeholder="Cari banner…"
-               class="h-9 w-72 rounded-lg border-neutral-300 ps-9 focus:border-emerald-500 focus:ring-emerald-500"/>
+               class="h-9 w-72 rounded-lg border-neutral-300 ps-9 focus:border-gray-300 focus:ring-gray-300"/>
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" viewBox="0 0 24 24" fill="none">
           <path d="M21 21l-4-4M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
 
       <select wire:model.live="status"
-              class="h-9 rounded-lg border-neutral-300 focus:border-emerald-500 focus:ring-emerald-500">
+              class="h-9 rounded-lg border-neutral-300 focus:border-gray-300 focus:ring-gray-300">
         @foreach(($statusOptions ?? ['all'=>'Semua Status','active'=>'Aktif','draft'=>'Draft','expired'=>'Expired']) as $key => $label)
           <option value="{{ $key }}">{{ $label }}</option>
         @endforeach
@@ -108,7 +105,7 @@
       <div class="ms-auto flex items-center gap-2">
         <span class="text-sm text-neutral-500">Tampil</span>
         <select wire:model.live="perPage"
-                class="h-9 rounded-lg border-neutral-300 focus:border-emerald-500 focus:ring-emerald-500">
+                class="h-9 rounded-lg border-neutral-300 focus:border-red-500 focus:ring-red-500">
           @foreach([10,20,30,50] as $n)
             <option value="{{ $n }}">{{ $n }}</option>
           @endforeach
@@ -124,7 +121,7 @@
       <button wire:click="$set('placement','{{ $val }}')"
               @class([
                 'px-4 py-2 rounded-lg text-sm',
-                'bg-emerald-600 text-white' => $placement === $val,
+                'bg-red-600 text-white' => $placement === $val,
                 'text-neutral-600 hover:bg-neutral-100' => $placement !== $val,
               ])>{{ $label }}</button>
     @endforeach
@@ -163,7 +160,7 @@
               <td class="px-4 py-3">
                 <span @class([
                   'rounded-md px-2 py-0.5 text-xs font-medium',
-                  'bg-emerald-100 text-emerald-700' => $st === 'active',
+                  'bg-red-100 text-red-700' => $st === 'active',
                   'bg-amber-100 text-amber-700'     => $st === 'draft',
                   'bg-rose-100 text-rose-700'       => $st === 'expired',
                   'bg-neutral-100 text-neutral-700' => !in_array($st, ['active','draft','expired']),
