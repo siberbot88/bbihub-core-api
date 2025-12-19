@@ -37,8 +37,8 @@ class EmploymentService
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%");
             });
         }
 
@@ -60,12 +60,12 @@ class EmploymentService
 
                 /** @var User $user */
                 $user = User::create([
-                    'id'       => Str::uuid(),
-                    'name'     => trim($data['name']),
+                    'id' => Str::uuid(),
+                    'name' => trim($data['name']),
                     'username' => trim($data['username']),
-                    'email'    => trim($data['email']),
+                    'email' => trim($data['email']),
                     'password' => Hash::make($plainPassword),
-                    'photo'    => $data['photo']
+                    'photo' => $data['photo']
                         ?? ('https://placehold.co/400x400/000000/FFFFFF?text='
                             . strtoupper(substr($data['name'], 0, 2))),
                     'must_change_password' => true,
@@ -84,13 +84,13 @@ class EmploymentService
                 $newCode = 'ST' . str_pad((string) $nextNum, 5, '0', STR_PAD_LEFT);
 
                 $employment = Employment::create([
-                    'id'            => Str::uuid(),
-                    'user_uuid'     => $user->id,
+                    'id' => Str::uuid(),
+                    'user_uuid' => $user->id,
                     'workshop_uuid' => $data['workshop_uuid'],
-                    'code'          => $newCode,
-                    'specialist'    => $data['specialist'] ?? null,
-                    'jobdesk'       => $data['jobdesk'] ?? null,
-                    'status'        => $data['status'] ?? 'active',
+                    'code' => $newCode,
+                    'specialist' => $data['specialist'] ?? null,
+                    'jobdesk' => $data['jobdesk'] ?? null,
+                    'status' => $data['status'] ?? 'active',
                 ]);
 
                 return [$user, $employment, $plainPassword];
@@ -114,18 +114,41 @@ class EmploymentService
     public function updateEmployee(Employment $employment, array $data): Employment
     {
         $user = $employment->user;
+        $plainPassword = null;
+        $shouldSendEmail = false;
 
-        DB::transaction(function () use ($data, $user, $employment) {
+        DB::transaction(function () use ($data, $user, $employment, &$plainPassword, &$shouldSendEmail) {
             $user->fill(array_filter(
                 $data,
                 fn($key) => in_array($key, ['name', 'username', 'email'], true),
                 ARRAY_FILTER_USE_KEY
             ));
 
+            // Check if role is changing to something that requires credentials (e.g., admin)
+            // and if we need to generate a password (if not provided)
+            $newRole = $data['role'] ?? null;
+            $isPromotingToAdmin = $newRole && in_array($newRole, self::ROLES_NEED_EMAIL, true);
+
+            // 1. Password provided manually
             if (!empty($data['password'])) {
-                $user->password = Hash::make($data['password']);
+                $plainPassword = $data['password'];
+                $user->password = Hash::make($plainPassword);
                 $user->must_change_password = false;
                 $user->password_changed_at = now();
+
+                // If promoting, we definitely send email
+                if ($isPromotingToAdmin) {
+                    $shouldSendEmail = true;
+                }
+            }
+            // 2. Password NOT provided, but promoting to Admin -> Generate new one
+            elseif ($isPromotingToAdmin) {
+                // Security Note: We reset password because we can't send the old one.
+                // This ensures the new Admin definitely has access.
+                $plainPassword = $this->generatePassword(8);
+                $user->password = Hash::make($plainPassword);
+                $user->must_change_password = true; // Force change on first login
+                $shouldSendEmail = true;
             }
 
             $user->save();
@@ -144,6 +167,10 @@ class EmploymentService
 
             $employment->save();
         });
+
+        if ($shouldSendEmail && $plainPassword) {
+            $this->sendCredentialsEmail($user, $plainPassword, $data['role']);
+        }
 
         $employment->load('user', 'user.roles:name', 'workshop:id,name,user_uuid');
         return $employment;
@@ -201,7 +228,7 @@ class EmploymentService
         } catch (\Throwable $mailErr) {
             Log::warning('Send staff credential mail failed', [
                 'user_id' => $user->id,
-                'error'   => $mailErr->getMessage(),
+                'error' => $mailErr->getMessage(),
             ]);
             return false;
         }
@@ -216,7 +243,7 @@ class EmploymentService
             return Role::findByName($roleName, $guard);
         } catch (\Throwable $e) {
             return Role::create([
-                'name'       => $roleName,
+                'name' => $roleName,
                 'guard_name' => $guard,
             ]);
         }
