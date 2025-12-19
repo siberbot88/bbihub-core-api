@@ -398,5 +398,5 @@
       </div>
     </div>
   </div>
-  @include('livewire.admin.users.user-modals')
+  <livewire:admin.users.user-modals />
 </div>

@@ -381,7 +381,7 @@
 
                 <div class="flex justify-between py-2">
                   <span class="text-sm font-medium text-gray-500">Dibuat:</span>
-                  <span class="text-sm text-gray-900">{{ $selectedUser->created_at->format('d M Y, H:i') }}</span>
+                  <span class="text-sm text-gray-900">{{ $selectedUser->created_at?->format('d M Y, H:i') ?? '-' }}</span>
                 </div>
               </div>
             </div>
