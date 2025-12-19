@@ -101,6 +101,7 @@ class AuditLogTest extends TestCase
             ->where('event', 'login')
             ->first();
 
+        $this->assertNotNull($log, 'Login audit log should exist');
         $this->assertNotNull($log->ip_address);
         $this->assertNotNull($log->user_agent);
         $this->assertEquals($user->email, $log->user_email);

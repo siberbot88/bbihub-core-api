@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class AuditLog extends Model
 {
@@ -49,16 +50,34 @@ class AuditLog extends Model
         array $oldValues = [],
         array $newValues = []
     ) {
-        return static::create([
-            'user_id' => $user?->id,
-            'user_email' => $user?->email,
-            'event' => $event,
-            'auditable_type' => $auditable ? get_class($auditable) : null,
-            'auditable_id' => $auditable?->id ?? $auditable?->getKey(),
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'ip_address' => request()?->ip() ?? '127.0.0.1',
-            'user_agent' => request()?->userAgent() ?? 'Unknown',
-        ]);
+        try {
+            $data = [
+                'user_id' => $user?->id,
+                'user_email' => $user?->email,
+                'event' => $event,
+                'auditable_type' => $auditable ? get_class($auditable) : null,
+                'auditable_id' => $auditable?->id ?? $auditable?->getKey(),
+                'old_values' => empty($oldValues) ? null : $oldValues,
+                'new_values' => empty($newValues) ? null : $newValues,
+                'ip_address' => request()?->ip() ?? '127.0.0.1',
+                'user_agent' => request()?->userAgent() ?? 'Unknown',
+            ];
+
+            // Create and immediately save
+            $log = new static($data);
+            $log->save();
+
+            return $log;
+        } catch (\Exception $e) {
+            // Log error for debugging
+            Log::error('AuditLog creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data ?? []
+            ]);
+
+            // Don't break the app
+            return null;
+        }
     }
 }
