@@ -294,9 +294,7 @@ class ServiceService
         }
     }
 
-    private function handleStatusTransition(Service $service, string $to): void
-    {
-        $from = $service->status;
+
 
         $allowed = [
             'pending'             => ['in progress', 'completed', 'menunggu pembayaran', 'cancelled'],
@@ -309,6 +307,7 @@ class ServiceService
 
         if ($from !== $to && ! in_array($to, $allowed[$from] ?? [], true)) {
             throw ValidationException::withMessages([
+
                 'status' => "Transisi status dari '{$from}' ke '{$to}' tidak diperbolehkan."
             ]);
         }

@@ -44,7 +44,6 @@ class AdminController extends Controller
         return response()->json(['data' => $employees]);
     }
     /**
-     *
      * POST /api/v1/admins/services/{service}/accept
      */
     public function accept(Request $request, Service $service)
