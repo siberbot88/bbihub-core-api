@@ -30,10 +30,13 @@ class Index extends Component
     public bool $showEdit = false;
     public bool $showDelete = false;
     public bool $showSuspend = false;
+    public bool $showCreate = false;
 
     // Selected workshop
     public ?Workshop $selectedWorkshop = null;
 
+
+    // Status options
     public array $statusOptions = [
         'all'       => 'Semua Status',
         'pending'   => 'Menunggu Verifikasi',
@@ -41,7 +44,14 @@ class Index extends Component
         'suspended' => 'Ditangguhkan',
     ];
 
+    // City options
     public array $cityOptions = ['all' => 'Semua Kota'];
+
+    public function create()
+    {
+        $this->selectedWorkshop = null;
+        $this->showCreate = true;
+    }
 
     public function mount(): void
     {

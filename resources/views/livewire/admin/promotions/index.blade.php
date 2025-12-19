@@ -1,5 +1,5 @@
 <div wire:key="promotions-root"
-     class="w-full max-w-7xl mx-auto px-4 lg:px-6 space-y-5">
+     class="w-full px-2 lg:px-4 space-y-5">
 
 
   {{-- PAGE TITLE + ACTIONS --}}
@@ -50,7 +50,6 @@
       <div class="mt-3 h-2 w-full overflow-hidden rounded bg-neutral-100">
         <div class="h-full bg-rose-500" style="width: {{ $pctTotal }}%"></div>
       </div>
-      <div class="mt-1 text-xs text-rose-600">Batas maksimal tercapai</div>
     </div>
 
     {{-- Homepage --}}
@@ -66,7 +65,6 @@
       <div class="mt-3 h-2 w-full overflow-hidden rounded bg-neutral-100">
         <div class="h-full bg-rose-500" style="width: {{ $pctHome }}%"></div>
       </div>
-      <div class="mt-1 text-xs text-rose-600">Batas maksimal tercapai</div>
     </div>
 
     {{-- Halaman Produk --}}
@@ -82,7 +80,6 @@
       <div class="mt-3 h-2 w-full overflow-hidden rounded bg-neutral-100">
         <div class="h-full bg-rose-500" style="width: {{ $pctProd }}%"></div>
       </div>
-      <div class="mt-1 text-xs text-rose-600">Batas maksimal tercapai</div>
     </div>
   </div>
 
