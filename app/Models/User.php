@@ -14,7 +14,13 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+
+/**
+ * Implement MustVerifyEmail so Laravel knows this user must verify email.
+ */
+use \Illuminate\Contracts\Auth\MustVerifyEmail;
+
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasUuids, HasFactory, Notifiable, HasRoles, HasApiTokens;

@@ -20,7 +20,7 @@ class AnalyticsService
 
         // Current period metrics
         $currentMetrics = $this->getMetrics($workshopUuid, $dates['start'], $dates['end']);
-        
+
         // Previous period for comparison
         $previousMetrics = $this->getMetrics($workshopUuid, $previousDates['start'], $previousDates['end']);
 
@@ -77,8 +77,8 @@ class AnalyticsService
 
         // Average rating from feedback
         $avgRating = Feedback::whereHas('transaction', function ($query) use ($workshopUuid) {
-                $query->where('workshop_uuid', $workshopUuid);
-            })
+            $query->where('workshop_uuid', $workshopUuid);
+        })
             ->whereBetween('submitted_at', [$startDate, $endDate])
             ->avg('rating') ?? 0;
 
@@ -88,7 +88,7 @@ class AnalyticsService
             ->whereBetween('scheduled_date', [$startDate, $endDate])
             ->distinct('scheduled_date')
             ->count('scheduled_date');
-        
+
         $occupancy = $totalDays > 0 ? ($daysWithServices / $totalDays) * 100 : 0;
 
         return [
@@ -105,11 +105,11 @@ class AnalyticsService
     private function calculateGrowth(array $current, array $previous)
     {
         $growth = [];
-        
+
         foreach (['revenue', 'jobs', 'occupancy', 'avg_rating'] as $metric) {
             $currentValue = $current[$metric];
             $previousValue = $previous[$metric];
-            
+
             if ($previousValue > 0) {
                 $percentageChange = (($currentValue - $previousValue) / $previousValue) * 100;
                 $growth[$metric === 'avg_rating' ? 'rating' : $metric] = round($percentageChange, 1);
@@ -134,7 +134,7 @@ class AnalyticsService
             ->get();
 
         $total = $services->sum('count');
-        
+
         // Map to friendly names
         $categoryMap = [
             'ringan' => 'Service Rutin',
@@ -151,7 +151,7 @@ class AnalyticsService
         }
 
         // Ensure we return an object, not array (for JSON consistency)
-        return empty($breakdown) ? (object)[] : $breakdown;
+        return empty($breakdown) ? (object) [] : $breakdown;
     }
 
     /**
@@ -168,9 +168,9 @@ class AnalyticsService
 
         if ($servicesByHour->isEmpty()) {
             return [
-                'peak_range' => '14:00 - 16:00', // Default
-                'peak_hour' => 14,
-                'hourly_distribution' => (object)[], // Cast to object for JSON
+                'peak_range' => '-',
+                'peak_hour' => 0,
+                'hourly_distribution' => (object) [],
             ];
         }
 
@@ -183,10 +183,10 @@ class AnalyticsService
         // Build hourly distribution for visualization (8am - 10pm)
         $hourlyDistribution = [];
         $visualizationHours = [8, 10, 12, 14, 16, 18, 20, 22];
-        
+
         foreach ($visualizationHours as $hour) {
             $service = $servicesByHour->firstWhere('hour', $hour);
-            $hourlyDistribution["{$hour}:00"] = $service ? (int)$service->count : 0;
+            $hourlyDistribution["{$hour}:00"] = $service ? (int) $service->count : 0;
         }
 
         return [
@@ -206,7 +206,7 @@ class AnalyticsService
         $totalServices = Service::where('workshop_uuid', $workshopUuid)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
-        
+
         $avgQueue = $totalDays > 0 ? round($totalServices / $totalDays, 1) : 0;
 
         // Efficiency (completed vs total services)
@@ -214,7 +214,7 @@ class AnalyticsService
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'completed')
             ->count();
-        
+
         $efficiency = $totalServices > 0 ? round(($completedServices / $totalServices) * 100, 1) : 0;
 
         // Occupancy (reuse from metrics)
@@ -233,8 +233,8 @@ class AnalyticsService
     private function getDateRange(string $range)
     {
         $now = Carbon::now();
-        
-        return match($range) {
+
+        return match ($range) {
             'daily' => [
                 'start' => $now->copy()->startOfDay(),
                 'end' => $now->copy()->endOfDay(),
@@ -260,8 +260,8 @@ class AnalyticsService
     private function getPreviousDateRange(string $range)
     {
         $now = Carbon::now();
-        
-        return match($range) {
+
+        return match ($range) {
             'daily' => [
                 'start' => $now->copy()->subDay()->startOfDay(),
                 'end' => $now->copy()->subDay()->endOfDay(),

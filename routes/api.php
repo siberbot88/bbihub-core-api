@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\TransactionItemController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VoucherApiController;
+use App\Http\Controllers\Api\Owner\FeedbackController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AdminController;
@@ -36,9 +37,17 @@ Route::prefix('v1/auth')->group(function () {
 
     Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword'])
         ->middleware('throttle:5,10'); // Max 5 attempts per 10 minutes
+    Route::post('reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword'])
+        ->middleware('throttle:5,10'); // Max 5 attempts per 10 minutes
+
+    // Email Verification
+    Route::get('email/verify/{id}/{hash}', [\App\Http\Controllers\Api\EmailVerificationController::class, 'verify'])->name('verification.verify');
 });
 
-// Test endpoint for chat (no auth)
+// Resend Verification Email (Protected)
+Route::post('v1/email/resend', [\App\Http\Controllers\Api\EmailVerificationController::class, 'resend'])
+    ->middleware(['auth:sanctum', 'throttle:6,1'])
+    ->name('verification.resend');
 Route::get('v1/chat/test', function () {
     return response()->json([
         'success' => true,
@@ -137,6 +146,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+        // Feedback
+        Route::get('feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     });
 
     // ADMIN ROUTES (Consolidated)
