@@ -46,7 +46,7 @@ Route::get('/json', function () {
     return response()->json([
         'message' => 'BbiHub API',
         'version' => '1.0.0',
-        'status'  => 'running',
+        'status' => 'running',
     ]);
 })->middleware('throttle:60,1');
 
@@ -64,6 +64,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])
         // Dashboard
         Route::get('/dashboard', Dashboard::class)
             ->name('dashboard');
+
+        // Executive EIS
+        Route::get('/executive-dashboard', \App\Livewire\Admin\ExecutiveDashboard::class)
+            ->name('executive-dashboard');
 
         // Profile (Volt)
         Volt::route('/profile', 'pages.profile.edit')
@@ -117,10 +121,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])
         |--------------------------
         |
         | Nama route:
+        | - admin.workshops.verification
         | - admin.workshops.index
         | - admin.workshops.edit
         */
         Route::prefix('workshops')->as('workshops.')->group(function () {
+            // Verification Route
+            Route::get('/verification', \App\Livewire\Admin\Workshops\Verification::class)
+                ->name('verification');
+
             Route::get('/', WorkshopsIndex::class)
                 ->name('index');
 
@@ -160,9 +169,17 @@ Route::middleware(['auth', 'verified', 'superadmin'])
         Route::get('/settings', SettingsIndex::class)
             ->name('settings')
             ->middleware('throttle:60,1');
+
+        /*
+        |--------------------------
+        | Demo Form (Testing Tool)
+        |--------------------------
+        */
+        Route::get('/demo-form', \App\Livewire\Admin\Demo\Form::class)
+            ->name('demo-form');
     });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 Route::fallback(function () {
     abort(404);
