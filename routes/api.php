@@ -180,6 +180,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::put ('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'update']);
         Route::delete('transactions/{transaction}/items/{item}', [TransactionItemController::class, 'destroy']);
 
+        // ===== INVOICES =====
+        Route::post('transactions/{transaction}/invoice', [\App\Http\Controllers\Api\InvoiceController::class, 'store']);
+        Route::get ('invoices/{invoice}', [\App\Http\Controllers\Api\InvoiceController::class, 'show']);
+        Route::patch('invoices/{invoice}/mark-paid', [\App\Http\Controllers\Api\InvoiceController::class, 'markPaid']);
+
         // ===== ADMIN FLOW =====
         Route::post('services/{service}/accept',          [AdminController::class, 'accept']);
         Route::post('services/{service}/decline',         [AdminController::class, 'decline']);

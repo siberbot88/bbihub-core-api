@@ -59,6 +59,7 @@ class ServiceResource extends JsonResource
                     'name'         => $this->vehicle->name,
                     'year'         => $this->vehicle->year,
                     'color'        => $this->vehicle->color,
+                    'category'     => $this->vehicle->category,
                     'odometer'     => $this->vehicle->odometer,
                 ];
             }),

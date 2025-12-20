@@ -28,6 +28,7 @@ class StoreWalkInServiceRequest extends FormRequest
             'vehicle_model'    => 'nullable|string|max:50',
             'vehicle_type'     => 'nullable|string|max:50',
             'vehicle_color'    => 'nullable|string|max:50',
+            'vehicle_category' => 'nullable|string|max:50',
             'vehicle_year'     => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'vehicle_odometer' => 'nullable|integer|min:0',
             

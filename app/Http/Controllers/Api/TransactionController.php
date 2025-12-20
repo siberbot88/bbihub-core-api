@@ -52,13 +52,21 @@ class TransactionController extends Controller
         }
     }
 
+
     // GET /api/v1/transactions/{transaction}
     public function show(Transaction $transaction)
     {
         $this->authorize('view', $transaction);
 
         return new TransactionResource(
-            $transaction->load(['service', 'items'])
+            $transaction->load([
+                'service.customer',
+                'service.vehicle',
+                'service.workshop',
+                'items',
+                'mechanic.user',
+                'invoice',
+            ])
         );
     }
 

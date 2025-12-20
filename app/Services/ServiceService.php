@@ -43,6 +43,7 @@ class ServiceService
                      'code'          => 'VHC-' . strtoupper(Str::random(8)),
                      'name'          => ($data['vehicle_brand'] ?? 'Unknown') . ' ' . ($data['vehicle_model'] ?? 'Unknown'),
                      'type'          => $data['vehicle_type'] ?? 'motor',
+                     'category'      => $data['vehicle_category'] ?? 'matic',
                      'brand'         => $data['vehicle_brand'] ?? 'Unknown',
                      'model'         => $data['vehicle_model'] ?? 'Unknown',
                      'year'          => $data['vehicle_year'] ?? date('Y'),
