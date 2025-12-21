@@ -29,7 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected string $guard_name = 'web';
+    protected string $guard_name = 'sanctum';
     protected $fillable = [
         'id',
         'name',

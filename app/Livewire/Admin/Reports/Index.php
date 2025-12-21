@@ -34,6 +34,10 @@ class Index extends Component
     #[Url(as: 'pp')]
     public int $perPage = 10;
 
+    // Modal properties
+    public bool $showDetailModal = false;
+    public ?Report $selectedReport = null;
+
     // reset halaman kalau filter berubah
     public function updatingQ()
     {
@@ -140,6 +144,36 @@ class Index extends Component
 
         // Force re-render
         $this->dispatch('$refresh');
+    }
+
+    /**
+     * Open detail modal
+     */
+    public function openDetail($reportId)
+    {
+        $this->selectedReport = Report::with('workshop.owner')->find($reportId);
+        $this->showDetailModal = true;
+    }
+
+    /**
+     * Close detail modal
+     */
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->selectedReport = null;
+    }
+
+    /**
+     * Update report status
+     */
+    public function updateStatus(string $status)
+    {
+        if ($this->selectedReport) {
+            $this->selectedReport->update(['status' => $status]);
+            $this->closeDetailModal();
+            $this->dispatch('$refresh');
+        }
     }
 
     public function render()
