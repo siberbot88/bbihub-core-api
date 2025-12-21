@@ -1,8 +1,64 @@
 <div class="space-y-8" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 500)">
-    {{-- Header --}}
-    <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-bold text-gray-900">Executive Decision Intelligence</h1>
-        <p class="text-sm text-gray-500">Pemantauan kinerja bisnis real-time berbasis prinsip EIS.</p>
+    {{-- Header & Controls --}}
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Executive Decision Intelligence</h1>
+            <p class="text-sm text-gray-500">Pemantauan kinerja bisnis real-time berbasis prinsip EIS.</p>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-3">
+            {{-- Export Button --}}
+            <button wire:click="exportData" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Ekspor Data
+            </button>
+
+            {{-- Filter Button --}}
+            <div class="relative" x-data="{ open: @entangle('showFilter') }">
+                <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors shadow-sm">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Filter
+                </button>
+
+                {{-- Filter Dropdown --}}
+                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50 origin-top-right" style="display: none;">
+                    <h3 class="font-bold text-gray-900 mb-3">Pilih Periode</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Bulan</label>
+                            <select wire:model="selectedMonth" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                @foreach(range(1, 12) as $m)
+                                    <option value="{{ $m }}">{{ DateTime::createFromFormat('!m', $m)->format('F') }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Tahun</label>
+                            <select wire:model="selectedYear" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                @foreach(range(date('Y'), date('Y')-2) as $y)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button wire:click="applyFilter" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+                            Terapkan Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Refresh Button --}}
+            <button wire:click="refresh" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors shadow-sm group">
+                <svg class="w-4 h-4 text-gray-500 group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+            </button>
+        </div>
     </div>
 
     {{-- Loading Skeleton --}}
@@ -300,6 +356,91 @@
             </div>
         </div>
     </div>
+
+    {{-- 3. Business Outlook (Platform Intelligence) --}}
+    <div wire:loading.remove 
+         class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
+         x-show="loaded"
+         x-transition:enter="transition ease-out duration-700 delay-200"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0">
+         
+         <div class="flex items-center gap-3 mb-8">
+            <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Platform Business Outlook (SaaS)</h2>
+                <p class="text-sm text-gray-500">Prediksi kesehatan bisnis BBI Hub & Peluang Pertumbuhan</p>
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+             {{-- MRR Forecast --}}
+             <div class="p-6 bg-gray-50 rounded-xl border border-gray-100">
+                 <h3 class="font-bold text-gray-900 mb-1">Prediksi Pendapatan (MRR)</h3>
+                 <p class="text-xs text-gray-500 mb-4">Proyeksi bulan depan berbasis Linear Regression</p>
+                 
+                 <div class="flex items-baseline gap-2 mb-4">
+                     <span class="text-3xl font-bold text-gray-900">Rp {{ number_format($platformOutlook['mrr_forecast']['prediction'], 0, ',', '.') }}</span>
+                     @if($platformOutlook['mrr_forecast']['growth_rate'] > 0)
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">+{{ number_format($platformOutlook['mrr_forecast']['growth_rate'], 1) }}%</span>
+                     @else
+                        <span class="text-xs font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">{{ number_format($platformOutlook['mrr_forecast']['growth_rate'], 1) }}%</span>
+                     @endif
+                 </div>
+                 <div class="h-32">
+                     <canvas id="mrrForecastChart"></canvas>
+                 </div>
+             </div>
+
+             {{-- Churn Risk --}}
+             <div class="p-6 bg-rose-50 rounded-xl border border-rose-100">
+                 <h3 class="font-bold text-rose-900 mb-1">Resiko Churn (High Risk)</h3>
+                 <p class="text-xs text-rose-700 mb-4">Bengkel dengan penurunan aktivitas ekstrim (>50%)</p>
+                 
+                 <div class="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                     @forelse($platformOutlook['churn_candidates'] as $risk)
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-rose-100 flex justify-between items-center">
+                            <div>
+                                <div class="font-bold text-gray-900 text-sm">{{ $risk['name'] }}</div>
+                                <div class="text-xs text-gray-500">{{ $risk['owner'] }}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-rose-600">Drop {{ $risk['drop_rate'] }}</div>
+                                <div class="text-[10px] text-gray-400">{{ $risk['prev_vol'] }} -> {{ $risk['current_vol'] }} trx</div>
+                            </div>
+                        </div>
+                     @empty
+                        <div class="text-center py-4 text-rose-400 text-sm">Tidak ada bengkel beresiko saat ini.</div>
+                     @endforelse
+                 </div>
+             </div>
+
+             {{-- Upsell Opportunities --}}
+             <div class="p-6 bg-emerald-50 rounded-xl border border-emerald-100">
+                 <h3 class="font-bold text-emerald-900 mb-1">Peluang Upsell (Hot Leads)</h3>
+                 <p class="text-xs text-emerald-700 mb-4">Pengguna Free dengan volume transaksi tinggi</p>
+                 
+                 <div class="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                     @forelse($platformOutlook['upsell_candidates'] as $lead)
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-emerald-100 flex justify-between items-center">
+                            <div>
+                                <div class="font-bold text-gray-900 text-sm">{{ $lead['workshop'] }}</div>
+                                <div class="text-xs text-gray-500">{{ $lead['owner'] }}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-indigo-600">{{ $lead['volume'] }} Trx/mo</div>
+                                <button class="mt-1 text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded hover:bg-emerald-700">Tawarkan Premium</button>
+                            </div>
+                        </div>
+                     @empty
+                        <div class="text-center py-4 text-emerald-500 text-sm">Belum ada kandidat upsell potensial.</div>
+                     @endforelse
+                 </div>
+             </div>
+         </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -307,17 +448,78 @@
 <script>
     document.addEventListener('livewire:navigated', initCharts);
     document.addEventListener('DOMContentLoaded', initCharts);
+    window.addEventListener('refresh-charts', initCharts); // Listen for Livewire event
 
     function initCharts() {
-        // Init CLV Chart
         initClvChart();
-
-        // Init Sparklines
         initSparklines();
-        
-        // Init AI Segmentation Chart
         initSegmentationChart();
+        initMrrForecastChart();
     }
+    
+    // ... existing charts ...
+
+    function initMrrForecastChart() {
+        const ctx = document.getElementById('mrrForecastChart');
+        if (!ctx) return;
+        if (window.mrrChart) window.mrrChart.destroy();
+
+        const rawData = @json($platformOutlook['mrr_forecast']['history'] ?? []);
+        const labels = rawData.map(d => d.label);
+        const values = rawData.map(d => d.y);
+        
+        // Add Prediction Point
+        const predictedVal = @json($platformOutlook['mrr_forecast']['prediction'] ?? 0);
+        labels.push('Next Month (Pred)');
+        // Pad values with null for historical line, add prediction at end
+        // Actually for simplicity, just append to array
+        const historicalData = [...values, null]; 
+        const predictedData = Array(values.length).fill(null);
+        predictedData.push(values[values.length-1]); // Connect lines
+        predictedData.push(predictedVal);
+
+        window.mrrChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'History',
+                        data: historicalData,
+                        borderColor: '#4f46e5', // Indigo
+                        backgroundColor: '#4f46e5',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'AI Forecast',
+                        data: predictedData,
+                        borderColor: '#9333ea', // Purple
+                        borderDash: [5, 5],
+                        backgroundColor: '#9333ea',
+                        pointStyle: 'star',
+                        pointRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }, // Compact
+                scales: {
+                    x: { display: false },
+                    y: { 
+                        display: true, 
+                        ticks: { 
+                            callback: (val) => (val/1000000).toFixed(0) + 'jt' // Abbreviate Millions
+                        } 
+                    }
+                }
+            }
+        });
+    }
+    
+    // ... existing functions ...
+
 
     function initSegmentationChart() {
         const ctx = document.getElementById('segmentationChart');

@@ -69,6 +69,9 @@ Route::middleware(['auth', 'verified', 'superadmin'])
         Route::get('/executive-dashboard', \App\Livewire\Admin\ExecutiveDashboard::class)
             ->name('executive-dashboard');
 
+        Route::get('/eis/print', [\App\Http\Controllers\Admin\EisReportController::class, 'print'])
+            ->name('eis.print');
+
         // Profile (Volt)
         Volt::route('/profile', 'pages.profile.edit')
             ->name('profile');

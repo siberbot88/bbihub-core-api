@@ -15,112 +15,133 @@ class EisService
     /**
      * Get KPI Scorecard Data (Actual vs Target)
      */
-    public function getKpiScorecard(): array
+    /**
+     * Get KPI Scorecard Data (Actual vs Target)
+     */
+    /**
+     * Get KPI Scorecard Data (Actual vs Target)
+     */
+    public function getKpiScorecard(?int $month = null, ?int $year = null): array
     {
-        $currentMonth = Carbon::now()->startOfMonth();
-        $monthKey = $currentMonth->format('Y-m-d');
+        $month = $month ?? now()->month;
+        $year = $year ?? now()->year;
 
-        // 1. Total Revenue (Subscriptions + Memberships) - Monthly
-        $revenue = $this->calculateMonthlyRevenue($currentMonth);
-        $revenueTarget = $this->getTarget('revenue_monthly', $monthKey, 150000000); // Default 150M
+        $cacheKey = "eis_scorecard_{$year}_{$month}";
 
-        // 2. Active Users (Roles assigned or Verified Emails)
-        $activeUsers = User::whereNotNull('email_verified_at')->count();
-        $usersTarget = $this->getTarget('active_users', $monthKey, 100);
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($month, $year) { // 30 mins
+            $date = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+            $monthKey = $date->format('Y-m-d');
 
-        // 3. Avg CLV (Simple calc for scorecard)
-        $avgClv = $this->calculateAvgClv();
-        $clvTarget = $this->getTarget('avg_clv', $monthKey, 5000000);
+            // 1. Total Revenue (Subscriptions + Memberships) - Monthly
+            $revenue = $this->calculateMonthlyRevenue($date);
+            $revenueTarget = $this->getTarget('revenue_monthly', $monthKey, 150000000); // Default 150M
 
-        // 4. MRR (Monthly Recurring Revenue)
-        $mrr = $this->calculateMRR();
-        $mrrTarget = $this->getTarget('mrr', $monthKey, 120000000);
+            // 2. Active Users (Snapshot - Currently always Realtime)
+            // Ideally we query count of users created_at <= end of month if historical
+            $activeUsers = User::where('created_at', '<=', $date->endOfMonth())
+                ->whereNotNull('email_verified_at')
+                ->count();
+            $usersTarget = $this->getTarget('active_users', $monthKey, 100);
 
-        // 5. Active Subscriptions (Replacing ARPU as per user request)
-        // Tracks paying B2B active customers (Workshops)
-        $activeSubs = OwnerSubscription::where('status', 'active')->count();
-        $subsTarget = $this->getTarget('active_subs', $monthKey, 50);
+            // 3. Avg CLV (Simple calc for scorecard)
+            $avgClv = $this->calculateAvgClv();
+            $clvTarget = $this->getTarget('avg_clv', $monthKey, 5000000);
 
-        // 6. CSAT (Customer Satisfaction)
-        $csat = $this->calculateCSAT();
-        $csatTarget = $this->getTarget('csat', $monthKey, 90);
+            // 4. MRR (Monthly Recurring Revenue)
+            // MRR is hard to calculate historically without snapshots. Using Current for now.
+            $mrr = $this->calculateMRR();
+            $mrrTarget = $this->getTarget('mrr', $monthKey, 120000000);
 
-        // 7. NPS (Net Promoter Score)
-        $nps = $this->calculateNPS();
-        $npsTarget = $this->getTarget('nps', $monthKey, 50);
+            // 5. Active Subscriptions
+            // Approximation: Active subs created before end of target month
+            // (Assuming no cancellations for simplicity in this MVP)
+            $activeSubs = OwnerSubscription::where('status', 'active')
+                ->where('created_at', '<=', $date->endOfMonth())
+                ->count();
 
-        return [
-            [
-                'id' => 'revenue',
-                'name' => 'Total Pendapatan (Bulanan)',
-                'description' => 'Total arus kas masuk dari langganan bengkel dan transaksi membership pelanggan bulan ini.',
-                'value' => $revenue,
-                'target' => $revenueTarget,
-                'unit' => 'IDR',
-                'status' => $this->getTrafficTypes($revenue, $revenueTarget),
-                'chart_data' => $this->generateTrend($revenue)
-            ],
-            [
-                'id' => 'mrr',
-                'name' => 'Monthly Recurring Revenue (MRR)',
-                'description' => 'Pendapatan berulang bulanan dari langganan aktif, indikator stabilitas arus kas.',
-                'value' => $mrr,
-                'target' => $mrrTarget,
-                'unit' => 'IDR',
-                'status' => $this->getTrafficTypes($mrr, $mrrTarget),
-                'chart_data' => $this->generateTrend($mrr)
-            ],
-            [
-                'id' => 'subscriptions', // Changed from arpu
-                'name' => 'Total Langganan Aktif',
-                'description' => 'Jumlah bengkel yang saat ini berlangganan paket premium secara aktif.',
-                'value' => $activeSubs,
-                'target' => $subsTarget,
-                'unit' => 'Bengkel',
-                'status' => $this->getTrafficTypes($activeSubs, $subsTarget),
-                'chart_data' => $this->generateTrend($activeSubs)
-            ],
-            [
-                'id' => 'users',
-                'name' => 'Pengguna Aktif',
-                'description' => 'Jumlah pengguna yang telah memverifikasi email dan aktif berinteraksi dengan sistem.',
-                'value' => $activeUsers,
-                'target' => $usersTarget,
-                'unit' => 'User',
-                'status' => $this->getTrafficTypes($activeUsers, $usersTarget),
-                'chart_data' => $this->generateTrend($activeUsers)
-            ],
-            [
-                'id' => 'csat',
-                'name' => 'Kepuasan Pelanggan (CSAT)',
-                'description' => 'Persentase pelanggan yang memberikan rating 4 atau 5 bintang.',
-                'value' => $csat,
-                'target' => $csatTarget,
-                'unit' => '%',
-                'status' => $this->getTrafficTypes($csat, $csatTarget),
-                'chart_data' => $this->generateTrend($csat)
-            ],
-            [
-                'id' => 'nps',
-                'name' => 'Net Promoter Score (NPS)',
-                'description' => 'Indikator loyalitas pelanggan (Promoters dikurangi Detractors).',
-                'value' => $nps,
-                'target' => $npsTarget,
-                'unit' => 'Score',
-                'status' => $this->getTrafficTypes($nps, $npsTarget),
-                'chart_data' => $this->generateTrend($nps)
-            ],
-            [
-                'id' => 'clv',
-                'name' => 'Rata-rata Nilai Pelanggan (CLV)',
-                'description' => 'Estimasi total pendapatan rata-rata yang dihasilkan oleh satu pelanggan selama berhubungan dengan bisnis.',
-                'value' => $avgClv,
-                'target' => $clvTarget,
-                'unit' => 'IDR',
-                'status' => $this->getTrafficTypes($avgClv, $clvTarget),
-                'chart_data' => $this->generateTrend($avgClv)
-            ]
-        ];
+            $subsTarget = $this->getTarget('active_subs', $monthKey, 50);
+
+            // 6. CSAT (Customer Satisfaction)
+            $csat = $this->calculateCSAT();
+            $csatTarget = $this->getTarget('csat', $monthKey, 90);
+
+            // 7. NPS (Net Promoter Score)
+            $nps = $this->calculateNPS();
+            $npsTarget = $this->getTarget('nps', $monthKey, 50);
+
+            return [
+                [
+                    'id' => 'revenue',
+                    'name' => 'Total Pendapatan (Bulanan)',
+                    'description' => 'Total arus kas masuk dari langganan bengkel dan transaksi membership pelanggan bulan ini.',
+                    'value' => $revenue,
+                    'target' => $revenueTarget,
+                    'unit' => 'IDR',
+                    'status' => $this->getTrafficTypes($revenue, $revenueTarget),
+                    'chart_data' => $this->generateTrend($revenue)
+                ],
+                [
+                    'id' => 'mrr',
+                    'name' => 'Monthly Recurring Revenue (MRR)',
+                    'description' => 'Pendapatan berulang bulanan dari langganan aktif, indikator stabilitas arus kas.',
+                    'value' => $mrr,
+                    'target' => $mrrTarget,
+                    'unit' => 'IDR',
+                    'status' => $this->getTrafficTypes($mrr, $mrrTarget),
+                    'chart_data' => $this->generateTrend($mrr)
+                ],
+                [
+                    'id' => 'subscriptions', // Changed from arpu
+                    'name' => 'Total Langganan Aktif',
+                    'description' => 'Jumlah bengkel yang saat ini berlangganan paket premium secara aktif.',
+                    'value' => $activeSubs,
+                    'target' => $subsTarget,
+                    'unit' => 'Bengkel',
+                    'status' => $this->getTrafficTypes($activeSubs, $subsTarget),
+                    'chart_data' => $this->generateTrend($activeSubs)
+                ],
+                [
+                    'id' => 'users',
+                    'name' => 'Pengguna Aktif',
+                    'description' => 'Jumlah pengguna yang telah memverifikasi email dan aktif berinteraksi dengan sistem.',
+                    'value' => $activeUsers,
+                    'target' => $usersTarget,
+                    'unit' => 'User',
+                    'status' => $this->getTrafficTypes($activeUsers, $usersTarget),
+                    'chart_data' => $this->generateTrend($activeUsers)
+                ],
+                [
+                    'id' => 'csat',
+                    'name' => 'Kepuasan Pelanggan (CSAT)',
+                    'description' => 'Persentase pelanggan yang memberikan rating 4 atau 5 bintang.',
+                    'value' => $csat,
+                    'target' => $csatTarget,
+                    'unit' => '%',
+                    'status' => $this->getTrafficTypes($csat, $csatTarget),
+                    'chart_data' => $this->generateTrend($csat)
+                ],
+                [
+                    'id' => 'nps',
+                    'name' => 'Net Promoter Score (NPS)',
+                    'description' => 'Indikator loyalitas pelanggan (Promoters dikurangi Detractors).',
+                    'value' => $nps,
+                    'target' => $npsTarget,
+                    'unit' => 'Score',
+                    'status' => $this->getTrafficTypes($nps, $npsTarget),
+                    'chart_data' => $this->generateTrend($nps)
+                ],
+                [
+                    'id' => 'clv',
+                    'name' => 'Rata-rata Nilai Pelanggan (CLV)',
+                    'description' => 'Estimasi total pendapatan rata-rata yang dihasilkan oleh satu pelanggan selama berhubungan dengan bisnis.',
+                    'value' => $avgClv,
+                    'target' => $clvTarget,
+                    'unit' => 'IDR',
+                    'status' => $this->getTrafficTypes($avgClv, $clvTarget),
+                    'chart_data' => $this->generateTrend($avgClv)
+                ]
+            ];
+        });
     }
 
     private function generateTrend($currentValue)
@@ -150,104 +171,100 @@ class EisService
      */
     public function getCustomerSegmentation(): array
     {
-        // 1. Get RFM Raw Data per Customer
-        // Recency: Days since last transaction
-        // Frequency: Total transaction count
-        // Monetary: Total spend
-        $rfmRaw = Transaction::select(
-            'customer_uuid',
-            DB::raw('MAX(created_at) as last_trx'),
-            DB::raw('COUNT(id) as freq'),
-            DB::raw('SUM(amount) as monetary')
-        )
-            ->whereNotNull('customer_uuid')
-            ->where('status', 'success') // Only count successful transactions, adjust status if needed
-            ->groupBy('customer_uuid')
-            ->get();
+        return \Illuminate\Support\Facades\Cache::remember('eis_segmentation', 3600, function () { // 60 mins
+            // 1. Get RFM Raw Data per Customer
+            $rfmRaw = Transaction::select(
+                'customer_uuid',
+                DB::raw('MAX(created_at) as last_trx'),
+                DB::raw('COUNT(id) as freq'),
+                DB::raw('SUM(amount) as monetary')
+            )
+                ->whereNotNull('customer_uuid')
+                ->where('status', 'success') // Only count successful transactions, adjust status if needed
+                ->groupBy('customer_uuid')
+                ->get();
 
-        if ($rfmRaw->isEmpty()) {
-            // Return dummy data if no transactions exist yet to prevent crash
-            return [
-                'segments' => [
-                    'Champions' => 10,
-                    'Loyal Customers' => 15,
-                    'Potential Loyalists' => 20,
-                    'At Risk' => 10,
-                    'Hibernating' => 25,
-                    'New Customers' => 20
-                ],
-                'total_analyzed' => 100
-            ];
-        }
-
-        // 2. Calculate RFM Scores (1-5 Scale) using Quintiles
-        $freqValues = $rfmRaw->pluck('freq')->sort()->values();
-        $monValues = $rfmRaw->pluck('monetary')->sort()->values();
-
-        // Helper to get score based on percentile
-        $getScore = function ($value, $sortedCollection) {
-            $count = $sortedCollection->count();
-            if ($count == 0)
-                return 1;
-            $position = $sortedCollection->search($value);
-            $percentile = ($position + 1) / $count;
-            if ($percentile >= 0.8)
-                return 5;
-            if ($percentile >= 0.6)
-                return 4;
-            if ($percentile >= 0.4)
-                return 3;
-            if ($percentile >= 0.2)
-                return 2;
-            return 1;
-        };
-
-        // Recency Score is inverted (Lower days = Higher score)
-        // We use timestamps, so Higher Timestamp = More Recent = Higher Score. 
-        // Simply sorting timestamps ASC works for percentile logic? 
-        // No, newest date is LARGEST timestamp.
-        $recValues = $rfmRaw->pluck('last_trx')->sort()->values(); // Oldest to Newest
-
-        $segments = [
-            'Champions' => 0,
-            'Loyal Customers' => 0,
-            'Potential Loyalists' => 0,
-            'At Risk' => 0,
-            'Hibernating' => 0,
-            'New Customers' => 0,
-            'Others' => 0
-        ];
-
-        foreach ($rfmRaw as $customer) {
-            $r_score = $getScore($customer->last_trx, $recValues);
-            $f_score = $getScore($customer->freq, $freqValues);
-            $m_score = $getScore($customer->monetary, $monValues);
-
-            // RFM Score Average (simple version) or Rule Based
-            $rfm_score = ($r_score . $f_score . $m_score); // string '555'
-
-            // Segmentation Logic (Simplification of common RFM Grid)
-            if ($r_score >= 5 && $f_score >= 5 && $m_score >= 5) {
-                $segments['Champions']++;
-            } elseif ($f_score >= 4) {
-                $segments['Loyal Customers']++;
-            } elseif ($r_score >= 4 && $f_score <= 2) {
-                $segments['New Customers']++;
-            } elseif ($r_score >= 3 && $f_score >= 3) {
-                $segments['Potential Loyalists']++;
-            } elseif ($r_score <= 2 && $f_score >= 4) {
-                $segments['At Risk']++;
-            } elseif ($r_score <= 2 && $f_score <= 2) {
-                $segments['Hibernating']++;
-            } else {
-                $segments['Others']++;
+            if ($rfmRaw->isEmpty()) {
+                return [
+                    'segments' => [
+                        'Champions' => 0,
+                        'Loyal Customers' => 0,
+                        'Potential Loyalists' => 0,
+                        'At Risk' => 0,
+                        'Hibernating' => 0,
+                        'New Customers' => 0,
+                        'Others' => 0
+                    ],
+                    'total_analyzed' => 0
+                ];
             }
-        }
 
-        return [
-            'segments' => $segments,
-            'total_analyzed' => $rfmRaw->count()
-        ];
+            // 2. Calculate RFM Scores (1-5 Scale) using Quintiles
+            $freqValues = $rfmRaw->pluck('freq')->sort()->values();
+            $monValues = $rfmRaw->pluck('monetary')->sort()->values();
+
+            // Helper to get score based on percentile
+            $getScore = function ($value, $sortedCollection) {
+                $count = $sortedCollection->count();
+                if ($count == 0)
+                    return 1;
+                $position = $sortedCollection->search($value);
+                $percentile = ($position + 1) / $count;
+                if ($percentile >= 0.8)
+                    return 5;
+                if ($percentile >= 0.6)
+                    return 4;
+                if ($percentile >= 0.4)
+                    return 3;
+                if ($percentile >= 0.2)
+                    return 2;
+                return 1;
+            };
+
+            // Recency Score is inverted (Lower days = Higher score)
+            // We use timestamps, so Higher Timestamp = More Recent = Higher Score. 
+            // Simply sorting timestamps ASC works for percentile logic? 
+            // No, newest date is LARGEST timestamp.
+            $recValues = $rfmRaw->pluck('last_trx')->sort()->values(); // Oldest to Newest
+
+            $segments = [
+                'Champions' => 0,
+                'Loyal Customers' => 0,
+                'Potential Loyalists' => 0,
+                'At Risk' => 0,
+                'Hibernating' => 0,
+                'New Customers' => 0,
+                'Others' => 0
+            ];
+
+            foreach ($rfmRaw as $customer) {
+                $r_score = $getScore($customer->last_trx, $recValues);
+                $f_score = $getScore($customer->freq, $freqValues);
+                $m_score = $getScore($customer->monetary, $monValues);
+
+                // Segmentation Logic (Simplification of common RFM Grid)
+                if ($r_score >= 5 && $f_score >= 5 && $m_score >= 5) {
+                    $segments['Champions']++;
+                } elseif ($f_score >= 4) {
+                    $segments['Loyal Customers']++;
+                } elseif ($r_score >= 4 && $f_score <= 2) {
+                    $segments['New Customers']++;
+                } elseif ($r_score >= 3 && $f_score >= 3) {
+                    $segments['Potential Loyalists']++;
+                } elseif ($r_score <= 2 && $f_score >= 4) {
+                    $segments['At Risk']++;
+                } elseif ($r_score <= 2 && $f_score <= 2) {
+                    $segments['Hibernating']++;
+                } else {
+                    $segments['Others']++;
+                }
+            }
+
+            return [
+                'segments' => $segments,
+                'total_analyzed' => $rfmRaw->count()
+            ];
+        });
     }
 
     /**
@@ -257,37 +274,39 @@ class EisService
      */
     public function getClvAnalysis(): array
     {
-        // Get customer metrics: Frequency (x) & Monetary (y) & Recency (size)
-        // Only for users who have at least 1 successful transaction
-        $customers = Transaction::select(
-            'customer_uuid',
-            DB::raw('count(*) as freq'),
-            DB::raw('avg(amount) as aov'),
-            DB::raw('sum(amount) as total_value'),
-            DB::raw('max(created_at) as last_transaction')
-        )
-            ->where('status', 'success')
-            ->groupBy('customer_uuid')
-            ->get();
+        return \Illuminate\Support\Facades\Cache::remember('eis_clv', 3600, function () { // 60 mins
+            // Get customer metrics: Frequency (x) & Monetary (y) & Recency (size)
+            // Only for users who have at least 1 successful transaction
+            $customers = Transaction::select(
+                'customer_uuid',
+                DB::raw('count(*) as freq'),
+                DB::raw('avg(amount) as aov'),
+                DB::raw('sum(amount) as total_value'),
+                DB::raw('max(created_at) as last_transaction')
+            )
+                ->where('status', 'success')
+                ->groupBy('customer_uuid')
+                ->get();
 
-        $scatterData = $customers->map(function ($c) {
-            $recencyDays = Carbon::parse($c->last_transaction)->diffInDays(now());
-            // Invert recency for size (newer = bigger bubble or distinct color)
+            $scatterData = $customers->map(function ($c) {
+                $recencyDays = Carbon::parse($c->last_transaction)->diffInDays(now());
+                // Invert recency for size (newer = bigger bubble or distinct color)
+                return [
+                    'x' => $c->freq, // Frequency
+                    'y' => (float) $c->total_value, // Total Value (LTV)
+                    'r' => $recencyDays < 30 ? 6 : ($recencyDays < 90 ? 4 : 2), // Bubble logic
+                    'customer' => $c->customer_uuid // Ideally format to Name
+                ];
+            });
+
             return [
-                'x' => $c->freq, // Frequency
-                'y' => (float) $c->total_value, // Total Value (LTV)
-                'r' => $recencyDays < 30 ? 6 : ($recencyDays < 90 ? 4 : 2), // Bubble logic
-                'customer' => $c->customer_uuid // Ideally format to Name
+                'scatter' => $scatterData,
+                'summary' => [
+                    'avg_ltv' => $customers->avg('total_value') ?? 0,
+                    'high_value_count' => $customers->where('total_value', '>', 10000000)->count()
+                ]
             ];
         });
-
-        return [
-            'scatter' => $scatterData,
-            'summary' => [
-                'avg_ltv' => $customers->avg('total_value') ?? 0,
-                'high_value_count' => $customers->where('total_value', '>', 10000000)->count()
-            ]
-        ];
     }
 
     /**
@@ -296,37 +315,39 @@ class EisService
      */
     public function getMarketGapAnalysis(): array
     {
-        // Get Cities with Workshop Count
-        $workshopCounts = \App\Models\Workshop::select('city', DB::raw('count(*) as total_workshops'))
-            ->groupBy('city')
-            ->pluck('total_workshops', 'city');
+        return \Illuminate\Support\Facades\Cache::remember('eis_market_gap', 3600, function () { // 60 mins
+            // Get Cities with Workshop Count
+            $workshopCounts = \App\Models\Workshop::select('city', DB::raw('count(*) as total_workshops'))
+                ->groupBy('city')
+                ->pluck('total_workshops', 'city');
 
-        // Get Service Demand by City (via Workshop relation)
-        // Ensure efficient join
-        $serviceDemand = \App\Models\Service::join('workshops', 'services.workshop_uuid', '=', 'workshops.id')
-            ->select('workshops.city', DB::raw('count(*) as total_requests'))
-            ->groupBy('workshops.city')
-            ->pluck('total_requests', 'city');
+            // Get Service Demand by City (via Workshop relation)
+            // Ensure efficient join
+            $serviceDemand = \App\Models\Service::join('workshops', 'services.workshop_uuid', '=', 'workshops.id')
+                ->select('workshops.city', DB::raw('count(*) as total_requests'))
+                ->groupBy('workshops.city')
+                ->pluck('total_requests', 'city');
 
-        $marketGaps = [];
-        foreach ($serviceDemand as $city => $demand) {
-            $supply = $workshopCounts[$city] ?? 0;
-            // Market Gap Formula: (Demand / Supply) * 100
-            // If supply is 0 but demand exists, gap is huge (max it out or handle div by zero)
-            $gapScore = $supply > 0 ? ($demand / $supply) * 100 : $demand * 100;
+            $marketGaps = [];
+            foreach ($serviceDemand as $city => $demand) {
+                $supply = $workshopCounts[$city] ?? 0;
+                // Market Gap Formula: (Demand / Supply) * 100
+                // If supply is 0 but demand exists, gap is huge (max it out or handle div by zero)
+                $gapScore = $supply > 0 ? ($demand / $supply) * 100 : $demand * 100;
 
-            $marketGaps[] = [
-                'city' => $city,
-                'demand' => $demand,
-                'supply' => $supply,
-                'gap_score' => $gapScore
-            ];
-        }
+                $marketGaps[] = [
+                    'city' => $city,
+                    'demand' => $demand,
+                    'supply' => $supply,
+                    'gap_score' => $gapScore
+                ];
+            }
 
-        // Sort by Gap Score Descending (Highest Demand vs Low Supply) -> O(n log n)
-        usort($marketGaps, fn($a, $b) => $b['gap_score'] <=> $a['gap_score']);
+            // Sort by Gap Score Descending (Highest Demand vs Low Supply) -> O(n log n)
+            usort($marketGaps, fn($a, $b) => $b['gap_score'] <=> $a['gap_score']);
 
-        return array_slice($marketGaps, 0, 5); // Return Top 5 opportunities
+            return array_slice($marketGaps, 0, 5); // Return Top 5 opportunities
+        });
     }
 
     private function calculateMRR(): float
@@ -428,5 +449,57 @@ class EisService
         if ($ratio >= 0.8)
             return 'yellow'; // Warning
         return 'red'; // Critical
+    }
+
+    /**
+     * Generate AI-driven Analysis Text (Indonesian)
+     */
+    public function generateAnalysis(?int $month = null, ?int $year = null): array
+    {
+        $month = $month ?? now()->month;
+        $year = $year ?? now()->year;
+        $date = Carbon::createFromDate($year, $month, 1);
+        $monthName = $date->translatedFormat('F Y');
+
+        // Get Data
+        $scorecard = $this->getKpiScorecard($month, $year);
+        $clv = $this->getClvAnalysis();
+
+        $analysis = [];
+
+        // 1. Executive Summary
+        $revenueItem = collect($scorecard)->firstWhere('id', 'revenue');
+        $mrrItem = collect($scorecard)->firstWhere('id', 'mrr');
+        $subsItem = collect($scorecard)->firstWhere('id', 'subscriptions');
+
+        $revStatus = $revenueItem['status'];
+        $analysis['summary'] = "Laporan kinerja bulan $monthName menunjukkan performa **" .
+            ($revStatus == 'blue' ? 'Sangat Baik' : ($revStatus == 'green' ? 'Stabil' : 'Perlu Perhatian')) .
+            "**. Total Pendapatan mencapai Rp " . number_format($revenueItem['value'], 0, ',', '.') .
+            ", dengan MRR (Pendapatan Berulang) sebesar Rp " . number_format($mrrItem['value'], 0, ',', '.') . ".";
+
+        // 2. Revenue Analysis
+        if ($revenueItem['value'] >= $revenueItem['target']) {
+            $analysis['revenue'] = "Target pendapatan Rp " . number_format($revenueItem['target']) . " berhasil dicapai. " .
+                "Faktor pendorong utama adalah penambahan " . $subsItem['value'] . " langganan baru yang aktif.";
+        } else {
+            $gap = $revenueItem['target'] - $revenueItem['value'];
+            $analysis['revenue'] = "Pendapatan masih dibawah target sebesar Rp " . number_format($gap) . ". " .
+                "Disarankan untuk meningkatkan konversi trial ke berbayar dan mengoptimalkan strategi upselling.";
+        }
+
+        // 3. Customer Insight
+        $highValueCount = $clv['summary']['high_value_count'];
+        $avgLtv = $clv['summary']['avg_ltv'];
+        $analysis['customer'] = "Analisis CLV mengidentifikasi **$highValueCount pelanggan prioritas** dengan nilai seumur hidup di atas Rp 10 Juta. " .
+            "Rata-rata nilai pelanggan saat ini adalah Rp " . number_format($avgLtv, 0, ',', '.') . ". " .
+            "Fokus strategi retensi pada segmen 'Champions' dapat meningkatkan profitabilitas jangka panjang.";
+
+        // 4. Recommendation
+        $analysis['recommendation'] = "1. Intensifkan pendekatan personal pada $highValueCount pelanggan Top Tier.\n" .
+            "2. Evaluasi channel akuisisi yang menyumbang churn rate tinggi (jika ada).\n" .
+            "3. Pertimbangkan promo bundling untuk meningkatkan pendapatan bulan depan.";
+
+        return $analysis;
     }
 }
