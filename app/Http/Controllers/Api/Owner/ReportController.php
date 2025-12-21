@@ -35,7 +35,7 @@ class ReportController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-        return $this->successResponse($reports, 'Reports retrieved successfully');
+        return $this->successResponse('Reports retrieved successfully', $reports);
     }
 
     /**
@@ -77,8 +77,8 @@ class ReportController extends Controller
             ]);
 
             return $this->successResponse(
-                $report->load('workshop'),
                 'Report submitted successfully',
+                $report->load('workshop'),
                 201
             );
         } catch (\Exception $e) {
@@ -111,6 +111,6 @@ class ReportController extends Controller
             return $this->errorResponse('Report not found', 404);
         }
 
-        return $this->successResponse($report, 'Report retrieved successfully');
+        return $this->successResponse('Report retrieved successfully', $report);
     }
 }

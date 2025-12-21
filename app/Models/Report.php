@@ -18,11 +18,25 @@ class Report extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'workshop_uuid','report_type','report_data','photo','status'
+        'workshop_uuid',
+        'report_type',
+        'report_data',
+        'photo',
+        'status'
     ];
 
-
-    public function workshop(): BelongsTo{
+    public function workshop(): BelongsTo
+    {
         return $this->belongsTo(Workshop::class, 'workshop_uuid', 'id');
+    }
+
+    /**
+     * Accessor to get the owner (user) through workshop
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'workshop_uuid', 'id')
+            ->join('workshops', 'workshops.user_uuid', '=', 'users.id')
+            ->where('workshops.id', $this->workshop_uuid);
     }
 }
