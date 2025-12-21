@@ -256,3 +256,28 @@
             </div>
         </div>
     </div>
+
+{{-- Detail Modal - Pure Livewire --}}
+@if($showDetailModal && $selectedReport)
+<div class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-200 p-6">
+                <h3 class="text-xl font-bold text-gray-900">Detail Laporan</h3>
+                <button wire:click="closeDetailModal" class="rounded-lg p-1 hover:bg-gray-100">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="max-h-96 overflow-y-auto p-6 space-y-4">
+                <div><label class="text-sm font-semibold text-gray-600">Pengirim</label><p class="mt-1">{{ $selectedReport->workshop?->owner?->name ?? '-' }}</p></div>
+                <div class="grid grid-cols-2 gap-4"><div><label class="text-sm font-semibold">Jenis</label><p class="mt-1">{{ ucfirst($selectedReport->report_type ?? '-') }}</p></div><div><label class="text-sm font-semibold">Status</label><p class="mt-1">{{ ucfirst($selectedReport->status ?? 'baru') }}</p></div></div>
+                <div><label class="text-sm font-semibold">Deskripsi</label><p class="mt-1">{{ $selectedReport->report_data }}</p></div>
+                <div class="pt-4"><div class="flex gap-2"><button wire:click="updateStatus('diproses')" class="rounded-lg bg-purple-600 px-4 py-2 text-sm text-white">Diproses</button><button wire:click="updateStatus('selesai')" class="rounded-lg bg-green-600 px-4 py-2 text-sm text-white">Selesai</button></div></div>
+            </div>
+            <div class="flex justify-end border-t p-4"><button wire:click="closeDetailModal" class="rounded-lg border px-4 py-2 text-sm">Tutup</button></div>
+        </div>
+    </div>
+</div>
+@endif
