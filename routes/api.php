@@ -153,6 +153,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::put('users/{user}', [AdminController::class, 'updateEmployee']);
 
         // Dashboard
+        Route::get('dashboard', [\App\Http\Controllers\Api\DashboardController::class, 'index']);
         Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'getStats']);
 
         // Service
@@ -171,6 +172,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::put ('transactions/{transaction}', [TransactionController::class, 'update']);
         Route::put ('transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
         Route::post('transactions/{transaction}/finalize', [TransactionController::class, 'finalize']);
+        Route::post('transactions/{transaction}/apply-voucher', [TransactionController::class, 'applyVoucher']);
+
+        // ===== VOUCHERS =====
+        Route::post('vouchers/validate', [\App\Http\Controllers\Api\VoucherApiController::class, 'validateVoucher']);
 
         // ===== TRANSACTION ITEMS =====
 

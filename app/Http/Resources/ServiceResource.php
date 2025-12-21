@@ -71,6 +71,9 @@ class ServiceResource extends JsonResource
                 ];
             }),
 
+            // Transaction ID for Flutter to use when adding items
+            'transaction_uuid' => $this->transaction?->id,
+
             'reason'            => $this->reason,
             'reason_description'=> $this->reason_description,
             'feedback_mechanic' => $this->feedback_mechanic,

@@ -14,6 +14,152 @@ use Carbon\Carbon;
 class DashboardController extends Controller
 {
     /**
+     * GET /api/v1/admins/dashboard
+     * Flutter-compatible dashboard endpoint
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->employment) {
+            return response()->json(['message' => 'Admin tidak memiliki workshop.'], 403);
+        }
+
+        $workshopId = $request->query('workshop_uuid') ?? $user->employment->workshop_uuid;
+        $today = Carbon::today();
+
+        // Base query for this workshop
+        $baseQuery = Service::where('workshop_uuid', $workshopId);
+
+        // Services Today (scheduled_date = today)
+        $servicesToday = (clone $baseQuery)
+            ->whereDate('scheduled_date', $today)
+            ->count();
+
+        // Needs Assignment (accepted but no mechanic assigned yet)
+        $needsAssignment = (clone $baseQuery)
+            ->where('acceptance_status', 'accepted')
+            ->where('status', 'pending')
+            ->whereNull('mechanic_uuid')
+            ->count();
+
+        // In Progress
+        $inProgress = (clone $baseQuery)
+            ->where('status', 'in progress')
+            ->count();
+
+        // Completed Today
+        $completed = (clone $baseQuery)
+            ->whereDate('completed_at', $today)
+            ->whereIn('status', ['completed', 'lunas'])
+            ->count();
+
+        // Trend Weekly (last 7 days)
+        $trendWeekly = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $count = (clone $baseQuery)
+                ->whereDate('scheduled_date', $date)
+                ->count();
+            $trendWeekly->push([
+                'date' => $date->format('D'), // Mon, Tue, etc.
+                'total' => $count,
+            ]);
+        }
+
+        // Trend Monthly (last 6 months)
+        $trendMonthly = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
+            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
+            $count = (clone $baseQuery)
+                ->whereBetween('scheduled_date', [$monthStart, $monthEnd])
+                ->count();
+            $trendMonthly->push([
+                'date' => $monthStart->format('M'), // Jan, Feb, etc.
+                'month' => $monthStart->format('Y-m'),
+                'total' => $count,
+            ]);
+        }
+
+        // Top Services (by category_service)
+        $topServices = (clone $baseQuery)
+            ->selectRaw('category_service, COUNT(*) as count')
+            ->whereNotNull('category_service')
+            ->groupBy('category_service')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get()
+            ->map(fn($s) => [
+                'category_service' => $s->category_service,
+                'count' => $s->count,
+            ]);
+
+        // === MECHANIC STATS ===
+        $mechanicStats = \App\Models\Employment::where('workshop_uuid', $workshopId)
+            ->with('user')
+            ->get()
+            ->map(function ($emp) use ($workshopId) {
+                $completedJobs = Service::where('workshop_uuid', $workshopId)
+                    ->where('mechanic_uuid', $emp->id)
+                    ->whereIn('status', ['completed', 'lunas'])
+                    ->count();
+                
+                $activeJobs = Service::where('workshop_uuid', $workshopId)
+                    ->where('mechanic_uuid', $emp->id)
+                    ->where('status', 'in progress')
+                    ->count();
+                
+                return [
+                    'id' => $emp->id,
+                    'name' => $emp->user?->name ?? 'Unknown',
+                    'role' => $emp->role ?? 'mechanic',
+                    'completed_jobs' => $completedJobs,
+                    'active_jobs' => $activeJobs,
+                ];
+            })
+            ->sortByDesc('completed_jobs')
+            ->values()
+            ->take(5);
+
+        // === CUSTOMER STATS ===
+        // Customers don't have workshop_uuid, so derive from services
+        $totalCustomers = (clone $baseQuery)
+            ->distinct('customer_uuid')
+            ->count('customer_uuid');
+        
+        $newCustomersThisMonth = (clone $baseQuery)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->distinct('customer_uuid')
+            ->count('customer_uuid');
+        
+        // Active customers = customers with services in last 30 days
+        $activeCustomers = (clone $baseQuery)
+            ->where('scheduled_date', '>=', Carbon::now()->subDays(30))
+            ->distinct('customer_uuid')
+            ->count('customer_uuid');
+
+        return response()->json([
+            'data' => [
+                'services_today' => $servicesToday,
+                'needs_assignment' => $needsAssignment,
+                'in_progress' => $inProgress,
+                'completed' => $completed,
+                'trend' => $trendWeekly, // Weekly (default for backward compatibility)
+                'trend_weekly' => $trendWeekly,
+                'trend_monthly' => $trendMonthly,
+                'top_services' => $topServices,
+                'mechanic_stats' => $mechanicStats,
+                'customer_stats' => [
+                    'total' => $totalCustomers,
+                    'new_this_month' => $newCustomersThisMonth,
+                    'active' => $activeCustomers,
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * GET /api/v1/admins/dashboard/stats
      * Filter by date_from & date_to (default: start of month - now)
      */

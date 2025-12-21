@@ -349,11 +349,12 @@ class ServiceService
 
     private function ensureMechanicExistsInWorkshop(string $mechanicUuid, string $workshopUuid): void
     {
-        $mechanic = Mechanic::where('id', $mechanicUuid)
+        // mechanic_uuid actually refers to Employment ID
+        $employment = Employment::where('id', $mechanicUuid)
             ->where('workshop_uuid', $workshopUuid)
             ->first();
 
-        if (! $mechanic) {
+        if (! $employment) {
             throw ValidationException::withMessages([
                 'mechanic_uuid' => 'Mekanik tidak ditemukan di workshop ini.'
             ]);

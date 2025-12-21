@@ -16,20 +16,18 @@ class TransactionService
     ) {}
 
     /**
-     * Buat transaksi baru dari service_uuid.
-     * Alur sama persis seperti TransactionController lama kamu.
+     * Get or Create transaksi dari service_uuid.
+     * Jika sudah ada transaksi, return existing.
+     * Jika belum ada, buat baru.
      */
     public function createTransaction(array $data, User $user): Transaction
     {
         $service = Service::with(['customer', 'workshop', 'mechanic.user', 'transaction'])
             ->findOrFail($data['service_uuid']);
 
-        // 1) Pastikan belum ada transaksi
+        // 1) Jika sudah ada transaksi, return existing (Get or Create pattern)
         if ($service->transaction) {
-            throw ValidationException::withMessages([
-                'service_uuid' => 'Transaksi untuk service ini sudah ada.',
-                'transaction_id' => $service->transaction->id,
-            ]);
+            return $service->transaction;
         }
 
         // 2) Pastikan mekanik ada

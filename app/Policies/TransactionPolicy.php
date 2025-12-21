@@ -21,7 +21,7 @@ class TransactionPolicy
         // Jika user adalah pemilik bengkel dari transaksi tersebut
         if ($user->hasRole('owner')) {
             // Cek apakah transaksi milik workshop yang dimiliki user
-            return $user->workshops()->where('id', $transaction->workshop_id)->exists();
+            return $user->workshops()->where('id', $transaction->workshop_uuid)->exists();
         }
 
         // Customer hanya bisa lihat transaksi miliknya -> vehicle -> user_id
@@ -39,7 +39,7 @@ class TransactionPolicy
             return true;
         }
         if ($user->hasRole('owner')) {
-            return $user->workshops()->where('id', $transaction->workshop_id)->exists();
+            return $user->workshops()->where('id', $transaction->workshop_uuid)->exists();
         }
 
         // Customer TIDAK BOLEH update transaksi
