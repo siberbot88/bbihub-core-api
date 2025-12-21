@@ -29,11 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public $incrementing = false;
     protected $keyType = 'string';
     protected string $guard_name = 'sanctum';
-
-    /**
-     * Jangan pakai $guarded dan $fillable sekaligus.
-     * Pilih salah satu. Kita pakai $fillable biar aman.
-     */
+  
     protected $fillable = [
         'id',
         'name',

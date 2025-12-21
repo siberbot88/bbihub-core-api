@@ -7,6 +7,7 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Workshop;
+use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -19,7 +20,7 @@ class ServiceApiControllerTest extends TestCase
     {
         parent::setUp();
         app()['cache']->forget('spatie.permission.cache');
-        
+
         Role::create(['name' => 'owner', 'guard_name' => 'sanctum']);
         Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
         Role::create(['name' => 'mechanic', 'guard_name' => 'sanctum']);
@@ -31,7 +32,7 @@ class ServiceApiControllerTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('admin');
-        
+
         Employment::factory()->create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -41,9 +42,9 @@ class ServiceApiControllerTest extends TestCase
             'workshop_uuid' => $workshop->id,
         ]);
 
-        $customer = \App\Models\Customer::factory()->create();
+        $customer = Customer::factory()->create();
 
-        $vehicle = \App\Models\Vehicle::factory()->create([
+        $vehicle = Vehicle::factory()->create([
             'customer_uuid' => $customer->id,
         ]);
 
@@ -63,7 +64,7 @@ class ServiceApiControllerTest extends TestCase
                 'links',
                 'meta' => ['current_page', 'last_page', 'total']
             ]);
-            
+
         $this->assertEquals(10, count($response->json('data')));
         $this->assertEquals(20, $response->json('meta.total'));
     }
@@ -74,7 +75,7 @@ class ServiceApiControllerTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('admin');
-        
+
         Employment::factory()->create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -96,7 +97,7 @@ class ServiceApiControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonFragment(['name' => 'Service Berkala']);
-            
+
         $this->assertDatabaseHas('services', ['name' => 'Service Berkala']);
     }
 
@@ -106,7 +107,7 @@ class ServiceApiControllerTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('admin');
-        
+
         Employment::factory()->create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -125,7 +126,7 @@ class ServiceApiControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['status' => 'accept']);
-            
+
         $this->assertDatabaseHas('services', [
             'id' => $service->id,
             'status' => 'accept'

@@ -153,6 +153,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         // Feedback
         Route::get('feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+
+        // Reports/Aduan Aplikasi
+        Route::apiResource('reports', \App\Http\Controllers\API\Owner\ReportController::class)->only(['index', 'store', 'show']);
     });
 
     // ADMIN ROUTES (Consolidated)

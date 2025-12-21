@@ -34,47 +34,66 @@ class Index extends Component
     #[Url(as: 'pp')]
     public int $perPage = 10;
 
+    // Modal properties
+    public bool $showDetailModal = false;
+    public ?Report $selectedReport = null;
+
     // reset halaman kalau filter berubah
-    public function updatingQ()       { $this->resetPage(); }
-    public function updatingStatus()  { $this->resetPage(); }
-    public function updatingType()    { $this->resetPage(); }
-    public function updatingDate()    { $this->resetPage(); }
-    public function updatingPerPage() { $this->resetPage(); }
+    public function updatingQ()
+    {
+        $this->resetPage();
+    }
+    public function updatingStatus()
+    {
+        $this->resetPage();
+    }
+    public function updatingType()
+    {
+        $this->resetPage();
+    }
+    public function updatingDate()
+    {
+        $this->resetPage();
+    }
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
 
     /** Statistik untuk 4 kartu atas */
     public function getStatsProperty(): array
     {
         $base = Report::query();
 
-        $total      = (clone $base)->count();
-        $today      = (clone $base)->whereDate('created_at', Carbon::today())->count();
+        $total = (clone $base)->count();
+        $today = (clone $base)->whereDate('created_at', Carbon::today())->count();
         $processing = (clone $base)->where('status', 'diproses')->count();
-        $done       = (clone $base)->where('status', 'selesai')->count();
+        $done = (clone $base)->where('status', 'selesai')->count();
 
         return [
             [
                 'title' => 'Total laporan masuk',
                 'value' => $total,
                 'trend' => '+0%',       // nanti kalau mau bisa dihitung beneran
-                'icon'  => 'inbox',
+                'icon' => 'inbox',
             ],
             [
                 'title' => 'Laporan masuk hari ini',
                 'value' => $today,
                 'trend' => '+0%',
-                'icon'  => 'calendar',
+                'icon' => 'calendar',
             ],
             [
                 'title' => 'Diproses',
                 'value' => $processing,
                 'trend' => '+0%',
-                'icon'  => 'progress',
+                'icon' => 'progress',
             ],
             [
                 'title' => 'Selesai',
                 'value' => $done,
                 'trend' => '+0%',
-                'icon'  => 'check',
+                'icon' => 'check',
             ],
         ];
     }
@@ -89,11 +108,11 @@ class Index extends Component
             $term = $this->q;
             $q->where(function ($w) use ($term) {
                 $w->where('report_type', 'like', "%{$term}%")
-                  ->orWhere('report_data', 'like', "%{$term}%")
-                  ->orWhereHas('user', function ($u) use ($term) {
-                      $u->where('name', 'like', "%{$term}%")
-                        ->orWhere('email', 'like', "%{$term}%");
-                  });
+                    ->orWhere('report_data', 'like', "%{$term}%")
+                    ->orWhereHas('user', function ($u) use ($term) {
+                        $u->where('name', 'like', "%{$term}%")
+                            ->orWhere('email', 'like', "%{$term}%");
+                    });
             });
         }
 
@@ -115,11 +134,53 @@ class Index extends Component
         return $q->paginate($this->perPage);
     }
 
+    /**
+     * Refresh data - force reload without filter reset
+     */
+    public function refresh()
+    {
+        // Clear computed properties cache
+        unset($this->stats, $this->rows);
+
+        // Force re-render
+        $this->dispatch('$refresh');
+    }
+
+    /**
+     * Open detail modal
+     */
+    public function openDetail($reportId)
+    {
+        $this->selectedReport = Report::with('workshop.owner')->find($reportId);
+        $this->showDetailModal = true;
+    }
+
+    /**
+     * Close detail modal
+     */
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->selectedReport = null;
+    }
+
+    /**
+     * Update report status
+     */
+    public function updateStatus(string $status)
+    {
+        if ($this->selectedReport) {
+            $this->selectedReport->update(['status' => $status]);
+            $this->closeDetailModal();
+            $this->dispatch('$refresh');
+        }
+    }
+
     public function render()
     {
         return view('livewire.admin.reports.index', [
             'stats' => $this->stats,  // dari accessor getStatsProperty
-            'rows'  => $this->rows,   // dari accessor getRowsProperty
+            'rows' => $this->rows,   // dari accessor getRowsProperty
         ]);
     }
 }
