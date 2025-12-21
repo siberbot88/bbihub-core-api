@@ -29,6 +29,8 @@ class Transaction extends Model
         'status',
         'amount',
         'payment_method',
+        'voucher_uuid',
+        'discount_amount',
     ];
 
     /* ========= RELATIONSHIPS ========= */
@@ -79,5 +81,9 @@ class Transaction extends Model
 
     public function feedback(): HasOne{
         return $this->hasOne(Feedback::class, 'transaction_uuid', 'id');
+    }
+
+    public function voucher(): BelongsTo{
+        return $this->belongsTo(Voucher::class, 'voucher_uuid');
     }
 }

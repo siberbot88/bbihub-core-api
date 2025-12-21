@@ -42,8 +42,10 @@ class ServiceApiController extends Controller
             ])
             ->allowedFilters([
                 AllowedFilter::exact('status'),
-                AllowedFilter::partial('code'),
+            AllowedFilter::exact('type'),
+            AllowedFilter::partial('code'),
                 AllowedFilter::exact('workshop_uuid'),
+                // Keep these for standard compliant clients
                 AllowedFilter::callback('date_from', function ($query, $value) {
                     $query->whereDate('scheduled_date', '>=', $value);
                 }),
@@ -52,6 +54,14 @@ class ServiceApiController extends Controller
                 }),
             ])
             ->defaultSort('-created_at');
+
+        // [Manual Filter Support] for Mobile App (flat params)
+        if ($request->has('date_from')) {
+            $query->whereDate('scheduled_date', '>=', $request->input('date_from'));
+        }
+        if ($request->has('date_to')) {
+            $query->whereDate('scheduled_date', '<=', $request->input('date_to'));
+        }
 
         // Scope query based on role
         if ($user->hasRole('owner')) {
@@ -137,6 +147,33 @@ class ServiceApiController extends Controller
                 'message' => $e->getMessage(),
             ], 422); // Or 500 depending on exception type, but ValidationException is usually 422 handled by Laravel
         }
+    }
+
+    /**
+     * POST /admins/services/walk-in
+     * Create Customer + Vehicle + Service in one flow
+     */
+    public function storeWalkIn(\App\Http\Requests\Api\Service\StoreWalkInServiceRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $user = $request->user();
+
+        // Force workshop uuid from admin session
+        $data['workshop_uuid'] = $user->employment->workshop_uuid;
+
+        $service = $this->serviceService->createWalkInService($data, $user);
+        
+        $service->load([
+             'workshop',
+             'customer',
+             'vehicle',
+             'mechanic.user',
+        ]);
+
+        return response()->json([
+            'message' => 'Walk-In Service created successfully',
+            'data'    => new ServiceResource($service),
+        ], 201);
     }
 
     /**

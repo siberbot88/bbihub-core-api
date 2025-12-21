@@ -17,8 +17,73 @@ class ServiceService
     ========================================================== */
 
     /**
+     * Create Walk-In Service (One-stop creation for Customer, Vehicle, Service)
+     */
+    public function createWalkInService(array $data, User $user): Service
+    {
+         return DB::transaction(function () use ($data, $user) {
+             // 1. Find or Create Customer
+             $customer = \App\Models\Customer::firstOrCreate(
+                 ['phone' => $data['customer_phone']],
+                 [
+                     'id'      => (string) Str::uuid(),
+                     'code'    => 'CUST-' . strtoupper(Str::random(8)),
+                     'name'    => $data['customer_name'],
+                     'email'   => $data['customer_email'] ?? null,
+                     'address' => $data['customer_address'] ?? '',
+                 ]
+             );
+
+             // 2. Find or Create Vehicle
+             $vehicle = \App\Models\Vehicle::firstOrCreate(
+                 ['plate_number' => $data['vehicle_plate']],
+                 [
+                     'id'            => (string) Str::uuid(),
+                     'customer_uuid' => $customer->id,
+                     'code'          => 'VHC-' . strtoupper(Str::random(8)),
+                     'name'          => ($data['vehicle_brand'] ?? 'Unknown') . ' ' . ($data['vehicle_model'] ?? 'Unknown'),
+                     'type'          => $data['vehicle_type'] ?? 'motor',
+                     'category'      => $data['vehicle_category'] ?? 'matic',
+                     'brand'         => $data['vehicle_brand'] ?? 'Unknown',
+                     'model'         => $data['vehicle_model'] ?? 'Unknown',
+                     'year'          => $data['vehicle_year'] ?? date('Y'),
+                     'color'         => $data['vehicle_color'] ?? 'Unknown',
+                     'odometer'      => $data['vehicle_odometer'] ?? '0',
+                 ]
+             );
+
+             // Update Odometer if provided
+             
+             // Ensure vehicle belongs to customer (if vehicle found but customer different, what to do?)
+             // Simple logic: If we found vehicle but user is diff, maybe owner changed. Update it.
+             if ($vehicle->customer_uuid !== $customer->id) {
+                 $vehicle->update(['customer_uuid' => $customer->id]);
+             }
+
+             // 3. Create Service
+             $serviceData = [
+                 'workshop_uuid'    => $data['workshop_uuid'],
+                 'customer_uuid'    => $customer->id,
+                 'vehicle_uuid'     => $vehicle->id,
+                 'name'             => $data['name'],
+                 'description'      => $data['description'] ?? '',
+                 'category_service' => $data['category'],
+                 'type'             => 'on-site',
+                 'scheduled_date'   => $data['scheduled_date'],
+                 'estimated_time'   => $data['estimated_time'] ?? now()->toDateString(),
+                 'status'           => 'pending',
+                 'acceptance_status'=> 'accepted',
+                 'accepted_at'      => now(),
+             ];
+
+             return $this->createService($serviceData, $user);
+         });
+    }
+
+    /**
      * Create a new service with generated SRV code.
      */
+    // This method is not a by createWalkInService.
     public function createService(array $data, User $user): Service
     {
         // Pastikan admin hanya create di workshop tempat dia bekerja
@@ -50,6 +115,11 @@ class ServiceService
         $data['code'] = $this->generateSrvCode();
         $data['status'] = $data['status'] ?? 'pending';
         $data['acceptance_status'] = $data['acceptance_status'] ?? 'pending';
+        
+        // Ensure type defaults to booking (unless passed internally)
+        if (!isset($data['type'])) {
+            $data['type'] = 'booking';
+        }
 
         return DB::transaction(fn () => Service::create($data));
     }
@@ -159,13 +229,22 @@ class ServiceService
 
 
         // ✅ begitu mekanik di-assign, status auto jadi in progress
-        $this->handleStatusTransition($service, 'in progress'
-        );
+        $this->handleStatusTransition($service, 'in progress');
 
         $service->update([
             'mechanic_uuid' => $mechanicUuid,
             'status'        => 'in progress'
 
+        ]);
+
+        // ✅ Create Log
+        \App\Models\ServiceLog::create([
+            'id'               => (string) Str::uuid(),
+            'service_uuid'     => $service->id,
+            'mechanic_uuid'    => $mechanicUuid,
+            'transaction_uuid' => $service->transaction?->id, // optional if transaction exists
+            'status'           => 'in progress',
+            'notes'            => 'Mekanik telah ditetapkan',
         ]);
 
         return $service;
@@ -270,15 +349,14 @@ class ServiceService
 
     private function ensureMechanicExistsInWorkshop(string $mechanicUuid, string $workshopUuid): void
     {
-        $ok = Employment::active()
-            ->mechanic()
-            ->where('id', $mechanicUuid)
+        // mechanic_uuid actually refers to Employment ID
+        $employment = Employment::where('id', $mechanicUuid)
             ->where('workshop_uuid', $workshopUuid)
-            ->exists();
+            ->first();
 
-        if (! $ok) {
+        if (! $employment) {
             throw ValidationException::withMessages([
-                'mechanic_uuid' => 'Mekanik tidak ditemukan / tidak aktif di workshop ini.'
+                'mechanic_uuid' => 'Mekanik tidak ditemukan di workshop ini.'
             ]);
         }
     }
@@ -288,3 +366,4 @@ class ServiceService
         return 'SRV-' . strtoupper(Str::random(6));
     }
 }
+
