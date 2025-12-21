@@ -52,13 +52,21 @@ class TransactionController extends Controller
         }
     }
 
+
     // GET /api/v1/transactions/{transaction}
     public function show(Transaction $transaction)
     {
         $this->authorize('view', $transaction);
 
         return new TransactionResource(
-            $transaction->load(['service', 'items'])
+            $transaction->load([
+                'service.customer',
+                'service.vehicle',
+                'service.workshop',
+                'items',
+                'mechanic.user',
+                'invoice',
+            ])
         );
     }
 
@@ -115,7 +123,6 @@ class TransactionController extends Controller
     }
 
     // POST /api/v1/transactions/{transaction}/finalize
-    // POST /api/v1/transactions/{transaction}/finalize
     public function finalize(Transaction $transaction)
     {
         $this->authorize('update', $transaction);
@@ -141,5 +148,77 @@ class TransactionController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         }
+    }
+
+    /**
+     * POST /api/v1/transactions/{transaction}/apply-voucher
+     * Apply voucher to transaction
+     */
+    public function applyVoucher(Request $request, Transaction $transaction)
+    {
+        $this->authorize('update', $transaction);
+
+        $data = $request->validate([
+            'voucher_code' => 'required|string',
+        ]);
+
+        // Find voucher
+        $voucher = \App\Models\Voucher::where('code_voucher', $data['voucher_code'])
+            ->where('workshop_uuid', $transaction->workshop_uuid)
+            ->first();
+
+        if (!$voucher) {
+            return response()->json([
+                'message' => 'Voucher tidak ditemukan.',
+            ], 422);
+        }
+
+        // Validate status
+        if ($voucher->status !== 'active') {
+            return response()->json([
+                'message' => 'Voucher tidak aktif atau sudah kadaluarsa.',
+            ], 422);
+        }
+
+        // Validate quota
+        if ($voucher->quota <= 0) {
+            return response()->json([
+                'message' => 'Kuota voucher sudah habis.',
+            ], 422);
+        }
+
+        // Validate minimum transaction
+        $transactionAmount = $transaction->items()->sum('subtotal');
+        if ($transactionAmount < $voucher->min_transaction) {
+            return response()->json([
+                'message' => 'Minimum transaksi Rp ' . number_format($voucher->min_transaction, 0, ',', '.'),
+            ], 422);
+        }
+
+        // Calculate discount
+        $discountAmount = min($voucher->discount_value, $transactionAmount);
+
+        // Apply voucher
+        $transaction->update([
+            'voucher_uuid' => $voucher->id,
+            'discount_amount' => $discountAmount,
+            'amount' => $transactionAmount - $discountAmount,
+        ]);
+
+        // Decrement quota
+        $voucher->decrement('quota');
+
+        return response()->json([
+            'message' => 'Voucher berhasil diterapkan.',
+            'data' => [
+                'voucher' => [
+                    'code' => $voucher->code_voucher,
+                    'title' => $voucher->title,
+                ],
+                'original_amount' => $transactionAmount,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $transactionAmount - $discountAmount,
+            ],
+        ], 200);
     }
 }

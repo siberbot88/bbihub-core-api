@@ -28,8 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
-
     protected string $guard_name = 'sanctum';
+  
     protected $fillable = [
         'id',
         'name',

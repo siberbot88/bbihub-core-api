@@ -87,4 +87,69 @@ class VoucherApiController extends Controller
 
         return response()->noContent();
     }
+
+    /**
+     * POST /api/v1/vouchers/validate
+     * Validate voucher code and calculate discount
+     */
+    public function validateVoucher(Request $request)
+    {
+        $data = $request->validate([
+            'code' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+            'workshop_uuid' => 'nullable|string',
+        ]);
+
+        $voucher = Voucher::where('code_voucher', $data['code'])
+            ->when($data['workshop_uuid'] ?? null, fn($q, $wid) => $q->where('workshop_uuid', $wid))
+            ->first();
+
+        if (!$voucher) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Kode voucher tidak ditemukan.',
+            ], 200);
+        }
+
+        // Check if voucher is active
+        if ($voucher->status !== 'active') {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Voucher tidak aktif atau sudah kadaluarsa.',
+            ], 200);
+        }
+
+        // Check quota
+        if ($voucher->quota <= 0) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Kuota voucher sudah habis.',
+            ], 200);
+        }
+
+        // Check minimum transaction
+        if ($data['amount'] < $voucher->min_transaction) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Minimum transaksi Rp ' . number_format($voucher->min_transaction, 0, ',', '.'),
+            ], 200);
+        }
+
+        // Calculate discount
+        $discountAmount = min($voucher->discount_value, $data['amount']);
+        $finalAmount = $data['amount'] - $discountAmount;
+
+        return response()->json([
+            'valid' => true,
+            'voucher' => [
+                'id' => $voucher->id,
+                'code' => $voucher->code_voucher,
+                'title' => $voucher->title,
+                'discount_value' => $voucher->discount_value,
+                'min_transaction' => $voucher->min_transaction,
+            ],
+            'discount_amount' => $discountAmount,
+            'final_amount' => $finalAmount,
+        ], 200);
+    }
 }
