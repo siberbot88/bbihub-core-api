@@ -149,7 +149,7 @@ class EmploymentTest extends TestCase
         $otherOwner = User::factory()->create();
         $otherOwner->guard_name = 'sanctum';
         $otherOwner->assignRole('owner');
-        
+
         $otherWorkshop = Workshop::create([
             'user_uuid' => $otherOwner->id,
             'name' => 'Other Workshop',
@@ -191,7 +191,7 @@ class EmploymentTest extends TestCase
         $user1 = User::factory()->create();
         $user1->guard_name = 'sanctum';
         $user1->assignRole('admin');
-        
+
         Employment::create([
             'user_uuid' => $user1->id,
             'workshop_uuid' => $workshop->id,
@@ -239,7 +239,7 @@ class EmploymentTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('mechanic');
-        
+
         $employment = Employment::create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -269,7 +269,7 @@ class EmploymentTest extends TestCase
         $otherOwner = User::factory()->create();
         $otherOwner->guard_name = 'sanctum';
         $otherOwner->assignRole('owner');
-        
+
         $otherWorkshop = Workshop::create([
             'user_uuid' => $otherOwner->id,
             'name' => 'Other Workshop',
@@ -292,7 +292,7 @@ class EmploymentTest extends TestCase
         $otherUser = User::factory()->create();
         $otherUser->guard_name = 'sanctum';
         $otherUser->assignRole('admin');
-        
+
         $otherEmployment = Employment::create([
             'user_uuid' => $otherUser->id,
             'workshop_uuid' => $otherWorkshop->id,
@@ -314,7 +314,7 @@ class EmploymentTest extends TestCase
         $user = User::factory()->create(['name' => 'Old Name']);
         $user->guard_name = 'sanctum';
         $user->assignRole('mechanic');
-        
+
         $employment = Employment::create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -349,7 +349,7 @@ class EmploymentTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('mechanic');
-        
+
         $employment = Employment::create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -376,7 +376,7 @@ class EmploymentTest extends TestCase
         $otherOwner = User::factory()->create();
         $otherOwner->guard_name = 'sanctum';
         $otherOwner->assignRole('owner');
-        
+
         $otherWorkshop = Workshop::create([
             'user_uuid' => $otherOwner->id,
             'name' => 'Other Workshop',
@@ -399,7 +399,7 @@ class EmploymentTest extends TestCase
         $otherUser = User::factory()->create();
         $otherUser->guard_name = 'sanctum';
         $otherUser->assignRole('admin');
-        
+
         $otherEmployment = Employment::create([
             'user_uuid' => $otherUser->id,
             'workshop_uuid' => $otherWorkshop->id,
@@ -423,7 +423,7 @@ class EmploymentTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('mechanic');
-        
+
         $employment = Employment::create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -453,7 +453,7 @@ class EmploymentTest extends TestCase
         $otherOwner = User::factory()->create();
         $otherOwner->guard_name = 'sanctum';
         $otherOwner->assignRole('owner');
-        
+
         $otherWorkshop = Workshop::create([
             'user_uuid' => $otherOwner->id,
             'name' => 'Other Workshop',
@@ -476,7 +476,7 @@ class EmploymentTest extends TestCase
         $otherUser = User::factory()->create();
         $otherUser->guard_name = 'sanctum';
         $otherUser->assignRole('admin');
-        
+
         $otherEmployment = Employment::create([
             'user_uuid' => $otherUser->id,
             'workshop_uuid' => $otherWorkshop->id,
@@ -501,7 +501,7 @@ class EmploymentTest extends TestCase
         $user = User::factory()->create();
         $user->guard_name = 'sanctum';
         $user->assignRole('mechanic');
-        
+
         $employment = Employment::create([
             'user_uuid' => $user->id,
             'workshop_uuid' => $workshop->id,
@@ -529,7 +529,7 @@ class EmploymentTest extends TestCase
         $otherOwner = User::factory()->create();
         $otherOwner->guard_name = 'sanctum';
         $otherOwner->assignRole('owner');
-        
+
         $otherWorkshop = Workshop::create([
             'user_uuid' => $otherOwner->id,
             'name' => 'Other Workshop',
@@ -552,7 +552,7 @@ class EmploymentTest extends TestCase
         $otherUser = User::factory()->create();
         $otherUser->guard_name = 'sanctum';
         $otherUser->assignRole('admin');
-        
+
         $otherEmployment = Employment::create([
             'user_uuid' => $otherUser->id,
             'workshop_uuid' => $otherWorkshop->id,
