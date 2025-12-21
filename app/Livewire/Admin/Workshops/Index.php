@@ -38,9 +38,9 @@ class Index extends Component
 
     // Status options
     public array $statusOptions = [
-        'all'       => 'Semua Status',
-        'pending'   => 'Menunggu Verifikasi',
-        'active'    => 'Aktif',
+        'all' => 'Semua Status',
+        'pending' => 'Menunggu Verifikasi',
+        'active' => 'Aktif',
         'suspended' => 'Ditangguhkan',
     ];
 
@@ -74,10 +74,22 @@ class Index extends Component
     }
 
     // Reset pagination saat filter/search berubah
-    public function updatingQ()       { $this->resetPage(); }
-    public function updatingStatus()  { $this->resetPage(); }
-    public function updatingCity()    { $this->resetPage(); }
-    public function updatingPerPage() { $this->resetPage(); }
+    public function updatingQ()
+    {
+        $this->resetPage();
+    }
+    public function updatingStatus()
+    {
+        $this->resetPage();
+    }
+    public function updatingCity()
+    {
+        $this->resetPage();
+    }
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
 
     /**
      * Computed property for summary cards with lazy loading
@@ -97,25 +109,25 @@ class Index extends Component
             [
                 'label' => 'Total Bengkel',
                 'value' => $total,
-                'hint'  => 'update +5%',
+                'hint' => 'update +5%',
                 'color' => 'blue',
             ],
             [
                 'label' => 'Menunggu Verifikasi',
                 'value' => $pending,
-                'hint'  => 'update +2%',
+                'hint' => 'update +2%',
                 'color' => 'yellow',
             ],
             [
                 'label' => 'Bengkel Aktif',
                 'value' => $active,
-                'hint'  => 'update +5%',
+                'hint' => 'update +5%',
                 'color' => 'green',
             ],
             [
                 'label' => 'Bengkel Ditangguhkan',
                 'value' => $suspended,
-                'hint'  => 'update +5%',
+                'hint' => 'update +5%',
                 'color' => 'red',
             ],
         ];
@@ -129,7 +141,7 @@ class Index extends Component
     {
         $hasStatus = Schema::hasColumn('workshops', 'status');
         $hasRating = Schema::hasColumn('workshops', 'rating');
-        
+
         // Build select columns dynamically - only add columns that exist
         $columns = [
             'id',
@@ -138,15 +150,15 @@ class Index extends Component
             'city',
             'created_at',
         ];
-        
+
         if ($hasStatus) {
             $columns[] = 'status';
         }
-        
+
         if ($hasRating) {
             $columns[] = 'rating';
         }
-        
+
         $query = Workshop::query()->select($columns);
 
         // Pencarian
@@ -154,7 +166,7 @@ class Index extends Component
             $q = $this->q;
             $query->where(function ($w) use ($q) {
                 $w->where('name', 'like', "%{$q}%")
-                  ->orWhere('code', 'like', "%{$q}%");
+                    ->orWhere('code', 'like', "%{$q}%");
             });
         }
 
@@ -208,7 +220,29 @@ class Index extends Component
         if ($this->selectedWorkshop && Schema::hasColumn('workshops', 'status')) {
             $newStatus = $this->selectedWorkshop->status === 'suspended' ? 'active' : 'suspended';
             $this->selectedWorkshop->update(['status' => $newStatus]);
-            
+
+            // Send email notification if workshop is being suspended
+            if ($newStatus === 'suspended') {
+                $this->selectedWorkshop->load('owner');
+
+                if ($this->selectedWorkshop->owner && $this->selectedWorkshop->owner->email) {
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($this->selectedWorkshop->owner->email)
+                            ->send(new \App\Mail\WorkshopSuspendedMail(
+                                workshop: $this->selectedWorkshop,
+                                ownerName: $this->selectedWorkshop->owner->name,
+                                reason: null // Optional: bisa ditambahkan field di modal untuk admin input alasan
+                            ));
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the suspend action
+                        \Illuminate\Support\Facades\Log::error('Failed to send workshop suspended email', [
+                            'workshop_id' => $this->selectedWorkshop->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+
             $this->reset(['showSuspend', 'selectedWorkshop']);
             session()->flash('message', 'Status bengkel berhasil diubah.');
         }
@@ -218,7 +252,7 @@ class Index extends Component
     {
         if ($this->selectedWorkshop) {
             $this->selectedWorkshop->delete();
-            
+
             $this->reset(['showDelete', 'selectedWorkshop']);
             session()->flash('message', 'Bengkel berhasil dihapus.');
         }
@@ -233,7 +267,7 @@ class Index extends Component
     {
         return view('livewire.admin.workshops.index', [
             'statusOptions' => $this->statusOptions,
-            'cityOptions'   => $this->cityOptions,
+            'cityOptions' => $this->cityOptions,
         ]);
     }
 }

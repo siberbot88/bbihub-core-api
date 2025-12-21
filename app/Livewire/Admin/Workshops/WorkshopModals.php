@@ -12,10 +12,10 @@ use Livewire\Component;
 class WorkshopModals extends Component
 {
     // Modal control
-    public bool $showDetail  = false;
-    public bool $showCreate  = false;
-    public bool $showEdit    = false;
-    public bool $showDelete  = false;
+    public bool $showDetail = false;
+    public bool $showCreate = false;
+    public bool $showEdit = false;
+    public bool $showDelete = false;
     public bool $showSuspend = false;
 
     public ?Workshop $selectedWorkshop = null;
@@ -49,10 +49,10 @@ class WorkshopModals extends Component
 
     public function resetModal(): void
     {
-        $this->showDetail  = false;
-        $this->showCreate  = false;
-        $this->showEdit    = false;
-        $this->showDelete  = false;
+        $this->showDetail = false;
+        $this->showCreate = false;
+        $this->showEdit = false;
+        $this->showDelete = false;
         $this->showSuspend = false;
 
         $this->selectedWorkshop = null;
@@ -231,7 +231,8 @@ class WorkshopModals extends Component
 
     private function ensureCode(): void
     {
-        if (!blank($this->code)) return;
+        if (!blank($this->code))
+            return;
 
         $base = 'WS-' . Str::upper(Str::substr(Str::slug($this->name ?: 'WORKSHOP'), 0, 8));
         $candidate = $base;
@@ -345,9 +346,46 @@ class WorkshopModals extends Component
         }
     }
 
+    public function confirmSuspend(): void
+    {
+        if ($this->selectedWorkshop && Schema::hasColumn('workshops', 'status')) {
+            $newStatus = $this->selectedWorkshop->status === 'suspended' ? 'active' : 'suspended';
+            $this->selectedWorkshop->update(['status' => $newStatus]);
+
+            // Send email notification if workshop is being suspended
+            if ($newStatus === 'suspended') {
+                $this->selectedWorkshop->load('owner');
+
+                if ($this->selectedWorkshop->owner && $this->selectedWorkshop->owner->email) {
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($this->selectedWorkshop->owner->email)
+                            ->send(new \App\Mail\WorkshopSuspendedMail(
+                                workshop: $this->selectedWorkshop,
+                                ownerName: $this->selectedWorkshop->owner->name,
+                                reason: null // Optional: bisa ditambahkan field di modal untuk admin input alasan
+                            ));
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the suspend action
+                        \Illuminate\Support\Facades\Log::error('Failed to send workshop suspended email', [
+                            'workshop_id' => $this->selectedWorkshop->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+
+            $this->resetModal();
+            session()->flash('message', 'Status bengkel berhasil diubah.');
+            $this->dispatch('workshops:refresh');
+        }
+    }
+
     public function closeModal(): void
     {
         $this->resetModal();
+
+        // Dispatch browser event untuk refresh parent
+        $this->dispatch('refreshWorkshopList');
     }
 
     public function render()
