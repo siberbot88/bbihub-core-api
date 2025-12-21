@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Security;
 
-use Sentry\Laravel\Facade\Sentry;
+use Sentry\Laravel\Facade as Sentry;
 use Tests\TestCase;
 
 class SentryTest extends TestCase

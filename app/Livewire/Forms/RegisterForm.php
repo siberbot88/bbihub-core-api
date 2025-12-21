@@ -10,16 +10,12 @@ use Livewire\Form;
 
 class RegisterForm extends Form
 {
-    #[Validate('required|string|max:255')]
     public string $name = '';
 
-    #[Validate('required|string|max:255|unique:users,username')]
     public string $username = '';
 
-    #[Validate('required|string|email|max:255|unique:users,email')]
     public string $email = '';
 
-    #[Validate('required|string|confirmed')]
     public string $password = '';
 
     public string $password_confirmation = '';
