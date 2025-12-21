@@ -96,7 +96,7 @@ class DashboardController extends Controller
 
         // === MECHANIC STATS ===
         $mechanicStats = \App\Models\Employment::where('workshop_uuid', $workshopId)
-            ->where('role', 'mechanic')  // Only mechanics, not admin
+            ->mechanic()  // Use scope from model which checks user roles
             ->with('user')
             ->get()
             ->map(function ($emp) use ($workshopId) {
