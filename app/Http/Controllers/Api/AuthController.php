@@ -28,7 +28,8 @@ class AuthController extends Controller
      */
     private function loadUserRelations(User $user): void
     {
-        if ($user->hasRole('owner', 'sanctum')) {
+        // Use loose check for 'owner' role to handle web/sanctum guard nuances safely
+        if ($user->hasRole('owner')) {
             $user->load('roles:name', 'workshops', 'ownerSubscription.plan');
         } else {
             $user->load('roles:name', 'employment.workshop');
@@ -75,17 +76,21 @@ class AuthController extends Controller
                 'must_change_password' => false,
             ]);
 
-            // Role 'owner' must exist in database (seeded)
+            // Ensure user matches the role's guard
+            $user->guard_name = 'sanctum';
             $user->assignRole('owner');
             // Force guard name if needed, though assignRole usually handles it based on config
             // But to be safe with previous logic:
             // $user->guard_name = 'sanctum'; // Usually not needed if model has guard_name property or default
 
+            // Trigger email verification
+            event(new \Illuminate\Auth\Events\Registered($user));
+
             $token = $user->createToken('auth_token_for_' . ($user->username ?? $user->email))->plainTextToken;
 
             $this->loadUserRelations($user);
 
-            return $this->successResponse('Registrasi berhasil. Akun Owner telah dibuat.', [
+            return $this->successResponse('Registrasi berhasil. Silakan cek email untuk verifikasi akun Anda.', [
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'user' => [
@@ -93,6 +98,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'username' => $user->username,
+                    'email_verified_at' => $user->email_verified_at, // Send verification status
                     'roles' => $user->roles,
                     'must_change_password' => (bool) $user->must_change_password,
                     'workshops' => $user->relationLoaded('workshops') ? $user->workshops : null,
@@ -157,6 +163,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'username' => $user->username,
+                'email_verified_at' => $user->email_verified_at,
                 'roles' => $user->roles,
                 'must_change_password' => (bool) $user->must_change_password,
                 'workshops' => $user->relationLoaded('workshops') ? $user->workshops : null,

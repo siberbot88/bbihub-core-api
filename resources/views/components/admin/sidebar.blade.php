@@ -9,13 +9,14 @@
   <nav class="flex-1 overflow-y-auto py-3">
     @php
       $items = [
-        ['label' => 'Dashboard',          'icon' => 'dashboard',   'route' => route('admin.dashboard')],
-        ['label' => 'Manajemen Pengguna', 'icon' => 'user',        'route' => route('admin.users')],
-        ['label' => 'Manajemen Bengkel',  'icon' => 'workshop',    'route' => route('admin.workshops')],
-        ['label' => 'Manajemen Promosi',  'icon' => 'promo',       'route' => route('admin.promotions')],
-        ['label' => 'Data Center',        'icon' => 'datacenter',  'route' => route('admin.data-center')],
-        ['label' => 'Laporan',            'icon' => 'report',      'route' => route('admin.reports')],
-        ['label' => 'Pengaturan',         'icon' => 'setting',     'route' => route('admin.settings')],
+        ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => route('admin.dashboard')],
+        ['label' => 'Manajemen Pengguna', 'icon' => 'user', 'route' => route('admin.users')],
+        ['label' => 'Manajemen Bengkel', 'icon' => 'workshop', 'route' => route('admin.workshops')],
+        ['label' => 'Manajemen Promosi', 'icon' => 'promo', 'route' => route('admin.promotions')],
+        ['label' => 'Data Center', 'icon' => 'datacenter', 'route' => route('admin.data-center')],
+        ['label' => 'Laporan', 'icon' => 'report', 'route' => route('admin.reports')],
+        ['label' => 'Form Demo', 'icon' => 'play-circle', 'route' => route('admin.demo-form')],
+        ['label' => 'Pengaturan', 'icon' => 'setting', 'route' => route('admin.settings')],
       ];
       $current = url()->current();
     @endphp
@@ -24,10 +25,10 @@
       @foreach($items as $it)
         @php $active = $current === $it['route']; @endphp
         <li>
-          <a href="{{ $it['route'] }}"
-             class="group flex items-center gap-3 rounded-xl px-3 py-2
-                    {{ $active ? 'bg-rose-50 text-rose-600' : 'text-gray-700 hover:bg-gray-50' }}">
-            <x-svg :name="$it['icon']" class="h-5 w-5 {{ $active ? 'text-rose-600' : 'text-gray-400 group-hover:text-gray-600' }}" />
+          <a href="{{ $it['route'] }}" class="group flex items-center gap-3 rounded-xl px-3 py-2
+                      {{ $active ? 'bg-rose-50 text-rose-600' : 'text-gray-700 hover:bg-gray-50' }}">
+            <x-svg :name="$it['icon']"
+              class="h-5 w-5 {{ $active ? 'text-rose-600' : 'text-gray-400 group-hover:text-gray-600' }}" />
             <span class="text-sm font-medium">{{ $it['label'] }}</span>
           </a>
         </li>
