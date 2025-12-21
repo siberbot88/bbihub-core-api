@@ -10,21 +10,24 @@ use Illuminate\Validation\ValidationException;
 
 class TransactionService
 {
+
+    public function __construct(
+        protected \App\Services\Payment\MidtransService $midtransService
+    ) {}
+
     /**
-     * Buat transaksi baru dari service_uuid.
-     * Alur sama persis seperti TransactionController lama kamu.
+     * Get or Create transaksi dari service_uuid.
+     * Jika sudah ada transaksi, return existing.
+     * Jika belum ada, buat baru.
      */
     public function createTransaction(array $data, User $user): Transaction
     {
         $service = Service::with(['customer', 'workshop', 'mechanic.user', 'transaction'])
             ->findOrFail($data['service_uuid']);
 
-        // 1) Pastikan belum ada transaksi
+        // 1) Jika sudah ada transaksi, return existing (Get or Create pattern)
         if ($service->transaction) {
-            throw ValidationException::withMessages([
-                'service_uuid' => 'Transaksi untuk service ini sudah ada.',
-                'transaction_id' => $service->transaction->id,
-            ]);
+            return $service->transaction;
         }
 
         // 2) Pastikan mekanik ada
@@ -116,6 +119,19 @@ class TransactionService
 
         $transaction->status = $newStatus;
         $transaction->save();
+
+        // === MIDTRANS INTEGRATION ===
+        // Jika status naik ke process (Menunggu Pembayaran) dan belum ada token
+        if ($newStatus === 'process' && $transaction->amount > 0) {
+            // Generate token jika belum ada
+            if (empty($transaction->snap_token)) {
+                $snap = $this->midtransService->getSnapToken($transaction);
+                $transaction->update([
+                   'snap_token' => $snap->token,
+                   'snap_redirect_url' => $snap->redirect_url
+                ]);
+            }
+        }
 
         // === SINKRON KE SERVICE ===
         $service = $transaction->service;

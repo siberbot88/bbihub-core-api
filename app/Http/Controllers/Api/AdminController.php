@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceResource;
+use App\Models\Employment;
 use App\Models\Service;
 use App\Services\ServiceService;
 use Illuminate\Http\Request;
@@ -14,6 +15,34 @@ class AdminController extends Controller
 {
     public function __construct(protected ServiceService $serviceService)
     {}
+
+    /**
+     * GET /api/v1/admins/employees
+     */
+    public function employees(Request $request)
+    {
+        $user = $request->user();
+
+        // 1. Cari data employment admin yang sedang login
+        $currentEmployment = Employment::where('user_uuid', $user->id)->first();
+
+        if (!$currentEmployment) {
+            return response()->json(['message' => 'Data employment tidak ditemukan.'], 403);
+        }
+
+        // 2. Query dasar: workshop yang sama
+        $query = Employment::with(['user.roles'])
+            ->where('workshop_uuid', $currentEmployment->workshop_uuid);
+
+        // 3. Filter berdasarkan role jika diminta (e.g. ?role=mechanic)
+        if ($request->has('role') && $request->role === 'mechanic') {
+            $query->mechanic();
+        }
+
+        $employees = $query->get();
+
+        return response()->json(['data' => $employees]);
+    }
 
     /**
      * POST /api/v1/admins/services/{service}/accept

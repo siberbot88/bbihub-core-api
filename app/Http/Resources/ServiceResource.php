@@ -24,6 +24,7 @@ class ServiceResource extends JsonResource
             'estimated_time'   => optional($this->estimated_time)->toIso8601String(),
             'status'           => $this->status,
             'acceptance_status'=> $this->acceptance_status,
+            'type'             => $this->type,
 
             // kolom di DB: category_service → kirim ke frontend sebagai category_name
             'category_service' => $this->category_service,
@@ -58,6 +59,7 @@ class ServiceResource extends JsonResource
                     'name'         => $this->vehicle->name,
                     'year'         => $this->vehicle->year,
                     'color'        => $this->vehicle->color,
+                    'category'     => $this->vehicle->category,
                     'odometer'     => $this->vehicle->odometer,
                 ];
             }),
@@ -68,6 +70,9 @@ class ServiceResource extends JsonResource
                     'name' => optional($this->mechanic->user)->name,
                 ];
             }),
+
+            // Transaction ID for Flutter to use when adding items
+            'transaction_uuid' => $this->transaction?->id,
 
             'reason'            => $this->reason,
             'reason_description'=> $this->reason_description,
