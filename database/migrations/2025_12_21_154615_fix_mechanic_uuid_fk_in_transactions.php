@@ -20,12 +20,17 @@ return new class extends Migration
             // FK might not exist, continue
         }
 
+        // First ensure the column is nullable so nullOnDelete can work
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->uuid('mechanic_uuid')->nullable()->change();
+        });
+
         // Add new FK to employments
         Schema::table('transactions', function (Blueprint $table) {
             $table->foreign('mechanic_uuid')
                   ->references('id')
                   ->on('employments')
-                  ->nullOnDelete();
+                  ->restrictOnDelete();
         });
     }
 
