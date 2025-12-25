@@ -14,8 +14,18 @@ return new class extends Migration
         Schema::create('service_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('service_uuid')->constrained('services');
-            $table->foreignUuid('mechanic_uuid')->nullable()->constrained('users');
-            $table->foreignUuid('transaction_uuid')->constrained('transactions');
+            $table->foreignUuid('mechanic_uuid')->nullable()->constrained('employments')->nullOnDelete();
+            $table->foreignUuid('transaction_uuid')->nullable()->constrained('transactions')->nullOnDelete();
+            $table->enum('status', [
+                'pending', 
+                'accepted', 
+                'rejected', 
+                'in progress', 
+                'completed', 
+                'menunggu pembayaran', 
+                'lunas', 
+                'cancelled'
+            ])->default('pending');
             $table->text('notes');
             $table->timestamps();
         });

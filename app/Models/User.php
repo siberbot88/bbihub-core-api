@@ -139,19 +139,27 @@ class User extends Authenticatable implements MustVerifyEmail
         );
     }
 
-    public function transactions(): HasMany
+    public function transactions(): HasManyThrough
     {
-        return $this->hasMany(Transaction::class, 'user_uuid', 'id');
+        // Asumsi: Transaksi sebagai mekanik (melalui employment)
+        return $this->hasManyThrough(Transaction::class, Employment::class, 'user_uuid', 'mechanic_uuid', 'id', 'id');
     }
 
-    public function logs(): HasMany
+    public function adminTransactions(): HasMany
     {
-        return $this->hasMany(ServiceLog::class, 'mechanic_uuid', 'id');
+        // Transaksi sebagai admin
+        return $this->hasMany(Transaction::class, 'admin_uuid', 'id');
+    }
+
+    public function logs(): HasManyThrough
+    {
+        // Service Log via employment
+        return $this->hasManyThrough(ServiceLog::class, Employment::class, 'user_uuid', 'mechanic_uuid', 'id', 'id');
     }
 
     public function notifications(): HasMany
     {
-        return $this->hasMany(Notification::class, 'mechanic_uuid', 'id');
+        return $this->hasMany(Notification::class, 'user_uuid', 'id');
     }
 
     /**

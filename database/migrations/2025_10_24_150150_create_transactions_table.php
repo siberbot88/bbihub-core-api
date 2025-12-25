@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('customer_uuid')->constrained('customers');
             $table->foreignUuid('workshop_uuid')->constrained('workshops');
             $table->foreignUuid('admin_uuid')->constrained('users');
-            $table->foreignUuid('mechanic_uuid')->constrained('users');
+            $table->foreignUuid('mechanic_uuid')->nullable()->constrained('employments')->restrictOnDelete();
             $table->enum('status', ['pending', 'process', 'success'])->default('pending')->nullable();
             $table->decimal('amount', 15, 2)->default(0);
             $table->string('payment_method')->nullable();

@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('code');
             $table->foreignUuid('workshop_uuid')->constrained('workshops');
             $table->string('name');
+            $table->foreignUuid('customer_uuid')->nullable()->constrained('customers');
+            $table->foreignUuid('vehicle_uuid')->nullable()->constrained('vehicles');
+            $table->foreignUuid('mechanic_uuid')->nullable()->constrained('employments')->nullOnDelete();
             $table->text('description');
             $table->decimal('price', 8, 2)->default(0);
             $table->date('scheduled_date');

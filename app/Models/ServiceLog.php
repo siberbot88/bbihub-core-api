@@ -31,7 +31,7 @@ class ServiceLog extends Model
     }
 
     public function mechanic(): BelongsTo{
-        return $this->belongsTo(User::class, 'mechanic_uuid', 'id');
+        return $this->belongsTo(Employment::class, 'mechanic_uuid', 'id');
     }
 
     public function transaction(): BelongsTo{
